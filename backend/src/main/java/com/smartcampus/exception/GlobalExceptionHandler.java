@@ -45,8 +45,15 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = Map.of(
                 "timestamp", Instant.now(),
                 "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "message", "An unexpected error occurred: " + ex.getMessage());
+                "message", "An unexpected error occurred");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-    }
-}
+    }}  
+
+    
+    
+    
+    
+    
+
+    
