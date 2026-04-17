@@ -10,8 +10,8 @@ import java.time.LocalTime;
 @Data
 public class BookingRequest {
     
-    @NotNull(message = "Resource ID is required")
-    private Long resourceId;
+    @NotNull(message = "Resource name is required")
+    private String resourceName;
 
     @NotNull(message = "Date is required")
     private LocalDate date;

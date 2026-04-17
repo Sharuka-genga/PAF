@@ -31,7 +31,7 @@ export default function BookingPage() {
   const [minTime, setMinTime] = useState("");
   const [minEndTime, setMinEndTime] = useState("");
   const [formData, setFormData] = useState({
-    resourceId: "",
+    resourceName: "",
     date: "",
     startTime: "",
     endTime: "",
@@ -81,7 +81,7 @@ export default function BookingPage() {
     e.preventDefault();
     
     // Validation
-    if (!formData.resourceId) return toast.error("Please select a resource");
+    if (!formData.resourceName) return toast.error("Please select a resource");
     if (!formData.date) return toast.error("Please select a booking date");
     if (!formData.startTime) return toast.error("Please select a start time");
     if (!formData.endTime) return toast.error("Please select an end time");
@@ -106,7 +106,6 @@ export default function BookingPage() {
 
     const promise = bookingService.create({
       ...formData,
-      resourceId: parseInt(formData.resourceId),
       attendees: parseInt(formData.attendees.toString()),
       startTime: `${formData.startTime}:00`,
       endTime: `${formData.endTime}:00`
@@ -116,7 +115,7 @@ export default function BookingPage() {
       loading: 'Submitting booking request...',
       success: () => {
         fetchBookings();
-        setFormData({ resourceId: "", date: "", startTime: "", endTime: "", purpose: "", attendees: 1 });
+        setFormData({ resourceName: "", date: "", startTime: "", endTime: "", purpose: "", attendees: 1 });
         return 'Booking requested successfully!';
       },
       error: (err) => err.response?.data?.message || 'Conflict: This slot is already taken'
@@ -173,15 +172,15 @@ export default function BookingPage() {
               <div className="space-y-2">
                 <Label className="text-slate-700">Resource</Label>
                 <Select 
-                  value={formData.resourceId} 
-                  onValueChange={(val) => setFormData({...formData, resourceId: val})}
+                  value={formData.resourceName} 
+                  onValueChange={(val) => setFormData({...formData, resourceName: val})}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose a resource..." />
                   </SelectTrigger>
                   <SelectContent>
                     {RESOURCES.map(r => (
-                      <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                      <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -292,7 +291,7 @@ export default function BookingPage() {
                     {bookings.map((b) => (
                       <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
                         <TableCell className="font-medium">
-                          {RESOURCES.find(r => r.id === b.resourceId.toString())?.name || `ID: ${b.resourceId}`}
+                          {b.resourceName}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
