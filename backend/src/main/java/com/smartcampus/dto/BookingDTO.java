@@ -16,7 +16,7 @@ import java.time.LocalTime;
 public class BookingDTO {
     private Long id;
     private Long userId;
-    private Long resourceId;
+    private String resourceName;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
