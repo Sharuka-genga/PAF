@@ -145,6 +145,16 @@ export default function BookingPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      await bookingService.delete(id);
+      toast.success("Record removed from history");
+      fetchBookings();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete record");
+    }
+  };
+
   const formatTime = (timeStr: string) => {
     if (!timeStr) return "";
     const [hours, minutes] = timeStr.split(":");
@@ -340,7 +350,15 @@ export default function BookingPage() {
                               <Trash2 className="size-4" />
                             </Button>
                           ) : (
-                            <span className="text-xs text-slate-300 italic font-medium px-2">No actions</span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDelete(b.id)}
+                              className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8 rounded-full transition-colors"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
                           )}
                         </TableCell>
                       </TableRow>

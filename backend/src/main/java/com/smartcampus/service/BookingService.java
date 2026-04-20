@@ -116,6 +116,23 @@ public class BookingService {
         return mapToDTO(bookingRepository.save(booking));
     }
 
+    @Transactional
+    public void deleteBooking(Long id, Long userId) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Only allow deleting non-active bookings (Rejected or Cancelled) to preserve history of active ones
+        if (booking.getStatus() == BookingStatus.PENDING || booking.getStatus() == BookingStatus.APPROVED) {
+            throw new RuntimeException("Cannot delete an active or approved booking. Please cancel it first.");
+        }
+
+        if (!booking.getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to delete this booking");
+        }
+
+        bookingRepository.delete(booking);
+    }
+
     private BookingDTO mapToDTO(Booking booking) {
         return BookingDTO.builder()
                 .id(booking.getId())

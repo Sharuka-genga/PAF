@@ -62,4 +62,13 @@ public class BookingController {
             @RequestHeader("X-User-Id") Long userId) {
         return ResponseEntity.ok(bookingService.cancelBooking(id, userId));
     }
+
+    // DELETE /api/bookings/{id} - User deletes a rejected/cancelled record
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBooking(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long userId) {
+        bookingService.deleteBooking(id, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

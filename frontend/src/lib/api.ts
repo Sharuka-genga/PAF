@@ -15,7 +15,8 @@ export const bookingService = {
   getAllBookings: (status?: string) => api.get("/bookings", { params: { status } }),
   approve: (id: number) => api.put(`/bookings/${id}/approve`),
   reject: (id: number, reason: string) => api.put(`/bookings/${id}/reject`, { reason }),
-  cancel: (id: number) => api.put(`/bookings/${id}/cancel`)
+  cancel: (id: number) => api.put(`/bookings/${id}/cancel`),
+  delete: (id: number) => api.delete(`/bookings/${id}`)
 };
 
 export default api;
