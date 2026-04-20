@@ -13,8 +13,16 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "../components/ui/select";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription
+} from "../components/ui/dialog";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, FileText, Trash2 } from "lucide-react";
+import { Calendar, Clock, Users, FileText, Trash2, AlertCircle, MessageSquare } from "lucide-react";
 
 const RESOURCES = [
   { id: "101", name: "Main Lecture Hall (LH-01)" },
@@ -30,6 +38,7 @@ export default function BookingPage() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [minTime, setMinTime] = useState("");
   const [minEndTime, setMinEndTime] = useState("");
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     resourceName: "",
     date: "",
@@ -67,11 +76,13 @@ export default function BookingPage() {
   };
 
   const fetchBookings = async () => {
+    setLoading(true);
     try {
       const res = await bookingService.getMyBookings();
       setBookings(res.data);
     } catch (error) {
       console.error("Failed to fetch bookings", error);
+      toast.error("Failed to sync personal schedule");
     } finally {
       setLoading(false);
     }
@@ -122,13 +133,15 @@ export default function BookingPage() {
     });
   };
 
-  const cancelBooking = async (id: number) => {
+  const confirmCancel = async () => {
+    if (!cancellingId) return;
     try {
-      await bookingService.cancel(id);
-      toast.success("Booking cancelled");
+      await bookingService.cancel(cancellingId);
+      toast.success("Booking cancelled successfully");
+      setCancellingId(null);
       fetchBookings();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to cancel");
+      toast.error(error.response?.data?.message || "Failed to cancel booking");
     }
   };
 
@@ -143,10 +156,10 @@ export default function BookingPage() {
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case "APPROVED": return "bg-green-100 text-green-700 border-green-200 hover:bg-green-100";
-      case "PENDING": return "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100";
-      case "REJECTED": return "bg-red-100 text-red-700 border-red-200 hover:bg-red-100";
-      case "CANCELLED": return "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-100";
+      case "APPROVED": return "bg-green-100 text-green-700 border-green-200 hover:bg-green-50";
+      case "PENDING": return "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-50";
+      case "REJECTED": return "bg-red-100 text-red-700 border-red-200 hover:bg-red-50";
+      case "CANCELLED": return "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-50";
       default: return "";
     }
   };
@@ -170,12 +183,12 @@ export default function BookingPage() {
           <CardContent className="pt-6">
             <form onSubmit={handleBookingSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-slate-700">Resource</Label>
+                <Label className="text-slate-700 font-medium">Resource</Label>
                 <Select 
                   value={formData.resourceName} 
                   onValueChange={(val) => setFormData({...formData, resourceName: val})}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder="Choose a resource..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -187,7 +200,7 @@ export default function BookingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-700">Date</Label>
+                <Label className="text-slate-700 font-medium">Date</Label>
                 <Input 
                   type="date"
                   value={formData.date} 
@@ -200,7 +213,7 @@ export default function BookingPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-700 flex items-center gap-1">
+                  <Label className="text-slate-700 flex items-center gap-1 font-medium">
                     <Clock className="size-3" /> Start
                   </Label>
                   <Input 
@@ -212,10 +225,11 @@ export default function BookingPage() {
                     }}
                     min={minTime}
                     required 
+                    className="bg-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-700 flex items-center gap-1">
+                  <Label className="text-slate-700 flex items-center gap-1 font-medium">
                     <Clock className="size-3" /> End
                   </Label>
                   <Input 
@@ -224,12 +238,13 @@ export default function BookingPage() {
                     onChange={(e) => setFormData({...formData, endTime: e.target.value})}
                     min={minEndTime || minTime}
                     required 
+                    className="bg-white"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-700 flex items-center gap-1">
+                <Label className="text-slate-700 flex items-center gap-1 font-medium">
                   <FileText className="size-3" /> Purpose
                 </Label>
                 <Input 
@@ -237,11 +252,12 @@ export default function BookingPage() {
                   value={formData.purpose} 
                   onChange={(e) => setFormData({...formData, purpose: e.target.value})}
                   required 
+                  className="bg-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-700 flex items-center gap-1">
+                <Label className="text-slate-700 flex items-center gap-1 font-medium">
                   <Users className="size-3" /> Attendees
                 </Label>
                 <Input 
@@ -250,6 +266,7 @@ export default function BookingPage() {
                   value={formData.attendees} 
                   onChange={(e) => setFormData({...formData, attendees: parseInt(e.target.value)})}
                   required 
+                  className="bg-white"
                 />
               </div>
 
@@ -272,8 +289,8 @@ export default function BookingPage() {
                 <p className="text-slate-500 text-sm">Syncing with campus server...</p>
               </div>
             ) : bookings.length === 0 ? (
-              <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-xl">
-                 <p className="text-slate-400 font-medium">No bookings found in your history.</p>
+              <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/30">
+                 <p className="text-slate-400 font-medium">No bookings found for this user.</p>
                  <p className="text-slate-300 text-sm">Use the form to create your first request.</p>
               </div>
             ) : (
@@ -290,31 +307,40 @@ export default function BookingPage() {
                   <TableBody>
                     {bookings.map((b) => (
                       <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium text-slate-900 uppercase tracking-tight text-xs">
                           {b.resourceName}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium">{b.date}</span>
+                            <span className="text-sm font-medium text-slate-700">{b.date}</span>
                             <span className="text-xs text-slate-500">{formatTime(b.startTime)} - {formatTime(b.endTime)}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusVariant(b.status)} variant="outline">
-                            {b.status}
-                          </Badge>
+                          <div className="flex flex-col gap-1.5 items-start">
+                             <Badge className={`${getStatusVariant(b.status)} border px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider`} variant="outline">
+                               {b.status}
+                             </Badge>
+                             {b.rejectionReason && (
+                               <div className="flex items-center gap-1 text-[10px] text-red-500 bg-red-50 p-1 rounded italic font-medium">
+                                 <MessageSquare className="size-2.5" /> {b.rejectionReason}
+                               </div>
+                             )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right px-4">
-                          {(b.status === "PENDING" || b.status === "APPROVED") && (
+                          {(b.status === "PENDING" || b.status === "APPROVED") ? (
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => cancelBooking(b.id)}
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8 rounded-full"
+                              onClick={() => setCancellingId(b.id)}
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8 rounded-full transition-colors"
                               title="Cancel Booking"
                             >
                               <Trash2 className="size-4" />
                             </Button>
+                          ) : (
+                            <span className="text-xs text-slate-300 italic font-medium px-2">No actions</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -326,6 +352,32 @@ export default function BookingPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cancellation Confirmation Dialog */}
+      <Dialog open={!!cancellingId} onOpenChange={(open) => !open && setCancellingId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="size-5" /> Confirm Cancellation
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this booking? This action cannot be undone and the resource will be made available for others.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setCancellingId(null)}>
+              No, keep it
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmCancel}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Yes, cancel booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
