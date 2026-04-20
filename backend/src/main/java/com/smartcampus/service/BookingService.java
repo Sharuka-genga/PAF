@@ -52,8 +52,16 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    public List<BookingDTO> getAllBookings() {
-        return bookingRepository.findAll().stream()
+    public List<BookingDTO> getAllBookings(BookingStatus status) {
+        List<Booking> bookings;
+        if (status != null) {
+            bookings = bookingRepository.findAll().stream()
+                    .filter(b -> b.getStatus() == status)
+                    .collect(Collectors.toList());
+        } else {
+            bookings = bookingRepository.findAll();
+        }
+        return bookings.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -62,6 +70,10 @@ public class BookingService {
     public BookingDTO approveBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new RuntimeException("Only PENDING bookings can be approved.");
+        }
         
         // Final check for conflicts before approving
         if (bookingRepository.existsOverlappingBooking(
@@ -77,6 +89,10 @@ public class BookingService {
     public BookingDTO rejectBooking(Long id, String reason) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new RuntimeException("Only PENDING bookings can be rejected.");
+        }
         booking.setStatus(BookingStatus.REJECTED);
         booking.setRejectionReason(reason);
         return mapToDTO(bookingRepository.save(booking));
@@ -86,6 +102,10 @@ public class BookingService {
     public BookingDTO cancelBooking(Long id, Long userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (booking.getStatus() != BookingStatus.PENDING && booking.getStatus() != BookingStatus.APPROVED) {
+            throw new RuntimeException("Only PENDING or APPROVED bookings can be cancelled.");
+        }
         
         // Authorization check (simplified)
         if (!booking.getUserId().equals(userId)) {

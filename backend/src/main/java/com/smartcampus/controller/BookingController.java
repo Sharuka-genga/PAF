@@ -33,10 +33,11 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getUserBookings(userId));
     }
 
-    // GET /api/bookings - Admin views all bookings
+    // GET /api/bookings - Admin views all bookings with optional status filter
     @GetMapping
-    public ResponseEntity<List<BookingDTO>> getAllBookings() {
-        return ResponseEntity.ok(bookingService.getAllBookings());
+    public ResponseEntity<List<BookingDTO>> getAllBookings(
+            @RequestParam(required = false) com.smartcampus.model.enums.BookingStatus status) {
+        return ResponseEntity.ok(bookingService.getAllBookings(status));
     }
 
     // PUT /api/bookings/{id}/approve - Admin approves a booking
