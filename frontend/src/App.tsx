@@ -10,6 +10,8 @@ import Notifications from './pages/Notifications';
 import TicketsPage from './pages/TicketsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
+import ResourcesPage from './pages/ResourcesPage';
+import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { useAuth } from './context/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -109,6 +111,14 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/resources"
+            element={
+              <PrivateRoute>
+                <ResourcesPage />
+              </PrivateRoute>
+            }
+          />
 
           {/* Admin Routes */}
           <Route
@@ -124,6 +134,14 @@ function App() {
             element={
               <AdminRoute>
                 <AdminUsers />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/resources"
+            element={
+              <AdminRoute>
+                <AdminResourcesPage />
               </AdminRoute>
             }
           />
