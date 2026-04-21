@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import ProfileDropdown from '../components/ui/ProfileDropdown';
+import NotificationDropdown from '../components/ui/NotificationDropdown';
 
 const Dashboard = () => {
   const { user, isAdmin } = useAuth();
@@ -18,20 +19,29 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [resourcesRes, bookingsRes, ticketsRes, notifRes] = await Promise.all([
-          resourceAPI.getAll(),
-          bookingAPI.getMyBookings(),
-          ticketAPI.getMyTickets(),
-          notificationAPI.getUnreadCount()
+        const results = await Promise.allSettled([
+          resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
+          bookingAPI.getMyBookings().catch(() => ({ data: { data: [] } })),
+          ticketAPI.getMyTickets().catch(() => ({ data: { data: [] } })),
+          notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
         ]);
+
+        const getValue = (result, isCount = false) => {
+          if (result.status === 'fulfilled' && result.value?.data?.data) {
+            return isCount ? (result.value.data.data.count || 0) : (result.value.data.data.length || 0);
+          }
+          return 0;
+        };
+
         setStats({
-          resources: resourcesRes.data.data?.length || 0,
-          bookings: bookingsRes.data.data?.length || 0,
-          tickets: ticketsRes.data.data?.length || 0,
-          notifications: notifRes.data.data?.count ?? 0
+          resources: getValue(results[0]),
+          bookings: getValue(results[1]),
+          tickets: getValue(results[2]),
+          notifications: getValue(results[3], true)
         });
-        setRecentBookings((bookingsRes.data.data || []).slice(0, 5));
-        setRecentTickets((ticketsRes.data.data || []).slice(0, 5));
+        
+        setRecentBookings(results[1].status === 'fulfilled' ? (results[1].value.data?.data || []).slice(0, 5) : []);
+        setRecentTickets(results[2].status === 'fulfilled' ? (results[2].value.data?.data || []).slice(0, 5) : []);
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       } finally {
@@ -84,7 +94,10 @@ const Dashboard = () => {
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">Smart Campus Hub</h1>
             </div>
-            <ProfileDropdown />
+            <div className="flex items-center gap-2">
+              <NotificationDropdown />
+              <ProfileDropdown />
+            </div>
           </div>
         </div>
       </header>
