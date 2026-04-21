@@ -28,8 +28,15 @@ const Login = () => {
 
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      const userData = await login(form.email, form.password);
       toast.success('Login successful!');
+      
+      // Redirect based on user role
+      if (userData.roles.includes('ADMIN')) {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/dashboard';
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {

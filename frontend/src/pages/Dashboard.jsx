@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { resourceAPI, bookingAPI, ticketAPI, notificationAPI } from '../services/api';
-import { FiGrid, FiCalendar, FiAlertCircle, FiBell, FiPlus, FiArrowRight } from 'react-icons/fi';
+import { FiGrid, FiCalendar, FiAlertCircle, FiBell, FiPlus, FiArrowRight, FiSettings } from 'react-icons/fi';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import ProfileDropdown from '../components/ui/ProfileDropdown';
 
 const Dashboard = () => {
   const { user, isAdmin } = useAuth();
@@ -75,12 +76,26 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Welcome */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Welcome back, {user?.name}!</h1>
-        <p className="text-muted-foreground mt-1">Here's what's happening on campus today.</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900">Smart Campus Hub</h1>
+            </div>
+            <ProfileDropdown />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Welcome */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">Welcome back, {user?.name}!</h1>
+          <p className="text-muted-foreground mt-1">Here's what's happening on campus today.</p>
+        </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -183,6 +198,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+      </main>
     </div>
   );
 };
