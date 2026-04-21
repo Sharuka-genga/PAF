@@ -22,9 +22,10 @@ import {
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Filter, MessageSquare, Info, Clock, Users } from "lucide-react";
+import type { Booking } from "../lib/types";
 
 export default function AdminBookingsPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [rejectingId, setRejectingId] = useState<number | null>(null);
@@ -53,6 +54,7 @@ export default function AdminBookingsPage() {
       await bookingService.approve(id);
       toast.success("Booking approved successfully");
       fetchBookings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to approve booking");
     }
@@ -68,6 +70,7 @@ export default function AdminBookingsPage() {
       setRejectingId(null);
       setRejectionReason("");
       fetchBookings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to reject booking");
     }
