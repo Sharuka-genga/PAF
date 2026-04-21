@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { Booking } from "./types";
 
 // Standardizing API requests
 const api = axios.create({
@@ -10,7 +11,7 @@ const api = axios.create({
 });
 
 export const bookingService = {
-  create: (data: any) => api.post("/bookings", data),
+  create: (data: Partial<Booking>) => api.post("/bookings", data),
   getMyBookings: () => api.get("/bookings/my"),
   getAllBookings: (status?: string) => api.get("/bookings", { params: { status } }),
   approve: (id: number) => api.put(`/bookings/${id}/approve`),

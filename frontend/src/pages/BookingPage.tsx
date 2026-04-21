@@ -23,6 +23,7 @@ import {
 } from "../components/ui/dialog";
 import { toast } from "sonner";
 import { Calendar, Clock, Users, FileText, Trash2, AlertCircle, MessageSquare } from "lucide-react";
+import type { Booking } from "../lib/types";
 
 const RESOURCES = [
   { id: "101", name: "Main Lecture Hall (LH-01)" },
@@ -33,7 +34,7 @@ const RESOURCES = [
 ];
 
 export default function BookingPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [minTime, setMinTime] = useState("");
@@ -140,6 +141,7 @@ export default function BookingPage() {
       toast.success("Booking cancelled successfully");
       setCancellingId(null);
       fetchBookings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to cancel booking");
     }
@@ -150,6 +152,7 @@ export default function BookingPage() {
       await bookingService.delete(id);
       toast.success("Record removed from history");
       fetchBookings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to delete record");
     }

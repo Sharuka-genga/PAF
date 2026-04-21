@@ -8,6 +8,7 @@ import com.smartcampus.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
 
     @Transactional
-    public BookingDTO createBooking(Long userId, BookingRequest request) {
+    public BookingDTO createBooking(@NonNull Long userId, @NonNull BookingRequest request) {
         // 1. Validate startTime < endTime
         if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().equals(request.getEndTime())) {
             throw new RuntimeException("Start time must be before end time");
@@ -46,7 +47,7 @@ public class BookingService {
         return mapToDTO(saved);
     }
 
-    public List<BookingDTO> getUserBookings(Long userId) {
+    public List<BookingDTO> getUserBookings(@NonNull Long userId) {
         return bookingRepository.findByUserId(userId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -67,7 +68,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingDTO approveBooking(Long id) {
+    public BookingDTO approveBooking(@NonNull Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         
@@ -86,7 +87,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingDTO rejectBooking(Long id, String reason) {
+    public BookingDTO rejectBooking(@NonNull Long id, @NonNull String reason) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         
@@ -99,7 +100,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingDTO cancelBooking(Long id, Long userId) {
+    public BookingDTO cancelBooking(@NonNull Long id, @NonNull Long userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         
@@ -117,7 +118,7 @@ public class BookingService {
     }
 
     @Transactional
-    public void deleteBooking(Long id, Long userId) {
+    public void deleteBooking(@NonNull Long id, @NonNull Long userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
