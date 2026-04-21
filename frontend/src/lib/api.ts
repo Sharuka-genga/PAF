@@ -5,10 +5,35 @@ import type { Booking } from "./types";
 const api = axios.create({
   baseURL: "/api",
   headers: {
-    "Content-Type": "application/json",
-    "X-User-Id": "1"
+    "Content-Type": "application/json"
   }
 });
+
+// Request interceptor to add auth token and dynamic User ID
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.id) {
+          config.headers["X-User-Id"] = user.id;
+        }
+      } catch (e) {
+        console.error("Failed to parse user from storage", e);
+      }
+    }
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const bookingService = {
   create: (data: Partial<Booking>) => api.post("/bookings", data),

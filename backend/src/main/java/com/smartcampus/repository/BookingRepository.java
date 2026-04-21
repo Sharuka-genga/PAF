@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findByUserId(Long userId);
+    List<Booking> findByUserId(String userId);
 
     /**
      * Checks for overlapping bookings for a specific resource and date.

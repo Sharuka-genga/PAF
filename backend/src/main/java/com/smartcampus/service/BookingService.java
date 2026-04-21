@@ -18,9 +18,10 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final NotificationService notificationService;
 
     @Transactional
-    public BookingDTO createBooking(@NonNull Long userId, @NonNull BookingRequest request) {
+    public BookingDTO createBooking(@NonNull String userId, @NonNull BookingRequest request) {
         // 1. Validate startTime < endTime
         if (request.getStartTime().isAfter(request.getEndTime()) || request.getStartTime().equals(request.getEndTime())) {
             throw new RuntimeException("Start time must be before end time");
@@ -47,7 +48,7 @@ public class BookingService {
         return mapToDTO(saved);
     }
 
-    public List<BookingDTO> getUserBookings(@NonNull Long userId) {
+    public List<BookingDTO> getUserBookings(@NonNull String userId) {
         return bookingRepository.findByUserId(userId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -83,7 +84,18 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.APPROVED);
-        return mapToDTO(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+        
+        // Create Notification
+        notificationService.createNotification(
+            booking.getUserId(),
+            "Booking Approved",
+            "Your booking for " + booking.getResourceName() + " on " + booking.getDate() + " has been approved.",
+            com.smartcampus.model.Notification.NotificationType.BOOKING_APPROVED,
+            booking.getId().toString()
+        );
+
+        return mapToDTO(saved);
     }
 
     @Transactional
@@ -96,11 +108,22 @@ public class BookingService {
         }
         booking.setStatus(BookingStatus.REJECTED);
         booking.setRejectionReason(reason);
-        return mapToDTO(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        // Create Notification
+        notificationService.createNotification(
+            booking.getUserId(),
+            "Booking Rejected",
+            "Your booking for " + booking.getResourceName() + " has been rejected. Reason: " + reason,
+            com.smartcampus.model.Notification.NotificationType.BOOKING_REJECTED,
+            booking.getId().toString()
+        );
+
+        return mapToDTO(saved);
     }
 
     @Transactional
-    public BookingDTO cancelBooking(@NonNull Long id, @NonNull Long userId) {
+    public BookingDTO cancelBooking(@NonNull Long id, @NonNull String userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         
@@ -114,15 +137,25 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
-        return mapToDTO(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        // Create Notification (to self, or maybe just log it. Usually cancel is user action)
+        notificationService.createNotification(
+            booking.getUserId(),
+            "Booking Cancelled",
+            "You have cancelled your booking for " + booking.getResourceName(),
+            com.smartcampus.model.Notification.NotificationType.BOOKING_CANCELLED,
+            booking.getId().toString()
+        );
+
+        return mapToDTO(saved);
     }
 
     @Transactional
-    public void deleteBooking(@NonNull Long id, @NonNull Long userId) {
+    public void deleteBooking(@NonNull Long id, @NonNull String userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        // Only allow deleting non-active bookings (Rejected or Cancelled) to preserve history of active ones
         if (booking.getStatus() == BookingStatus.PENDING || booking.getStatus() == BookingStatus.APPROVED) {
             throw new RuntimeException("Cannot delete an active or approved booking. Please cancel it first.");
         }

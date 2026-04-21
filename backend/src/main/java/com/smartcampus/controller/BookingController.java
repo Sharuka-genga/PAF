@@ -22,14 +22,14 @@ public class BookingController {
     // POST /api/bookings - Create a booking
     @PostMapping
     public ResponseEntity<BookingDTO> createBooking(
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Id") String userId,
             @Valid @RequestBody BookingRequest request) {
         return new ResponseEntity<>(bookingService.createBooking(userId, request), HttpStatus.CREATED);
     }
 
     // GET /api/bookings/my - User views their own bookings
     @GetMapping("/my")
-    public ResponseEntity<List<BookingDTO>> getMyBookings(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<List<BookingDTO>> getMyBookings(@RequestHeader("X-User-Id") String userId) {
         return ResponseEntity.ok(bookingService.getUserBookings(userId));
     }
 
@@ -59,7 +59,7 @@ public class BookingController {
     @PutMapping("/{id}/cancel")
     public ResponseEntity<BookingDTO> cancelBooking(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") String userId) {
         return ResponseEntity.ok(bookingService.cancelBooking(id, userId));
     }
 
@@ -67,7 +67,7 @@ public class BookingController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBooking(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") String userId) {
         bookingService.deleteBooking(id, userId);
         return ResponseEntity.noContent().build();
     }
