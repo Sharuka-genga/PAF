@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-import TicketsPage from './pages/TicketsPage'
-
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b px-6 py-4 mb-4">
-        <h1 className="text-xl font-bold text-gray-800">🏫 Smart Campus Operations Hub</h1>
-      </nav>
-      <TicketsPage />
-    </div>
-  )
-}
-
-export default App
-=======
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
@@ -23,8 +7,11 @@ import OAuth2RedirectHandler from './pages/auth/OAuth2RedirectHandler';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
+import TicketsPage from './pages/TicketsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
+import ResourcesPage from './pages/ResourcesPage';
+import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { useAuth } from './context/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -39,7 +26,7 @@ interface AdminRouteProps {
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -47,13 +34,13 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
       </div>
     );
   }
-  
+
   return user ? children : <Navigate to="/login" replace />;
 };
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
@@ -61,11 +48,11 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
       </div>
     );
   }
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return isAdmin() ? children : <Navigate to="/dashboard" replace />;
 };
 
@@ -89,55 +76,76 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/admin-register" element={<AdminRegister />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
-          
+
           {/* Private User Routes */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <PrivateRoute>
                 <Dashboard />
               </PrivateRoute>
-            } 
+            }
           />
-          <Route 
-            path="/dashboard" 
-            element={<Navigate to="/" replace />} 
-          />
-          <Route 
-            path="/settings" 
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route
+            path="/settings"
             element={
               <PrivateRoute>
                 <Settings />
               </PrivateRoute>
-            } 
+            }
           />
-          <Route 
-            path="/notifications" 
+          <Route
+            path="/notifications"
             element={
               <PrivateRoute>
                 <Notifications />
               </PrivateRoute>
-            } 
+            }
           />
-          
+          <Route
+            path="/tickets"
+            element={
+              <PrivateRoute>
+                <TicketsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              <PrivateRoute>
+                <ResourcesPage />
+              </PrivateRoute>
+            }
+          />
+
           {/* Admin Routes */}
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <AdminRoute>
                 <AdminDashboard />
               </AdminRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/users" 
+          <Route
+            path="/admin/users"
             element={
               <AdminRoute>
                 <AdminUsers />
               </AdminRoute>
-            } 
+            }
           />
-          
+          <Route
+            path="/admin/resources"
+            element={
+              <AdminRoute>
+                <AdminResourcesPage />
+              </AdminRoute>
+            }
+          />
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
