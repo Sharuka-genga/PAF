@@ -1,14 +1,14 @@
 package com.smartcampus.repository;
 
 import com.smartcampus.model.Notification;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface NotificationRepository extends MongoRepository<Notification, String> {
+public interface NotificationRepository extends JpaRepository<Notification, String> {
     List<Notification> findByUserIdOrderByCreatedAtDesc(String userId);
-    List<Notification> findByUserIdAndReadFalseOrderByCreatedAtDesc(String userId);
-    long countByUserIdAndReadFalse(String userId);
+    List<Notification> findByUserIdAndIsReadFalseOrderByCreatedAtDesc(String userId);
+    long countByUserIdAndIsReadFalse(String userId);
 }
