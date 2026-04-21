@@ -4,11 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,15 +17,18 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")
+@Entity
+@Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String name;
 
-    @Indexed(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     private String password;
@@ -37,6 +39,10 @@ public class User {
 
     private String providerId;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
@@ -54,6 +60,7 @@ public class User {
     private boolean compactMode = false;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate

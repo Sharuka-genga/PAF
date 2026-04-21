@@ -35,7 +35,7 @@ public class NotificationService {
                 .message(message)
                 .type(type)
                 .referenceId(referenceId)
-                .read(false)
+                .isRead(false)
                 .build();
             return Objects.requireNonNull(notificationRepository.save(notification));
     }
@@ -65,11 +65,11 @@ public class NotificationService {
     }
 
     public List<Notification> getUnreadNotifications(@NonNull String userId) {
-        return notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
+        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
     }
 
     public long getUnreadCount(@NonNull String userId) {
-        return notificationRepository.countByUserIdAndReadFalse(userId);
+        return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
 
     @SuppressWarnings("null")
@@ -80,7 +80,7 @@ public class NotificationService {
     }
 
     public void markAllAsRead(@NonNull String userId) {
-        List<Notification> unread = notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
+        List<Notification> unread = notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
         unread.forEach(n -> n.setRead(true));
         if (!unread.isEmpty()) {
             notificationRepository.saveAll(unread);
