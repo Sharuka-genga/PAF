@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import { toast } from 'react-toastify';
-import { FiShield, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiShield, FiSearch, FiTrash2, FiEdit2, FiSave, FiX, FiUser, FiMail } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 
 const AdminUsers = () => {
   const { user: currentUser } = useAuth();
@@ -11,6 +14,8 @@ const AdminUsers = () => {
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState(null);
   const [selectedRoles, setSelectedRoles] = useState([]);
+  const [editingDetails, setEditingDetails] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const allRoles = ['USER', 'ADMIN', 'TECHNICIAN'];
 
@@ -30,11 +35,25 @@ const AdminUsers = () => {
   const handleUpdateRoles = async (userId) => {
     try {
       await adminAPI.updateUserRoles(userId, selectedRoles);
-      toast.success('User roles updated');
+      toast.success('User roles updated successfully!');
       setEditingUser(null);
       fetchUsers();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update roles');
+    }
+  };
+
+  const handleUpdateUserDetails = async () => {
+    try {
+      await adminAPI.updateUser(editingDetails.id, {
+        name: editingDetails.name,
+        email: editingDetails.email
+      });
+      toast.success('User details updated successfully!');
+      setEditingDetails(null);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update user details');
     }
   };
 
@@ -44,14 +63,19 @@ const AdminUsers = () => {
       return;
     }
 
-    const confirmed = window.confirm(`Delete account for ${targetUser.name || targetUser.email}? This action cannot be undone.`);
-    if (!confirmed) return;
+    setConfirmDelete(targetUser);
+  };
 
+  const confirmDeleteUser = async () => {
     try {
-      await adminAPI.deleteUser(targetUser.id);
-      toast.success('User account deleted');
-      if (editingUser?.id === targetUser.id) {
+      await adminAPI.deleteUser(confirmDelete.id);
+      toast.success(`User account for ${confirmDelete.name || confirmDelete.email} has been deleted successfully!`);
+      setConfirmDelete(null);
+      if (editingUser?.id === confirmDelete.id) {
         setEditingUser(null);
+      }
+      if (editingDetails?.id === confirmDelete.id) {
+        setEditingDetails(null);
       }
       fetchUsers();
     } catch (err) {
@@ -119,15 +143,40 @@ const AdminUsers = () => {
             {filteredUsers.map(user => (
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                      {user.name?.charAt(0)?.toUpperCase() || '?'}
+                  {editingDetails?.id === user.id ? (
+                    <div className="space-y-2">
+                      <div>
+                        <Label htmlFor={`name-${user.id}`} className="text-xs text-gray-600">Name</Label>
+                        <Input
+                          id={`name-${user.id}`}
+                          type="text"
+                          value={editingDetails.name}
+                          onChange={(e) => setEditingDetails({...editingDetails, name: e.target.value})}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`email-${user.id}`} className="text-xs text-gray-600">Email</Label>
+                        <Input
+                          id={`email-${user.id}`}
+                          type="email"
+                          value={editingDetails.email}
+                          onChange={(e) => setEditingDetails({...editingDetails, email: e.target.value})}
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {user.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-sm text-gray-600">{user.provider || 'local'}</span>
@@ -143,18 +192,55 @@ const AdminUsers = () => {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end items-center gap-3">
-                    <button
-                      onClick={() => { setEditingUser(user); setSelectedRoles([...(user.roles || [])]); }}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      <FiShield className="w-4 h-4 inline mr-1" />Edit Roles
-                    </button>
-                    <button
-                      onClick={() => handleDeleteUser(user)}
-                      className="text-sm text-red-600 hover:text-red-700 font-medium"
-                    >
-                      <FiTrash2 className="w-4 h-4 inline mr-1" />Delete User
-                    </button>
+                    {editingDetails?.id === user.id ? (
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          size="sm"
+                          onClick={handleUpdateUserDetails}
+                          className="bg-green-600 hover:bg-green-700 text-white h-8 gap-1"
+                        >
+                          <FiSave className="w-3.5 h-3.5" /> <span className="hidden xl:inline">Save</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingDetails(null)}
+                          className="h-8 gap-1 text-gray-600"
+                        >
+                          <FiX className="w-3.5 h-3.5" /> <span className="hidden xl:inline">Cancel</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-1.5 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingDetails(user)}
+                          className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-1.5 px-2.5"
+                        >
+                          <FiEdit2 className="w-4 h-4" />
+                          <span className="text-xs font-semibold hidden md:inline">Details</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => { setEditingUser(user); setSelectedRoles([...(user.roles || [])]); }}
+                          className="h-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 gap-1.5 px-2.5"
+                        >
+                          <FiShield className="w-4 h-4" />
+                          <span className="text-xs font-semibold hidden md:inline">Roles</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                          className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 gap-1.5 px-2.5"
+                        >
+                          <FiTrash2 className="w-4 h-4" />
+                          <span className="text-xs font-semibold hidden md:inline">Delete</span>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -197,6 +283,35 @@ const AdminUsers = () => {
               </button>
               <button onClick={() => setEditingUser(null)}
                 className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Confirm Delete</h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete the account for <strong>{confirmDelete.name || confirmDelete.email}</strong>? 
+              This action cannot be undone.
+            </p>
+            <div className="flex space-x-3">
+              <Button
+                variant="destructive"
+                onClick={confirmDeleteUser}
+                className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 font-medium"
+              >
+                Delete Account
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 border-gray-300 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         </div>

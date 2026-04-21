@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser } from 'react-icons/fi';
+import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2 } from 'react-icons/fi';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
@@ -11,7 +11,7 @@ import { Button } from '../components/ui/button';
 const SETTINGS_STORAGE_KEY = 'smartCampusSettings';
 
 const Settings = () => {
-  const { user, loadUser, isAdmin, isTechnician } = useAuth();
+  const { user, loadUser, isAdmin, isTechnician, deleteAccount } = useAuth();
   const [profileName, setProfileName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -27,6 +27,7 @@ const Settings = () => {
     compactMode: false,
   });
   const [savingPreferences, setSavingPreferences] = useState(false);
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
 
   useEffect(() => {
     setProfileName(user?.name || '');
@@ -128,6 +129,21 @@ const Settings = () => {
       toast.error(err.response?.data?.message || 'Failed to save preferences');
     } finally {
       setSavingPreferences(false);
+    }
+  };
+
+  const triggerDeleteAccount = () => {
+    setConfirmDeleteAccount(true);
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount();
+      toast.success('Your account has been deleted permanently from the system');
+      window.location.href = '/login';
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete account');
+      setConfirmDeleteAccount(false);
     }
   };
 
@@ -277,6 +293,30 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card>
+
+          <Card className="border-red-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-red-600">
+                <FiAlertCircle className="text-red-600" />
+                Danger Zone
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <Button
+                  onClick={triggerDeleteAccount}
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700 text-white gap-2"
+                >
+                  <FiTrash2 />
+                  Delete My Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <aside className="space-y-4">
@@ -308,6 +348,35 @@ const Settings = () => {
           )}
         </aside>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {confirmDeleteAccount && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <FiAlertCircle className="text-red-600 inline" /> Confirm Account Deletion
+            </h2>
+            <p className="text-gray-600 mb-6 text-sm">
+              Are you absolutely sure you want to delete your account? This action <strong>cannot be undone</strong> and you will lose all data associated with your profile.
+            </p>
+            <div className="flex space-x-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDeleteAccount(false)}
+                className="hover:bg-gray-50 border-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                className="bg-red-600 text-white hover:bg-red-700 font-medium"
+              >
+                Yes, Delete Account
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

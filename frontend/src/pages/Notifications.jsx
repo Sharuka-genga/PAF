@@ -13,6 +13,23 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showUnread, setShowUnread] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await notificationAPI.getAll();
+        setNotifications(res.data.data || []);
+        toast.success('Notifications loaded successfully!');
+      } catch (err) {
+        console.error('Notifications fetch error:', err);
+        toast.error('Failed to load notifications');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotifications();
+  }, []);
 
   useEffect(() => { fetchNotifications(); }, [showUnread]);
 
@@ -55,11 +72,18 @@ const Notifications = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const triggerDelete = (id) => {
+    setConfirmDeleteId(id);
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
     try {
-      await notificationAPI.delete(id);
+      await notificationAPI.delete(confirmDeleteId);
       emitNotificationChange();
       fetchNotifications();
+      toast.success('Notification deleted successfully');
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error('Failed to delete');
     }
@@ -183,7 +207,10 @@ const Notifications = () => {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => handleDelete(notif.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerDelete(notif.id);
+                    }}
                     title="Delete"
                   >
                     <FiTrash2 className="w-4 h-4" />
@@ -192,6 +219,35 @@ const Notifications = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl border border-gray-100">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Delete Notification?</h2>
+            <p className="text-gray-600 mb-5 text-sm">
+              Are you sure you want to delete this notification?
+            </p>
+            <div className="flex space-x-3 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDeleteId(null)}
+                className="hover:bg-gray-50 border-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleDelete}
+                className="bg-red-600 text-white hover:bg-red-700 font-medium"
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

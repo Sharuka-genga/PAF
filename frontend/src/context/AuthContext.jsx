@@ -25,10 +25,13 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       const response = await authAPI.getMe();
-      setUser(response.data.data);
+      const userData = response.data.data;
+      setUser(userData);
+      return userData;
     } catch (error) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -77,7 +80,8 @@ export const AuthProvider = ({ children }) => {
 
   const setAuthToken = async (token) => {
     localStorage.setItem('token', token);
-    await loadUser();
+    const userData = await loadUser();
+    return userData;
   };
 
   return (
