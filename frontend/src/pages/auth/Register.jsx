@@ -144,12 +144,20 @@ const Register = () => {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              Sign in
-            </Link>
-          </p>
+          <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col space-y-4">
+            <p className="text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                Sign in instead
+              </Link>
+            </p>
+            <p className="text-center text-xs text-gray-500">
+              Are you setting up an institution?{' '}
+              <Link to="/admin-register" className="text-gray-700 hover:text-gray-900 font-semibold underline decoration-gray-300 underline-offset-2 transition-colors">
+                Register as an Admin
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

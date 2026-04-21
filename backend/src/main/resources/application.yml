@@ -26,6 +26,10 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid,email,profile
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_basic
 
 app:
   jwt:
@@ -34,7 +38,7 @@ app:
   cors:
     allowed-origins: http://localhost:5173
 file:
-  upload-dir: uploads
+  upload-dir: ${file.upload-dir:uploads}
 
 server:
   port: 8080

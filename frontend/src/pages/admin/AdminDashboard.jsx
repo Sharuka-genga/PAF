@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { adminAPI } from '../../services/api';
+import { adminAPI, bookingAPI, ticketAPI, resourceAPI } from '../../services/api';
 import { FiGrid, FiCalendar, FiAlertCircle, FiUsers, FiSettings } from 'react-icons/fi';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import ProfileDropdown from '../../components/ui/ProfileDropdown';
+import NotificationDropdown from '../../components/ui/NotificationDropdown';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -16,16 +17,25 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const usersRes = await adminAPI.getAllUsers();
-        const bookingsRes = await adminAPI.getAllBookings?.();
-        const ticketsRes = await adminAPI.getAllTickets?.();
-        const resourcesRes = await adminAPI.getAllResources?.();
-        
+        const results = await Promise.allSettled([
+          adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
+          bookingAPI.getAll().catch(() => ({ data: { data: [] } })),
+          ticketAPI.getAll().catch(() => ({ data: { data: [] } })),
+          resourceAPI.getAll().catch(() => ({ data: { data: [] } }))
+        ]);
+
+        const getValue = (result) => {
+          if (result.status === 'fulfilled' && result.value?.data?.data) {
+            return result.value.data.data.length || 0;
+          }
+          return 0;
+        };
+
         setStats({
-          users: usersRes.data.data?.length || 0,
-          bookings: bookingsRes.data.data?.length || 0,
-          tickets: ticketsRes.data.data?.length || 0,
-          resources: resourcesRes.data.data?.length || 0
+          users: getValue(results[0]),
+          bookings: getValue(results[1]),
+          tickets: getValue(results[2]),
+          resources: getValue(results[3])
         });
       } catch (err) {
         console.error('Admin dashboard fetch error:', err);
@@ -60,17 +70,26 @@ const AdminDashboard = () => {
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
             </div>
-            <ProfileDropdown />
+            <div className="flex items-center gap-2">
+              <NotificationDropdown />
+              <ProfileDropdown />
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome back, {user?.name}! Here's your admin overview.</p>
+        {/* Welcome Banner */}
+        <div className="mb-8 p-6 bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-600 rounded-2xl shadow-md text-white flex items-center justify-between relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold mb-1 flex items-center gap-3">
+              <span className="bg-white/20 backdrop-blur-sm p-2 rounded-xl inline-flex"><FiUsers className="w-6 h-6 text-white"/></span> 
+              Welcome Admin, {user?.name}!
+            </h1>
+            <p className="text-blue-100 opacity-90 text-sm mt-2 ml-[3.25rem]">Here is your comprehensive system overview for {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.</p>
+          </div>
+          <div className="absolute -right-8 -top-8 w-64 h-64 bg-white/5 rounded-full blur-3xl z-0"></div>
         </div>
 
       {/* Stats */}

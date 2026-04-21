@@ -10,7 +10,8 @@ import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import { useAuth } from './context/AuthContext';
-import { Toaster } from 'sonner';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -56,7 +57,16 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Toaster position="top-right" richColors />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+        />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
