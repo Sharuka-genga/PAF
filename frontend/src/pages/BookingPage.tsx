@@ -148,22 +148,22 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-2">
+    <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
+      <div className={`flex flex-col gap-2 ${isCreateView ? 'w-full mx-auto max-w-[700px]' : ''}`}>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          {isCreateView ? "New Booking Request" : "Manage Bookings"}
+          {isCreateView ? "New Booking Request" : "Booking History"}
         </h1>
         <p className="text-slate-500">
           {isCreateView 
             ? "Reserve a campus facility for your upcoming event." 
-            : "Review your campus facility reservations and track their status."}
+            : "Track and review all your past and upcoming campus reservations in one convenient place."}
         </p>
       </div>
 
       <div className="w-full">
         {isCreateView ? (
           /* Reservation Form */
-          <div className="max-w-2xl">
+          <div className="mx-auto max-w-[700px]">
             <Button variant="ghost" asChild className="mb-4 text-slate-500 hover:text-slate-700 -ml-4">
               <Link to="/">
                 <ArrowLeft className="mr-2 size-4" /> Back
@@ -295,35 +295,55 @@ export default function BookingPage() {
                   <Table>
                     <TableHeader className="bg-slate-50">
                       <TableRow>
-                        <TableHead className="font-semibold text-slate-700 text-left">Resource</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-left">Schedule</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-left">Status</TableHead>
+                        <TableHead className="font-semibold text-slate-700 py-4">Facility & Event</TableHead>
+                        <TableHead className="font-semibold text-slate-700 py-4">Date</TableHead>
+                        <TableHead className="font-semibold text-slate-700 py-4">Time Slot</TableHead>
+                        <TableHead className="font-semibold text-slate-700 py-4 text-center">People</TableHead>
+                        <TableHead className="font-semibold text-slate-700 py-4 text-center">Status</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {bookings.map((b) => (
                         <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                          <TableCell className="font-semibold text-slate-900 text-sm text-left">
-                            {b.resourceName}
-                            <div className="text-xs text-slate-500 font-normal mt-1 flex items-center gap-1">
-                              <Users className="size-3" /> {b.attendees} attendees
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-left">
+                          <TableCell>
                             <div className="flex flex-col">
-                              <span className="text-sm font-semibold text-slate-700">{b.date}</span>
-                              <span className="text-xs font-medium text-slate-500 mt-0.5">{formatTime(b.startTime)} - {formatTime(b.endTime)}</span>
+                              <span className="font-bold text-slate-900 text-sm">{b.resourceName}</span>
+                              <span className="text-xs text-slate-500 italic mt-0.5 line-clamp-1 max-w-[200px]" title={b.purpose}>
+                                {b.purpose ? `"${b.purpose}"` : "Event"}
+                              </span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-left">
-                            <div className="flex flex-col gap-1.5 items-start">
-                               <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-1 rounded-md text-xs font-bold tracking-wide shadow-sm`} variant="outline">
+                          
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-slate-700 font-medium text-sm">
+                              <Calendar className="size-3.5 text-slate-400" />
+                              {b.date}
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                              <Clock className="size-3.5 text-slate-400" />
+                              <span>{formatTime(b.startTime)} &mdash; {formatTime(b.endTime)}</span>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="text-center">
+                            <div className="inline-flex items-center justify-center gap-1.5 text-slate-600 bg-slate-50 border px-2 py-1 rounded-md">
+                              <Users className="size-3.5" />
+                              <span className="text-sm font-semibold">{b.attendees}</span>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="text-center">
+                            <div className="flex flex-col gap-1.5 items-center justify-center">
+                               <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm`} variant="outline">
                                  {b.status}
                                </Badge>
                                {b.rejectionReason && (
-                                 <div className="flex items-start gap-1.5 text-xs text-red-600 bg-red-50/80 p-2 rounded-md italic font-medium max-w-[200px] mt-1">
-                                   <MessageSquare className="size-3.5 shrink-0 mt-0.5" /> 
-                                   <span className="leading-snug">{b.rejectionReason}</span>
+                                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-red-600 bg-red-50/80 px-2 py-0.5 rounded-md italic font-medium">
+                                   <MessageSquare className="size-3 shrink-0" /> 
+                                   <span className="leading-none max-w-[150px] truncate" title={b.rejectionReason}>{b.rejectionReason}</span>
                                  </div>
                                )}
                             </div>

@@ -28,9 +28,9 @@ public class BookingService {
         }
 
         // 2. Conflict validation
-        if (bookingRepository.existsOverlappingBooking(
+        if (bookingRepository.existsApprovedOrPendingOverlappingBooking(
                 request.getResourceName(), request.getDate(), request.getStartTime(), request.getEndTime())) {
-            throw new RuntimeException("Conflict: Resource is already booked for this time range");
+            throw new RuntimeException("Conflict: Resource is already booked or requested for this time slot");
         }
 
         Booking booking = Booking.builder()
@@ -78,7 +78,7 @@ public class BookingService {
         }
         
         // Final check for conflicts before approving
-        if (bookingRepository.existsOverlappingBooking(
+        if (bookingRepository.existsApprovedOverlappingBooking(
                 booking.getResourceName(), booking.getDate(), booking.getStartTime(), booking.getEndTime())) {
             throw new RuntimeException("Cannot approve: A conflicting booking was approved earlier.");
         }

@@ -96,8 +96,8 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Admin Management</h1>
           <p className="text-slate-500">Review and moderate facility booking requests across campus.</p>
@@ -127,12 +127,12 @@ export default function AdminBookingsPage() {
           <Table>
             <TableHeader className="bg-slate-50 border-b">
               <TableRow>
-                <TableHead className="font-semibold text-slate-700 py-4 underline decoration-slate-200 underline-offset-4">ID</TableHead>
+                <TableHead className="font-semibold text-slate-700 py-4">ID</TableHead>
                 <TableHead className="font-semibold text-slate-700 py-4">Resource</TableHead>
                 <TableHead className="font-semibold text-slate-700 py-4">Schedule</TableHead>
                 <TableHead className="font-semibold text-slate-700 py-4">Purpose</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4">People</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4">Status</TableHead>
+                <TableHead className="font-semibold text-slate-700 py-4 text-center">People</TableHead>
+                <TableHead className="font-semibold text-slate-700 py-4 text-center">Status</TableHead>
                 <TableHead className="text-right font-semibold text-slate-700 py-4 px-6">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -175,20 +175,20 @@ export default function AdminBookingsPage() {
                     <TableCell className="max-w-[200px] truncate text-slate-600 text-sm italic" title={b.purpose}>
                       "{b.purpose}"
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 text-slate-600">
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1.5 text-slate-600">
                         <Users className="size-3.5" />
                         <span className="text-sm font-medium">{b.attendees}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1.5 items-start">
-                        <Badge className={`${getStatusVariant(b.status)} border px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider`} variant="outline">
+                    <TableCell className="text-center">
+                      <div className="flex flex-col gap-1.5 items-center justify-center">
+                        <Badge className={`${getStatusVariant(b.status)} border px-2 py-0.5 rounded-md text-[11px] font-bold tracking-wider`} variant="outline">
                           {b.status}
                         </Badge>
                         {b.rejectionReason && (
-                          <div className="flex items-center gap-1 text-[10px] text-red-500 bg-red-50 px-1 rounded italic">
-                            <MessageSquare className="size-2.5" /> {b.rejectionReason}
+                          <div className="flex items-center justify-center gap-1 text-[11px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded italic">
+                            <MessageSquare className="size-3" /> {b.rejectionReason}
                           </div>
                         )}
                       </div>

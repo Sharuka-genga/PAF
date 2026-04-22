@@ -24,8 +24,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "AND b.date = :date " +
            "AND b.status = 'APPROVED' " +
            "AND (:startTime < b.endTime AND :endTime > b.startTime)")
-    boolean existsOverlappingBooking(@Param("resourceName") String resourceName,
-                                     @Param("date") LocalDate date,
-                                     @Param("startTime") LocalTime startTime,
-                                     @Param("endTime") LocalTime endTime);
+    boolean existsApprovedOverlappingBooking(@Param("resourceName") String resourceName,
+                                             @Param("date") LocalDate date,
+                                             @Param("startTime") LocalTime startTime,
+                                             @Param("endTime") LocalTime endTime);
+
+    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
+           "WHERE b.resourceName = :resourceName " +
+           "AND b.date = :date " +
+           "AND b.status IN ('APPROVED', 'PENDING') " +
+           "AND (:startTime < b.endTime AND :endTime > b.startTime)")
+    boolean existsApprovedOrPendingOverlappingBooking(@Param("resourceName") String resourceName,
+                                                      @Param("date") LocalDate date,
+                                                      @Param("startTime") LocalTime startTime,
+                                                      @Param("endTime") LocalTime endTime);
 }
