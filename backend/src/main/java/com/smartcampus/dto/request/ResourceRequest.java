@@ -2,7 +2,6 @@ package com.smartcampus.dto.request;
 
 import com.smartcampus.model.ResourceStatus;
 import com.smartcampus.model.ResourceType;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -24,7 +23,6 @@ public class ResourceRequest {
     @NotNull(message = "Status is required")
     private ResourceStatus status;
 
-    @Min(value = 1, message = "Capacity must be at least 1")
     private Integer capacity;
 
     private String location;

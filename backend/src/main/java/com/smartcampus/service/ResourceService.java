@@ -11,17 +11,59 @@ import com.smartcampus.model.ResourceStatus;
 import com.smartcampus.model.ResourceType;
 import com.smartcampus.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.DayOfWeek;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
+
+    private String saveImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) return null;
+        try {
+            Path directory = Paths.get(uploadDir).toAbsolutePath().normalize();
+            if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
+            }
+            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+            Path targetLocation = directory.resolve(fileName);
+            Files.copy(image.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            return "/api/files/" + fileName; // Assuming a file server endpoint
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not store file. Please try again!", ex);
+        }
+    }
+
+    public String uploadImage(String id, MultipartFile file) throws IOException {
+        String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
+        String filename = UUID.randomUUID() + "_" + originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        Path uploadPath = Paths.get("uploads/resources/").toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+        Files.copy(file.getInputStream(),
+          uploadPath.resolve(filename),
+          StandardCopyOption.REPLACE_EXISTING);
+        Resource resource = resourceRepository.findById(id)
+          .orElseThrow(() -> new RuntimeException("Resource not found"));
+        resource.setImageUrl("/uploads/resources/" + filename);
+        resourceRepository.save(resource);
+        return resource.getImageUrl();
+    }
 
     public List<ResourceResponse> getAll() {
         return resourceRepository.findAll()
@@ -46,7 +88,8 @@ public class ResourceService {
     }
 
     @Transactional
-    public ResourceResponse create(ResourceRequest request) {
+    public ResourceResponse create(ResourceRequest request, MultipartFile image) {
+        String imageUrl = saveImage(image);
         Resource resource = Resource.builder()
                 .name(request.getName())
                 .type(request.getType())
@@ -54,6 +97,7 @@ public class ResourceService {
                 .location(request.getLocation())
                 .status(request.getStatus())
                 .description(request.getDescription())
+                .imageUrl(imageUrl)
                 .availabilityWindows(
                         request.getAvailabilityWindows() != null
                                 ? request.getAvailabilityWindows().stream()
@@ -64,7 +108,7 @@ public class ResourceService {
     }
 
     @Transactional
-    public ResourceResponse update(String id, ResourceRequest request) {
+    public ResourceResponse update(String id, ResourceRequest request, MultipartFile image) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
 
@@ -75,6 +119,10 @@ public class ResourceService {
         resource.setStatus(request.getStatus());
         resource.setDescription(request.getDescription());
 
+        if (image != null && !image.isEmpty()) {
+            resource.setImageUrl(saveImage(image));
+        }
+
         resource.getAvailabilityWindows().clear();
         if (request.getAvailabilityWindows() != null) {
             resource.getAvailabilityWindows().addAll(
@@ -82,6 +130,14 @@ public class ResourceService {
                             .map(this::toWindowEntity).toList());
         }
 
+        return toResponse(resourceRepository.save(resource));
+    }
+
+    @Transactional
+    public ResourceResponse updateStatus(String id, String status) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
+        resource.setStatus(ResourceStatus.valueOf(status.toUpperCase()));
         return toResponse(resourceRepository.save(resource));
     }
 
@@ -117,6 +173,7 @@ public class ResourceService {
                 .location(r.getLocation())
                 .status(r.getStatus())
                 .description(r.getDescription())
+                .imageUrl(r.getImageUrl())
                 .availabilityWindows(
                         r.getAvailabilityWindows() != null
                                 ? r.getAvailabilityWindows().stream()

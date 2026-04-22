@@ -25,6 +25,19 @@ public class ResourceController {
                 ApiResponse.success("Resources retrieved", resourceService.getAll()));
     }
 
+    @PostMapping("/{id}/image")
+    public ResponseEntity<?> uploadImage(
+            @PathVariable String id,
+            @RequestParam("image") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            String imageUrl = resourceService.uploadImage(id, file);
+            return ResponseEntity.ok(java.util.Map.of("imageUrl", imageUrl));
+        } catch (java.io.IOException e) {
+            return ResponseEntity.status(500)
+              .body(java.util.Map.of("error", "Failed to upload image"));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ResourceResponse>> getById(@PathVariable String id) {
         return ResponseEntity.ok(
@@ -42,19 +55,47 @@ public class ResourceController {
                         resourceService.search(type, minCapacity, location, status)));
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<ResourceResponse>> create(
+    @PostMapping(consumes = "application/json")
+    public ResponseEntity<ApiResponse<ResourceResponse>> createJson(
             @Valid @RequestBody ResourceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.success("Resource created", resourceService.create(request)));
+                ApiResponse.success("Resource created", resourceService.create(request, null)));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ResourceResponse>> update(
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<ApiResponse<ResourceResponse>> createMultipart(
+            @RequestParam("data") String dataJson,
+            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) throws com.fasterxml.jackson.core.JsonProcessingException {
+        ResourceRequest request = new com.fasterxml.jackson.databind.ObjectMapper().readValue(dataJson, ResourceRequest.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.success("Resource created", resourceService.create(request, image)));
+    }
+
+    @PutMapping(value = "/{id}", consumes = "application/json")
+    public ResponseEntity<ApiResponse<ResourceResponse>> updateJson(
             @PathVariable String id,
             @Valid @RequestBody ResourceRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.success("Resource updated", resourceService.update(id, request)));
+                ApiResponse.success("Resource updated", resourceService.update(id, request, null)));
+    }
+
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<ApiResponse<ResourceResponse>> updateMultipart(
+            @PathVariable String id,
+            @RequestParam("data") String dataJson,
+            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) throws com.fasterxml.jackson.core.JsonProcessingException {
+        ResourceRequest request = new com.fasterxml.jackson.databind.ObjectMapper().readValue(dataJson, ResourceRequest.class);
+        return ResponseEntity.ok(
+                ApiResponse.success("Resource updated", resourceService.update(id, request, image)));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<ResourceResponse>> updateStatus(
+            @PathVariable String id,
+            @RequestBody java.util.Map<String, String> statusMap) {
+        String status = statusMap.get("status");
+        return ResponseEntity.ok(
+                ApiResponse.success("Status updated", resourceService.updateStatus(id, status)));
     }
 
     @DeleteMapping("/{id}")
