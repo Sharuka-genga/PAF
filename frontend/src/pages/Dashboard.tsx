@@ -20,29 +20,20 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const results = await Promise.allSettled([
-          resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
-          bookingAPI.getMyBookings().catch(() => ({ data: { data: [] } })),
-          ticketAPI.getMyTickets().catch(() => ({ data: { data: [] } })),
-          notificationAPI.getUnreadCount().catch(() => ({ data: { data: 0 } }))
+        const [resourcesRes, bookingsRes, ticketsRes, notifRes] = await Promise.all([
+          resourceAPI.getAll(),
+          bookingAPI.getMyBookings(),
+          ticketAPI.getMyTickets(),
+          notificationAPI.getUnreadCount()
         ]);
-
-        const getValue = (result: any, isCount = false) => {
-          if (result.status === 'fulfilled' && result.value?.data?.data !== undefined) {
-            return isCount ? (result.value.data.data || 0) : (result.value.data.data.length || 0);
-          }
-          return 0;
-        };
-
         setStats({
-          resources: getValue(results[0]),
-          bookings: getValue(results[1]),
-          tickets: getValue(results[2]),
-          notifications: (results[3] as any).value?.data?.data?.count || 0
+          resources: resourcesRes.data.data?.length || 0,
+          bookings: bookingsRes.data.data?.length || 0,
+          tickets: ticketsRes.data.data?.length || 0,
+          notifications: notifRes.data.data?.count ?? 0
         });
-        
-        setRecentBookings(results[1].status === 'fulfilled' ? (results[1].value as any).data?.data?.slice(0, 5) || [] : []);
-        setRecentTickets(results[2].status === 'fulfilled' ? (results[2].value as any).data?.data?.slice(0, 5) || [] : []);
+        setRecentBookings((bookingsRes.data.data || []).slice(0, 5));
+        setRecentTickets((ticketsRes.data.data || []).slice(0, 5));
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       } finally {
@@ -54,7 +45,7 @@ const Dashboard: React.FC = () => {
 
   const statCards = [
     { label: 'Resources', value: stats.resources, icon: <FiGrid className="w-5 h-5" />, color: 'bg-blue-500', link: '/resources' },
-    { label: 'My Bookings', value: stats.bookings, icon: <FiCalendar className="w-5 h-5" />, color: 'bg-green-500', link: '/bookings' },
+    { label: 'My Bookings', value: stats.bookings, icon: <FiCalendar className="w-5 h-5" />, color: 'bg-green-500', link: '/my-bookings' },
     { label: 'My Tickets', value: stats.tickets, icon: <FiAlertCircle className="w-5 h-5" />, color: 'bg-orange-500', link: '/tickets' },
     { label: 'Unread Alerts', value: stats.notifications, icon: <FiBell className="w-5 h-5" />, color: 'bg-purple-500', link: '/notifications' },
   ];
@@ -166,14 +157,14 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             {recentBookings.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4">No bookings yet</p>
+              <p className="text-muted-foreground text-sm py-4 text-center">No recent bookings yet</p>
             ) : (
               <div className="space-y-3 mt-2">
                 {recentBookings.map(b => (
                   <div key={b.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-accent transition-colors">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{b.resourceName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{(b as any).bookingDate} · {b.startTime} - {b.endTime}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{b.bookingDate} · {b.startTime} - {b.endTime}</p>
                     </div>
                     <Badge {...getBadgeProps(b.status)}>{b.status}</Badge>
                   </div>
