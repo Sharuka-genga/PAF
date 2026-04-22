@@ -18,6 +18,19 @@ const statusColors: Record<string, string> = {
   REJECTED: 'bg-red-100 text-red-800',
 };
 
+function getTimeDiff(from: string, to?: string): string {
+  const start = new Date(from).getTime();
+  const end = to ? new Date(to).getTime() : Date.now();
+  const diff = Math.abs(end - start);
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ${hours % 24}h`;
+  }
+  return `${hours}h ${minutes}m`;
+}
+
 export default function TicketDetail({ ticket, onBack }: Props) {
   const [comments, setComments] = useState<TicketComment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -27,9 +40,14 @@ export default function TicketDetail({ ticket, onBack }: Props) {
   const [status, setStatus] = useState(ticket.status);
   const [resolutionNotes, setResolutionNotes] = useState(ticket.resolutionNotes || '');
   const [technicianId, setTechnicianId] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date().toISOString());
 
   useEffect(() => {
     loadComments();
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toISOString());
+    }, 60000);
+    return () => clearInterval(timer);
   }, []);
 
   const loadComments = async () => {
@@ -94,14 +112,21 @@ export default function TicketDetail({ ticket, onBack }: Props) {
     }
   };
 
+  const isResolved = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
+  const isInProgress = ticket.status === 'IN_PROGRESS' || isResolved;
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <Button variant="outline" onClick={onBack} className="mb-4">← Back</Button>
 
+      {/* Ticket Info */}
       <Card className="mb-6">
         <CardHeader>
           <div className="flex justify-between items-start">
-            <CardTitle className="text-2xl">{ticket.title}</CardTitle>
+            <CardTitle className="text-2xl">
+              <span className="text-gray-400 text-sm mr-2">#{ticket.id}</span>
+              {ticket.title}
+            </CardTitle>
             <span className={`px-3 py-1 rounded text-sm font-medium ${statusColors[ticket.status]}`}>
               {ticket.status}
             </span>
@@ -115,21 +140,84 @@ export default function TicketDetail({ ticket, onBack }: Props) {
             <div><span className="font-medium">Location:</span> {ticket.location}</div>
             <div><span className="font-medium">Contact:</span> {ticket.contactDetails}</div>
           </div>
-
-          {/* Images */}
-          {(ticket.image1 || ticket.image2 || ticket.image3) && (
-            <div className="flex gap-2 mt-2">
-              {ticket.image1 && <img src={ticket.image1} alt="Evidence 1" className="w-24 h-24 object-cover rounded" />}
-              {ticket.image2 && <img src={ticket.image2} alt="Evidence 2" className="w-24 h-24 object-cover rounded" />}
-              {ticket.image3 && <img src={ticket.image3} alt="Evidence 3" className="w-24 h-24 object-cover rounded" />}
-            </div>
-          )}
-
+                  {(ticket.image1 || ticket.image2 || ticket.image3) && (
+                      <div className="flex gap-2 mt-2">
+                          {ticket.image1 && (
+                              <img
+                                  src={`data:image/jpeg;base64,${ticket.image1}`}
+                                  alt="Evidence 1"
+                                  className="w-24 h-24 object-cover rounded"
+                              />
+                          )}
+                          {ticket.image2 && (
+                              <img
+                                  src={`data:image/jpeg;base64,${ticket.image2}`}
+                                  alt="Evidence 2"
+                                  className="w-24 h-24 object-cover rounded"
+                              />
+                          )}
+                          {ticket.image3 && (
+                              <img
+                                  src={`data:image/jpeg;base64,${ticket.image3}`}
+                                  alt="Evidence 3"
+                                  className="w-24 h-24 object-cover rounded"
+                              />
+                          )}
+                      </div>
+                  )}
+          
           {ticket.resolutionNotes && (
             <div className="bg-green-50 p-3 rounded">
               <span className="font-medium">Resolution Notes:</span> {ticket.resolutionNotes}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Service Level Timer */}
+      <Card className="mb-6 border-blue-200 bg-blue-50">
+        <CardHeader>
+          <CardTitle className="text-blue-800">⏱️ Service Level Timer</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white p-3 rounded shadow-sm">
+              <p className="text-xs text-gray-500 mb-1">🕐 Time Since Created</p>
+              <p className="text-xl font-bold text-blue-700">
+                {ticket.createdAt ? getTimeDiff(ticket.createdAt, currentTime) : 'N/A'}
+              </p>
+              <p className="text-xs text-gray-400">
+                Created: {ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : 'N/A'}
+              </p>
+            </div>
+            <div className="bg-white p-3 rounded shadow-sm">
+              <p className="text-xs text-gray-500 mb-1">
+                {isResolved ? '✅ Time to Resolution' : '⚡ Time to First Response'}
+              </p>
+              <p className={`text-xl font-bold ${isResolved ? 'text-green-700' : isInProgress ? 'text-purple-700' : 'text-orange-700'}`}>
+                {isResolved
+                  ? ticket.updatedAt ? getTimeDiff(ticket.createdAt!, ticket.updatedAt) : 'N/A'
+                  : isInProgress
+                  ? ticket.updatedAt ? getTimeDiff(ticket.createdAt!, ticket.updatedAt) : 'N/A'
+                  : 'Awaiting Response'}
+              </p>
+              <p className="text-xs text-gray-400">
+                Status: {ticket.status}
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 bg-white p-3 rounded shadow-sm">
+            <p className="text-xs text-gray-500 mb-2">📊 SLA Status</p>
+            <div className="flex items-center gap-2">
+              {ticket.createdAt && (() => {
+                const hours = Math.floor(Math.abs(Date.now() - new Date(ticket.createdAt).getTime()) / (1000 * 60 * 60));
+                if (isResolved) return <span className="text-green-600 font-medium">✅ Resolved</span>;
+                if (hours < 4) return <span className="text-green-600 font-medium">🟢 Within SLA (under 4 hours)</span>;
+                if (hours < 24) return <span className="text-yellow-600 font-medium">🟡 SLA Warning (4-24 hours)</span>;
+                return <span className="text-red-600 font-medium">🔴 SLA Breached (over 24 hours)</span>;
+              })()}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -156,7 +244,6 @@ export default function TicketDetail({ ticket, onBack }: Props) {
             </div>
             <Button onClick={handleStatusUpdate}>Update</Button>
           </div>
-
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <label className="text-sm font-medium">Assign Technician (User ID)</label>
@@ -208,8 +295,6 @@ export default function TicketDetail({ ticket, onBack }: Props) {
               </div>
             ))
           )}
-
-          {/* Add Comment */}
           <div className="flex gap-2 mt-4">
             <Input value={newComment} onChange={e => setNewComment(e.target.value)}
               placeholder="Add a comment..." />
