@@ -87,28 +87,29 @@ export default function AdminBookingsPage() {
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case "APPROVED": return "bg-green-100 text-green-700 border-green-200";
-      case "PENDING": return "bg-amber-100 text-amber-700 border-amber-200";
-      case "REJECTED": return "bg-red-100 text-red-700 border-red-200";
-      case "CANCELLED": return "bg-slate-100 text-slate-500 border-slate-200";
+      case "APPROVED": return "bg-[#059669]/10 text-[#059669] border-[#059669]/20";
+      case "PENDING": return "bg-[#D97706]/10 text-[#D97706] border-[#D97706]/20";
+      case "REJECTED": return "bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/20";
+      case "CANCELLED": return "bg-[#E2E0EC]/50 text-[#5A5680] border-[#E2E0EC]";
       default: return "";
     }
   };
 
   return (
+    <div className="min-h-screen w-full bg-[#F5F4F8] font-['DM_Sans'] pb-12">
     <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Admin Management</h1>
-          <p className="text-slate-500">Review and moderate facility booking requests across campus.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1A1730]">Admin Management</h1>
+          <p className="text-[#9B97B8]">Review and moderate facility booking requests across campus.</p>
         </div>
         
-        <div className="flex items-center gap-3 bg-white p-2 rounded-xl border shadow-sm">
-          <div className="flex items-center gap-2 px-3 text-slate-500 text-sm font-medium border-r pr-4">
-            <Filter className="size-4" /> Filter by Status
+        <div className="flex items-center gap-3 bg-white p-2 rounded-[12px] border border-[#E2E0EC] shadow-none">
+          <div className="flex items-center gap-2 px-3 text-[#9B97B8] text-xs uppercase tracking-wider font-medium border-r border-[#E2E0EC] pr-4">
+            <Filter className="size-4" /> Filter
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px] border-none shadow-none focus:ring-0">
+            <SelectTrigger className="w-[160px] border-none shadow-none focus:ring-0 text-[#1A1730]">
               <SelectValue placeholder="All Bookings" />
             </SelectTrigger>
             <SelectContent>
@@ -122,18 +123,18 @@ export default function AdminBookingsPage() {
         </div>
       </div>
 
-      <Card className="shadow-md border-slate-200 overflow-hidden">
+      <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none overflow-hidden">
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-slate-50 border-b">
-              <TableRow>
-                <TableHead className="font-semibold text-slate-700 py-4">ID</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4">Resource</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4">Schedule</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4">Purpose</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4 text-center">People</TableHead>
-                <TableHead className="font-semibold text-slate-700 py-4 text-center">Status</TableHead>
-                <TableHead className="text-right font-semibold text-slate-700 py-4 px-6">Actions</TableHead>
+            <TableHeader className="bg-[#F5F4F8]/50 border-b border-[#E2E0EC]">
+              <TableRow className="border-[#E2E0EC]">
+                <TableHead className="font-semibold text-[#5A5680] py-4">ID</TableHead>
+                <TableHead className="font-semibold text-[#5A5680] py-4">Resource</TableHead>
+                <TableHead className="font-semibold text-[#5A5680] py-4">Schedule</TableHead>
+                <TableHead className="font-semibold text-[#5A5680] py-4">Purpose</TableHead>
+                <TableHead className="font-semibold text-[#5A5680] py-4 text-center">People</TableHead>
+                <TableHead className="font-semibold text-[#5A5680] py-4 text-center">Status</TableHead>
+                <TableHead className="text-right font-semibold text-[#5A5680] py-4 px-6">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -141,53 +142,53 @@ export default function AdminBookingsPage() {
                 <TableRow>
                   <TableCell colSpan={7} className="h-64 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                      <p className="text-slate-500 text-sm font-medium">Loading requests...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7C3AED]"></div>
+                      <p className="text-[#9B97B8] text-sm font-medium">Loading requests...</p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : bookings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center gap-3 text-slate-400">
+                    <div className="flex flex-col items-center justify-center gap-3 text-[#9B97B8]">
                       <Info className="size-10 opacity-20" />
                       <div>
-                        <p className="font-medium">No bookings found for the selected filter.</p>
-                        <p className="text-sm">Try changing the status filter above.</p>
+                        <p className="font-medium text-[#5A5680]">No bookings found for the selected filter.</p>
+                        <p className="text-sm text-[#9B97B8]">Try changing the status filter above.</p>
                       </div>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 bookings.map((b) => (
-                  <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="font-mono text-xs text-slate-400">#{b.id}</TableCell>
-                    <TableCell className="font-semibold text-slate-900">{b.resourceName}</TableCell>
+                  <TableRow key={b.id} className="hover:bg-[#F5F4F8]/80 transition-colors border-[#E2E0EC]">
+                    <TableCell className="font-['DM_Mono'] text-xs text-[#9B97B8]">#{b.id}</TableCell>
+                    <TableCell className="font-semibold text-[#1A1730]">{b.resourceName}</TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium text-slate-700">{b.date}</span>
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                          <Clock className="size-3" />
+                        <span className="text-sm font-medium text-[#5A5680] font-['DM_Mono']">{b.date}</span>
+                        <span className="text-xs text-[#9B97B8] flex items-center gap-1 font-['DM_Mono']">
+                          <Clock className="size-3 text-[#A78BFA]" />
                           {formatTime(b.startTime)} - {formatTime(b.endTime)}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate text-slate-600 text-sm italic" title={b.purpose}>
+                    <TableCell className="max-w-[200px] truncate text-[#5A5680] text-sm italic" title={b.purpose}>
                       "{b.purpose}"
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 text-slate-600">
+                      <div className="flex items-center justify-center gap-1.5 text-[#5A5680]">
                         <Users className="size-3.5" />
-                        <span className="text-sm font-medium">{b.attendees}</span>
+                        <span className="text-sm font-medium font-['DM_Mono']">{b.attendees}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex flex-col gap-1.5 items-center justify-center">
-                        <Badge className={`${getStatusVariant(b.status)} border px-2 py-0.5 rounded-md text-[11px] font-bold tracking-wider`} variant="outline">
+                        <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-0.5 rounded-[10px] text-[11px] font-bold tracking-wider uppercase`} variant="outline">
                           {b.status}
                         </Badge>
                         {b.rejectionReason && (
-                          <div className="flex items-center justify-center gap-1 text-[11px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded italic">
+                          <div className="flex items-center justify-center gap-1 text-[11px] text-[#DC2626] bg-[#DC2626]/10 px-1.5 py-0.5 rounded-[8px] italic">
                             <MessageSquare className="size-3" /> {b.rejectionReason}
                           </div>
                         )}
@@ -200,7 +201,7 @@ export default function AdminBookingsPage() {
                             size="sm" 
                             variant="outline"
                             onClick={() => handleApprove(b.id)}
-                            className="bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 h-8"
+                            className="bg-[#059669]/10 text-[#059669] border-[#059669]/20 hover:bg-[#059669]/20 h-8 rounded-[10px]"
                           >
                             <CheckCircle2 className="size-4 mr-1.5" /> Approve
                           </Button>
@@ -208,13 +209,13 @@ export default function AdminBookingsPage() {
                             size="sm" 
                             variant="outline"
                             onClick={() => setRejectingId(b.id)}
-                            className="bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 h-8"
+                            className="bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/20 hover:bg-[#DC2626]/20 h-8 rounded-[10px]"
                           >
                             <XCircle className="size-4 mr-1.5" /> Reject
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-300 font-medium italic">No actions available</span>
+                        <span className="text-xs text-[#9B97B8] font-medium italic">No actions available</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -227,12 +228,12 @@ export default function AdminBookingsPage() {
 
       {/* Rejection Reason Dialog */}
       <Dialog open={!!rejectingId} onOpenChange={(open) => !open && setRejectingId(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] font-['DM_Sans']">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-rose-600">
+            <DialogTitle className="flex items-center gap-2 text-[#DC2626]">
               <XCircle className="size-5" /> Reject Booking Request
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[#9B97B8]">
               Please provide a reason for rejecting this booking. This will be visible to the user.
             </DialogDescription>
           </DialogHeader>
@@ -241,16 +242,16 @@ export default function AdminBookingsPage() {
               placeholder="e.g., The room is reserved for emergency repairs."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              className="resize-none min-h-[100px]"
+              className="resize-none min-h-[100px] rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730]"
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setRejectingId(null)} className="h-10">
+            <Button variant="ghost" onClick={() => setRejectingId(null)} className="h-10 rounded-[10px] text-[#5A5680] hover:bg-[#F5F4F8]">
               Cancel
             </Button>
             <Button 
               onClick={handleReject}
-              className="bg-rose-600 hover:bg-rose-700 text-white h-10 px-8"
+              className="bg-[#DC2626] hover:bg-[#DC2626]/90 text-white h-10 px-8 rounded-[10px]"
               disabled={!rejectionReason.trim()}
             >
               Confirm Rejection
@@ -258,6 +259,7 @@ export default function AdminBookingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
     </div>
   );
 }

@@ -200,47 +200,48 @@ export default function BookingPage() {
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case "APPROVED": return "bg-green-100 text-green-700 border-green-200 hover:bg-green-50";
-      case "PENDING": return "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-50";
-      case "REJECTED": return "bg-red-100 text-red-700 border-red-200 hover:bg-red-50";
-      case "CANCELLED": return "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-50";
+      case "APPROVED": return "bg-[#059669]/10 text-[#059669] border-[#059669]/20 font-['DM_Sans']";
+      case "PENDING": return "bg-[#D97706]/10 text-[#D97706] border-[#D97706]/20 font-['DM_Sans']";
+      case "REJECTED": return "bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/20 font-['DM_Sans']";
+      case "CANCELLED": return "bg-[#E2E0EC]/50 text-[#5A5680] border-[#E2E0EC] font-['DM_Sans']";
       default: return "";
     }
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
-      <div className={`flex flex-col gap-2 ${isCreateView ? 'w-full mx-auto max-w-[700px]' : ''}`}>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          {isCreateView ? "New Booking Request" : "Booking History"}
-        </h1>
-        <p className="text-slate-500">
-          {isCreateView 
-            ? "Reserve a campus facility for your upcoming event." 
-            : "Track and review all your past and upcoming campus reservations in one convenient place."}
-        </p>
-      </div>
+    <div className="min-h-screen w-full bg-[#F5F4F8] font-['DM_Sans'] pb-12">
+      <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
+        <div className={`flex flex-col gap-2 ${isCreateView ? 'w-full mx-auto max-w-[700px]' : ''}`}>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1A1730]">
+            {isCreateView ? "New Booking Request" : "Booking History"}
+          </h1>
+          <p className="text-[#9B97B8]">
+            {isCreateView 
+              ? "Reserve a campus facility for your upcoming event." 
+              : "Track and review all your past and upcoming campus reservations in one convenient place."}
+          </p>
+        </div>
 
       <div className="w-full">
         {isCreateView ? (
           /* Reservation Form */
           <div className="mx-auto max-w-[700px]">
-            <Button variant="ghost" asChild className="mb-4 text-slate-500 hover:text-slate-700 -ml-4">
+            <Button variant="ghost" asChild className="mb-4 text-[#9B97B8] hover:text-[#1A1730] hover:bg-transparent -ml-4">
               <Link to="/">
                 <ArrowLeft className="mr-2 size-4" /> Back
               </Link>
             </Button>
-            <Card className="shadow-sm border-slate-200">
-              <CardHeader className="bg-slate-50/50 border-b">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="size-5 text-indigo-600" />
+            <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none">
+              <CardHeader className="border-b border-[#E2E0EC]">
+                <CardTitle className="text-sm uppercase tracking-wider text-[#9B97B8] flex items-center gap-2">
+                  <Calendar className="size-4 text-[#7C3AED]" />
                   Reservation Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleBookingSubmit} className="space-y-5">
                   <div className="space-y-2">
-                    <Label className={`font-medium ${errors.resourceName ? 'text-red-500' : 'text-slate-700'}`}>Resource</Label>
+                    <Label className={`font-medium ${errors.resourceName ? 'text-[#DC2626]' : 'text-[#5A5680]'}`}>Resource</Label>
                     <Select 
                       value={formData.resourceName} 
                       onValueChange={(val) => {
@@ -248,7 +249,7 @@ export default function BookingPage() {
                         setErrors({...errors, resourceName: ""});
                       }}
                     >
-                      <SelectTrigger className={`w-full bg-white h-11 ${errors.resourceName ? 'border-red-500 focus:ring-red-500' : ''}`}>
+                      <SelectTrigger className={`w-full bg-white h-11 rounded-[10px] border-[#E2E0EC] focus:border-[#7C3AED] focus:ring-[#7C3AED] text-[#1A1730] ${errors.resourceName ? 'border-[#DC2626] focus:ring-[#DC2626]' : ''}`}>
                         <SelectValue placeholder="Choose a resource..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -257,30 +258,31 @@ export default function BookingPage() {
                             key={r.id} 
                             value={r.name}
                             disabled={r.status === 'OUT_OF_SERVICE' || r.status === 'UNAVAILABLE'}
+                            className="text-[#1A1730]"
                           >
                             {r.name} {r.status === 'OUT_OF_SERVICE' ? '(Out of Service)' : r.status === 'UNAVAILABLE' ? '(Unavailable)' : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.resourceName && <p className="text-red-500 text-xs font-medium flex items-center gap-1 mt-1">{errors.resourceName}</p>}
+                    {errors.resourceName && <p className="text-[#DC2626] text-xs font-medium flex items-center gap-1 mt-1">{errors.resourceName}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className={`font-medium ${errors.date ? 'text-red-500' : 'text-slate-700'}`}>Date</Label>
+                    <Label className={`font-medium ${errors.date ? 'text-[#DC2626]' : 'text-[#5A5680]'}`}>Date</Label>
                     <Input 
                       type="date"
                       value={formData.date} 
                       onChange={(e) => handleDateChange(e.target.value)}
                       min={getCurrentDate()}
-                      className={`bg-white h-11 ${errors.date ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                      className={`bg-white h-11 rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730] font-['DM_Mono'] ${errors.date ? 'border-[#DC2626] focus-visible:ring-[#DC2626]' : ''}`}
                     />
-                    {errors.date && <p className="text-red-500 text-xs font-medium mt-1">{errors.date}</p>}
+                    {errors.date && <p className="text-[#DC2626] text-xs font-medium mt-1">{errors.date}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className={`flex items-center gap-1 font-medium ${errors.startTime ? 'text-red-500' : 'text-slate-700'}`}>
+                      <Label className={`flex items-center gap-1 font-medium ${errors.startTime ? 'text-[#DC2626]' : 'text-[#5A5680]'}`}>
                         <Clock className="size-3.5" /> Start Time
                       </Label>
                       <Input 
@@ -292,12 +294,12 @@ export default function BookingPage() {
                           setErrors({...errors, startTime: ""});
                         }}
                         min={minTime}
-                        className={`bg-white h-11 ${errors.startTime ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                        className={`bg-white h-11 rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730] font-['DM_Mono'] ${errors.startTime ? 'border-[#DC2626] focus-visible:ring-[#DC2626]' : ''}`}
                       />
-                      {errors.startTime && <p className="text-red-500 text-xs font-medium mt-1">{errors.startTime}</p>}
+                      {errors.startTime && <p className="text-[#DC2626] text-xs font-medium mt-1">{errors.startTime}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label className={`flex items-center gap-1 font-medium ${errors.endTime ? 'text-red-500' : 'text-slate-700'}`}>
+                      <Label className={`flex items-center gap-1 font-medium ${errors.endTime ? 'text-[#DC2626]' : 'text-[#5A5680]'}`}>
                         <Clock className="size-3.5" /> End Time
                       </Label>
                       <Input 
@@ -308,14 +310,14 @@ export default function BookingPage() {
                           setErrors({...errors, endTime: ""});
                         }}
                         min={minEndTime || minTime}
-                        className={`bg-white h-11 ${errors.endTime ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                        className={`bg-white h-11 rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730] font-['DM_Mono'] ${errors.endTime ? 'border-[#DC2626] focus-visible:ring-[#DC2626]' : ''}`}
                       />
-                      {errors.endTime && <p className="text-red-500 text-xs font-medium mt-1">{errors.endTime}</p>}
+                      {errors.endTime && <p className="text-[#DC2626] text-xs font-medium mt-1">{errors.endTime}</p>}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className={`flex items-center gap-1 font-medium ${errors.purpose ? 'text-red-500' : 'text-slate-700'}`}>
+                    <Label className={`flex items-center gap-1 font-medium ${errors.purpose ? 'text-[#DC2626]' : 'text-[#5A5680]'}`}>
                       <FileText className="size-3.5" /> Purpose
                     </Label>
                     <Input 
@@ -325,13 +327,13 @@ export default function BookingPage() {
                         setFormData({...formData, purpose: e.target.value});
                         setErrors({...errors, purpose: ""});
                       }}
-                      className={`bg-white h-11 ${errors.purpose ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                      className={`bg-white h-11 rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730] ${errors.purpose ? 'border-[#DC2626] focus-visible:ring-[#DC2626]' : ''}`}
                     />
-                    {errors.purpose && <p className="text-red-500 text-xs font-medium mt-1">{errors.purpose}</p>}
+                    {errors.purpose && <p className="text-[#DC2626] text-xs font-medium mt-1">{errors.purpose}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className={`flex items-center gap-1 font-medium ${errors.attendees ? 'text-red-500' : 'text-slate-700'}`}>
+                    <Label className={`flex items-center gap-1 font-medium ${errors.attendees ? 'text-[#DC2626]' : 'text-[#5A5680]'}`}>
                       <Users className="size-3.5" /> Attendees Expected
                     </Label>
                     <Input 
@@ -342,12 +344,12 @@ export default function BookingPage() {
                         setFormData({...formData, attendees: parseInt(e.target.value) || 0});
                         setErrors({...errors, attendees: ""});
                       }}
-                      className={`bg-white h-11 ${errors.attendees ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                      className={`bg-white h-11 rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730] font-['DM_Mono'] ${errors.attendees ? 'border-[#DC2626] focus-visible:ring-[#DC2626]' : ''}`}
                     />
-                    {errors.attendees && <p className="text-red-500 text-xs font-medium mt-1">{errors.attendees}</p>}
+                    {errors.attendees && <p className="text-[#DC2626] text-xs font-medium mt-1">{errors.attendees}</p>}
                   </div>
 
-                  <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-12 shadow-sm transition-all active:scale-95 mt-4 text-base">
+                  <Button type="submit" className="w-full bg-[#7C3AED] hover:bg-[#7C3AED]/90 text-white font-medium h-12 shadow-none rounded-[10px] transition-all active:scale-95 mt-4 text-base">
                     Confirm Booking
                   </Button>
                 </form>
@@ -356,73 +358,73 @@ export default function BookingPage() {
           </div>
         ) : (
           /* Bookings List */
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b pb-4">
-              <CardTitle className="text-lg">My Schedule</CardTitle>
+          <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none">
+            <CardHeader className="border-b border-[#E2E0EC] pb-4">
+              <CardTitle className="text-sm uppercase tracking-wider text-[#9B97B8]">My Schedule</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                  <p className="text-slate-500 text-sm">Syncing with campus server...</p>
+                  <div className="animate-spin rounded-[10px] h-8 w-8 border-b-2 border-[#7C3AED]"></div>
+                  <p className="text-[#9B97B8] text-sm">Syncing with campus server...</p>
                 </div>
               ) : bookings.length === 0 ? (
-                <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/30">
-                   <p className="text-slate-400 font-medium">No bookings found for this user.</p>
-                   <p className="text-slate-300 text-sm mt-1">Use the "New Booking" button to create your first request.</p>
+                <div className="text-center py-20 border-[1.5px] border-dashed border-[#E2E0EC] rounded-[14px] bg-[#F5F4F8]/50">
+                   <p className="text-[#5A5680] font-medium">No bookings found for this user.</p>
+                   <p className="text-[#9B97B8] text-sm mt-1">Use the "New Booking" button to create your first request.</p>
                 </div>
               ) : (
-                <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+                <div className="overflow-hidden rounded-[10px] border-[1.5px] border-[#E2E0EC]">
                   <Table>
-                    <TableHeader className="bg-slate-50">
-                      <TableRow>
-                        <TableHead className="font-semibold text-slate-700 py-4">Facility & Event</TableHead>
-                        <TableHead className="font-semibold text-slate-700 py-4">Date</TableHead>
-                        <TableHead className="font-semibold text-slate-700 py-4">Time Slot</TableHead>
-                        <TableHead className="font-semibold text-slate-700 py-4 text-center">People</TableHead>
-                        <TableHead className="font-semibold text-slate-700 py-4 text-center">Status</TableHead>
+                    <TableHeader className="bg-[#F5F4F8]/50">
+                      <TableRow className="border-[#E2E0EC]">
+                        <TableHead className="font-semibold text-[#5A5680] py-4">Facility & Event</TableHead>
+                        <TableHead className="font-semibold text-[#5A5680] py-4">Date</TableHead>
+                        <TableHead className="font-semibold text-[#5A5680] py-4">Time Slot</TableHead>
+                        <TableHead className="font-semibold text-[#5A5680] py-4 text-center">People</TableHead>
+                        <TableHead className="font-semibold text-[#5A5680] py-4 text-center">Status</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {bookings.map((b) => (
-                        <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableRow key={b.id} className="hover:bg-[#F5F4F8]/80 transition-colors border-[#E2E0EC]">
                           <TableCell>
                             <div className="flex flex-col">
-                              <span className="font-bold text-slate-900 text-sm">{b.resourceName}</span>
-                              <span className="text-xs text-slate-500 italic mt-0.5 line-clamp-1 max-w-[200px]" title={b.purpose}>
+                              <span className="font-bold text-[#1A1730] text-sm">{b.resourceName}</span>
+                              <span className="text-xs text-[#9B97B8] italic mt-0.5 line-clamp-1 max-w-[200px]" title={b.purpose}>
                                 {b.purpose ? `"${b.purpose}"` : "Event"}
                               </span>
                             </div>
                           </TableCell>
                           
                           <TableCell>
-                            <div className="flex items-center gap-1.5 text-slate-700 font-medium text-sm">
-                              <Calendar className="size-3.5 text-slate-400" />
+                            <div className="flex items-center gap-1.5 text-[#5A5680] font-medium text-sm font-['DM_Mono']">
+                              <Calendar className="size-3.5 text-[#A78BFA]" />
                               {b.date}
                             </div>
                           </TableCell>
 
                           <TableCell>
-                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
-                              <Clock className="size-3.5 text-slate-400" />
+                            <div className="flex items-center gap-1.5 text-[#5A5680] text-sm font-['DM_Mono']">
+                              <Clock className="size-3.5 text-[#A78BFA]" />
                               <span>{formatTime(b.startTime)} &mdash; {formatTime(b.endTime)}</span>
                             </div>
                           </TableCell>
 
                           <TableCell className="text-center">
-                            <div className="inline-flex items-center justify-center gap-1.5 text-slate-600 bg-slate-50 border px-2 py-1 rounded-md">
+                            <div className="inline-flex items-center justify-center gap-1.5 text-[#5A5680] bg-[#F5F4F8]/50 border border-[#E2E0EC] px-2 py-1 rounded-[10px]">
                               <Users className="size-3.5" />
-                              <span className="text-sm font-semibold">{b.attendees}</span>
+                              <span className="text-sm font-semibold font-['DM_Mono']">{b.attendees}</span>
                             </div>
                           </TableCell>
 
                           <TableCell className="text-center">
                             <div className="flex flex-col gap-1.5 items-center justify-center">
-                               <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm`} variant="outline">
+                               <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-0.5 rounded-[10px] text-[11px] font-bold tracking-wide shadow-none uppercase`} variant="outline">
                                  {b.status}
                                </Badge>
                                {b.rejectionReason && (
-                                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-red-600 bg-red-50/80 px-2 py-0.5 rounded-md italic font-medium">
+                                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#DC2626] bg-[#DC2626]/10 px-2 py-0.5 rounded-[10px] italic font-medium">
                                    <MessageSquare className="size-3 shrink-0" /> 
                                    <span className="leading-none max-w-[150px] truncate" title={b.rejectionReason}>{b.rejectionReason}</span>
                                  </div>
@@ -439,6 +441,7 @@ export default function BookingPage() {
           </Card>
         )}
       </div>
+    </div>
     </div>
   );
 }
