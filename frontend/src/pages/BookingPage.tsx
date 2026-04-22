@@ -19,11 +19,11 @@ import { Calendar, Clock, Users, FileText, MessageSquare, ArrowLeft } from "luci
 import type { Booking } from "../lib/types";
 
 const RESOURCES = [
-  { id: "101", name: "Main Lecture Hall (LH-01)" },
-  { id: "102", name: "Computer Lab (LAB-A)" },
-  { id: "103", name: "Projector (Asset #PRJ-01)" },
-  { id: "104", name: "Meeting Room (MR-05)" },
-  { id: "105", name: "Faculty Boardroom" },
+  { id: "101", name: "Main Lecture Hall (LH-01)", status: "AVAILABLE" },
+  { id: "102", name: "Computer Lab (LAB-A)", status: "OUT_OF_SERVICE" },
+  { id: "103", name: "Projector (Asset #PRJ-01)", status: "AVAILABLE" },
+  { id: "104", name: "Meeting Room (MR-05)", status: "UNAVAILABLE" },
+  { id: "105", name: "Faculty Boardroom", status: "AVAILABLE" },
 ];
 
 export default function BookingPage() {
@@ -42,6 +42,7 @@ export default function BookingPage() {
     purpose: "",
     attendees: 1
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchBookings();
@@ -62,12 +63,68 @@ export default function BookingPage() {
 
   const handleDateChange = (date: string) => {
     setFormData({ ...formData, date, startTime: "", endTime: "" }); // Reset times when date changes
+    setErrors({ ...errors, date: "", startTime: "", endTime: "" });
     if (isToday(date)) {
       setMinTime(getCurrentTime());
     } else {
       setMinTime("");
     }
     setMinEndTime("");
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    if (!formData.resourceName) {
+      newErrors.resourceName = "Please select a resource";
+      isValid = false;
+    } else {
+      const selectedResource = RESOURCES.find(r => r.name === formData.resourceName);
+      if (selectedResource && (selectedResource.status === 'OUT_OF_SERVICE' || selectedResource.status === 'UNAVAILABLE')) {
+        newErrors.resourceName = "Resource currently unavailable";
+        isValid = false;
+      }
+    }
+
+    if (!formData.date) {
+      newErrors.date = "Please select a booking date";
+      isValid = false;
+    }
+
+    if (!formData.startTime) {
+      newErrors.startTime = "Please select a start time";
+      isValid = false;
+    } else if (formData.startTime < '08:00' || formData.startTime > '22:00') {
+      newErrors.startTime = "Booking times must be between 8:00 AM and 10:00 PM";
+      isValid = false;
+    }
+
+    if (!formData.endTime) {
+      newErrors.endTime = "Please select an end time";
+      isValid = false;
+    } else if (formData.endTime < '08:00' || formData.endTime > '22:00') {
+      newErrors.endTime = "Booking times must be between 8:00 AM and 10:00 PM";
+      isValid = false;
+    }
+
+    if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
+      newErrors.endTime = "Start time must be before end time";
+      isValid = false;
+    }
+    
+    if (!formData.purpose) {
+      newErrors.purpose = "Please provide a purpose";
+      isValid = false;
+    }
+
+    if (formData.attendees < 1) {
+      newErrors.attendees = "Must have at least 1 attendee";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const fetchBookings = async () => {
@@ -87,26 +144,23 @@ export default function BookingPage() {
     e.preventDefault();
     
     // Validation
-    if (!formData.resourceName) return toast.error("Please select a resource");
-    if (!formData.date) return toast.error("Please select a booking date");
-    if (!formData.startTime) return toast.error("Please select a start time");
-    if (!formData.endTime) return toast.error("Please select an end time");
-    if (formData.startTime >= formData.endTime) {
-      return toast.error("Start time must be before end time");
-    }
+    if (!validateForm()) return;
 
     // Check if booking is in the past
     if (isPastBooking(formData.date, formData.startTime)) {
-      return toast.error("Cannot book a time slot in the past. Please select a future date and time.");
+      setErrors({...errors, date: "Cannot book a time slot in the past. Please select a future date and time."});
+      return;
     }
 
     // For today's bookings, ensure times are not past
     if (isToday(formData.date)) {
       if (formData.startTime <= getCurrentTime()) {
-        return toast.error("For today's bookings, start time must be in the future.");
+        setErrors({...errors, startTime: "For today's bookings, start time must be in the future."});
+        return;
       }
       if (formData.endTime <= getCurrentTime()) {
-        return toast.error("For today's bookings, end time must be in the future.");
+        setErrors({...errors, endTime: "For today's bookings, end time must be in the future."});
+        return;
       }
     }
 
@@ -122,9 +176,16 @@ export default function BookingPage() {
       success: () => {
         fetchBookings();
         setFormData({ resourceName: "", date: "", startTime: "", endTime: "", purpose: "", attendees: 1 });
+        setErrors({});
         return 'Booking requested successfully!';
       },
-      error: (err) => err.response?.data?.message || 'Conflict: This slot is already taken'
+      error: (err) => {
+        const errorMsg = err.response?.data?.message || '';
+        if (errorMsg.toLowerCase().includes('conflict')) {
+            return "This time slot is already reserved";
+        }
+        return errorMsg || 'Failed to submit booking request';
+      }
     });
   };
 
@@ -179,37 +240,47 @@ export default function BookingPage() {
               <CardContent className="pt-6">
                 <form onSubmit={handleBookingSubmit} className="space-y-5">
                   <div className="space-y-2">
-                    <Label className="text-slate-700 font-medium">Resource</Label>
+                    <Label className={`font-medium ${errors.resourceName ? 'text-red-500' : 'text-slate-700'}`}>Resource</Label>
                     <Select 
                       value={formData.resourceName} 
-                      onValueChange={(val) => setFormData({...formData, resourceName: val})}
+                      onValueChange={(val) => {
+                        setFormData({...formData, resourceName: val});
+                        setErrors({...errors, resourceName: ""});
+                      }}
                     >
-                      <SelectTrigger className="w-full bg-white h-11">
+                      <SelectTrigger className={`w-full bg-white h-11 ${errors.resourceName ? 'border-red-500 focus:ring-red-500' : ''}`}>
                         <SelectValue placeholder="Choose a resource..." />
                       </SelectTrigger>
                       <SelectContent>
                         {RESOURCES.map(r => (
-                          <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
+                          <SelectItem 
+                            key={r.id} 
+                            value={r.name}
+                            disabled={r.status === 'OUT_OF_SERVICE' || r.status === 'UNAVAILABLE'}
+                          >
+                            {r.name} {r.status === 'OUT_OF_SERVICE' ? '(Out of Service)' : r.status === 'UNAVAILABLE' ? '(Unavailable)' : ''}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors.resourceName && <p className="text-red-500 text-xs font-medium flex items-center gap-1 mt-1">{errors.resourceName}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-slate-700 font-medium">Date</Label>
+                    <Label className={`font-medium ${errors.date ? 'text-red-500' : 'text-slate-700'}`}>Date</Label>
                     <Input 
                       type="date"
                       value={formData.date} 
                       onChange={(e) => handleDateChange(e.target.value)}
                       min={getCurrentDate()}
-                      required 
-                      className="bg-white h-11"
+                      className={`bg-white h-11 ${errors.date ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                     />
+                    {errors.date && <p className="text-red-500 text-xs font-medium mt-1">{errors.date}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                      <Label className={`flex items-center gap-1 font-medium ${errors.startTime ? 'text-red-500' : 'text-slate-700'}`}>
                         <Clock className="size-3.5" /> Start Time
                       </Label>
                       <Input 
@@ -218,52 +289,62 @@ export default function BookingPage() {
                         onChange={(e) => {
                           setFormData({...formData, startTime: e.target.value});
                           setMinEndTime(e.target.value || minTime);
+                          setErrors({...errors, startTime: ""});
                         }}
                         min={minTime}
-                        required 
-                        className="bg-white h-11"
+                        className={`bg-white h-11 ${errors.startTime ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       />
+                      {errors.startTime && <p className="text-red-500 text-xs font-medium mt-1">{errors.startTime}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                      <Label className={`flex items-center gap-1 font-medium ${errors.endTime ? 'text-red-500' : 'text-slate-700'}`}>
                         <Clock className="size-3.5" /> End Time
                       </Label>
                       <Input 
                         type="time"
                         value={formData.endTime} 
-                        onChange={(e) => setFormData({...formData, endTime: e.target.value})}
+                        onChange={(e) => {
+                          setFormData({...formData, endTime: e.target.value});
+                          setErrors({...errors, endTime: ""});
+                        }}
                         min={minEndTime || minTime}
-                        required 
-                        className="bg-white h-11"
+                        className={`bg-white h-11 ${errors.endTime ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       />
+                      {errors.endTime && <p className="text-red-500 text-xs font-medium mt-1">{errors.endTime}</p>}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                    <Label className={`flex items-center gap-1 font-medium ${errors.purpose ? 'text-red-500' : 'text-slate-700'}`}>
                       <FileText className="size-3.5" /> Purpose
                     </Label>
                     <Input 
                       placeholder="e.g., Guest Lecture, Study Group"
                       value={formData.purpose} 
-                      onChange={(e) => setFormData({...formData, purpose: e.target.value})}
-                      required 
-                      className="bg-white h-11"
+                      onChange={(e) => {
+                        setFormData({...formData, purpose: e.target.value});
+                        setErrors({...errors, purpose: ""});
+                      }}
+                      className={`bg-white h-11 ${errors.purpose ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                     />
+                    {errors.purpose && <p className="text-red-500 text-xs font-medium mt-1">{errors.purpose}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                    <Label className={`flex items-center gap-1 font-medium ${errors.attendees ? 'text-red-500' : 'text-slate-700'}`}>
                       <Users className="size-3.5" /> Attendees Expected
                     </Label>
                     <Input 
                       type="number"
                       min="1"
                       value={formData.attendees} 
-                      onChange={(e) => setFormData({...formData, attendees: parseInt(e.target.value)})}
-                      required 
-                      className="bg-white h-11"
+                      onChange={(e) => {
+                        setFormData({...formData, attendees: parseInt(e.target.value) || 0});
+                        setErrors({...errors, attendees: ""});
+                      }}
+                      className={`bg-white h-11 ${errors.attendees ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                     />
+                    {errors.attendees && <p className="text-red-500 text-xs font-medium mt-1">{errors.attendees}</p>}
                   </div>
 
                   <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-12 shadow-sm transition-all active:scale-95 mt-4 text-base">
