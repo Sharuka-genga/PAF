@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
 import { bookingService } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
@@ -13,16 +14,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "../components/ui/select";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  DialogDescription
-} from "../components/ui/dialog";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, FileText, Trash2, AlertCircle, MessageSquare } from "lucide-react";
+import { Calendar, Clock, Users, FileText, MessageSquare, ArrowLeft } from "lucide-react";
 import type { Booking } from "../lib/types";
 
 const RESOURCES = [
@@ -34,12 +27,13 @@ const RESOURCES = [
 ];
 
 export default function BookingPage() {
+  const location = useLocation();
+  const isCreateView = location.pathname === '/bookings/create';
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [minTime, setMinTime] = useState("");
   const [minEndTime, setMinEndTime] = useState("");
-  const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     resourceName: "",
     date: "",
@@ -134,30 +128,6 @@ export default function BookingPage() {
     });
   };
 
-  const confirmCancel = async () => {
-    if (!cancellingId) return;
-    try {
-      await bookingService.cancel(cancellingId);
-      toast.success("Booking cancelled successfully");
-      setCancellingId(null);
-      fetchBookings();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to cancel booking");
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    try {
-      await bookingService.delete(id);
-      toast.success("Record removed from history");
-      fetchBookings();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to delete record");
-    }
-  };
-
   const formatTime = (timeStr: string) => {
     if (!timeStr) return "";
     const [hours, minutes] = timeStr.split(":");
@@ -180,225 +150,194 @@ export default function BookingPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Manage Bookings</h1>
-        <p className="text-slate-500">Reserve campus facilities and track your requests.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          {isCreateView ? "New Booking Request" : "Manage Bookings"}
+        </h1>
+        <p className="text-slate-500">
+          {isCreateView 
+            ? "Reserve a campus facility for your upcoming event." 
+            : "Review your campus facility reservations and track their status."}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-start">
-        {/* Reservation Form */}
-        <Card className="shadow-sm border-slate-200">
-          <CardHeader className="bg-slate-50/50 border-b">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="size-5 text-indigo-600" />
-              New Reservation
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <form onSubmit={handleBookingSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-medium">Resource</Label>
-                <Select 
-                  value={formData.resourceName} 
-                  onValueChange={(val) => setFormData({...formData, resourceName: val})}
-                >
-                  <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Choose a resource..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {RESOURCES.map(r => (
-                      <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <div className="w-full">
+        {isCreateView ? (
+          /* Reservation Form */
+          <div className="max-w-2xl">
+            <Button variant="ghost" asChild className="mb-4 text-slate-500 hover:text-slate-700 -ml-4">
+              <Link to="/">
+                <ArrowLeft className="mr-2 size-4" /> Back
+              </Link>
+            </Button>
+            <Card className="shadow-sm border-slate-200">
+              <CardHeader className="bg-slate-50/50 border-b">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Calendar className="size-5 text-indigo-600" />
+                  Reservation Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleBookingSubmit} className="space-y-5">
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-medium">Resource</Label>
+                    <Select 
+                      value={formData.resourceName} 
+                      onValueChange={(val) => setFormData({...formData, resourceName: val})}
+                    >
+                      <SelectTrigger className="w-full bg-white h-11">
+                        <SelectValue placeholder="Choose a resource..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RESOURCES.map(r => (
+                          <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-medium">Date</Label>
-                <Input 
-                  type="date"
-                  value={formData.date} 
-                  onChange={(e) => handleDateChange(e.target.value)}
-                  min={getCurrentDate()}
-                  required 
-                  className="bg-white"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-medium">Date</Label>
+                    <Input 
+                      type="date"
+                      value={formData.date} 
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      min={getCurrentDate()}
+                      required 
+                      className="bg-white h-11"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 flex items-center gap-1 font-medium">
-                    <Clock className="size-3" /> Start
-                  </Label>
-                  <Input 
-                    type="time"
-                    value={formData.startTime} 
-                    onChange={(e) => {
-                      setFormData({...formData, startTime: e.target.value});
-                      setMinEndTime(e.target.value || minTime);
-                    }}
-                    min={minTime}
-                    required 
-                    className="bg-white"
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                        <Clock className="size-3.5" /> Start Time
+                      </Label>
+                      <Input 
+                        type="time"
+                        value={formData.startTime} 
+                        onChange={(e) => {
+                          setFormData({...formData, startTime: e.target.value});
+                          setMinEndTime(e.target.value || minTime);
+                        }}
+                        min={minTime}
+                        required 
+                        className="bg-white h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                        <Clock className="size-3.5" /> End Time
+                      </Label>
+                      <Input 
+                        type="time"
+                        value={formData.endTime} 
+                        onChange={(e) => setFormData({...formData, endTime: e.target.value})}
+                        min={minEndTime || minTime}
+                        required 
+                        className="bg-white h-11"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                      <FileText className="size-3.5" /> Purpose
+                    </Label>
+                    <Input 
+                      placeholder="e.g., Guest Lecture, Study Group"
+                      value={formData.purpose} 
+                      onChange={(e) => setFormData({...formData, purpose: e.target.value})}
+                      required 
+                      className="bg-white h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 flex items-center gap-1 font-medium">
+                      <Users className="size-3.5" /> Attendees Expected
+                    </Label>
+                    <Input 
+                      type="number"
+                      min="1"
+                      value={formData.attendees} 
+                      onChange={(e) => setFormData({...formData, attendees: parseInt(e.target.value)})}
+                      required 
+                      className="bg-white h-11"
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-12 shadow-sm transition-all active:scale-95 mt-4 text-base">
+                    Confirm Booking
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          /* Bookings List */
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b pb-4">
+              <CardTitle className="text-lg">My Schedule</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <p className="text-slate-500 text-sm">Syncing with campus server...</p>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-700 flex items-center gap-1 font-medium">
-                    <Clock className="size-3" /> End
-                  </Label>
-                  <Input 
-                    type="time"
-                    value={formData.endTime} 
-                    onChange={(e) => setFormData({...formData, endTime: e.target.value})}
-                    min={minEndTime || minTime}
-                    required 
-                    className="bg-white"
-                  />
+              ) : bookings.length === 0 ? (
+                <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/30">
+                   <p className="text-slate-400 font-medium">No bookings found for this user.</p>
+                   <p className="text-slate-300 text-sm mt-1">Use the "New Booking" button to create your first request.</p>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 flex items-center gap-1 font-medium">
-                  <FileText className="size-3" /> Purpose
-                </Label>
-                <Input 
-                  placeholder="e.g., Guest Lecture"
-                  value={formData.purpose} 
-                  onChange={(e) => setFormData({...formData, purpose: e.target.value})}
-                  required 
-                  className="bg-white"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 flex items-center gap-1 font-medium">
-                  <Users className="size-3" /> Attendees
-                </Label>
-                <Input 
-                  type="number"
-                  min="1"
-                  value={formData.attendees} 
-                  onChange={(e) => setFormData({...formData, attendees: parseInt(e.target.value)})}
-                  required 
-                  className="bg-white"
-                />
-              </div>
-
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-10 shadow-sm transition-all active:scale-95 mt-2">
-                Confirm Booking
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Bookings List */}
-        <Card className="lg:col-span-2 shadow-sm border-slate-200">
-          <CardHeader className="bg-slate-50/50 border-b">
-            <CardTitle className="text-lg">My Schedule</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-2">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                <p className="text-slate-500 text-sm">Syncing with campus server...</p>
-              </div>
-            ) : bookings.length === 0 ? (
-              <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/30">
-                 <p className="text-slate-400 font-medium">No bookings found for this user.</p>
-                 <p className="text-slate-300 text-sm">Use the form to create your first request.</p>
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
-                <Table>
-                  <TableHeader className="bg-slate-50">
-                    <TableRow>
-                      <TableHead className="font-semibold text-slate-700">Resource</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Schedule</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                      <TableHead className="text-right font-semibold text-slate-700 px-4">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bookings.map((b) => (
-                      <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="font-medium text-slate-900 uppercase tracking-tight text-xs">
-                          {b.resourceName}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-slate-700">{b.date}</span>
-                            <span className="text-xs text-slate-500">{formatTime(b.startTime)} - {formatTime(b.endTime)}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1.5 items-start">
-                             <Badge className={`${getStatusVariant(b.status)} border px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider`} variant="outline">
-                               {b.status}
-                             </Badge>
-                             {b.rejectionReason && (
-                               <div className="flex items-center gap-1 text-[10px] text-red-500 bg-red-50 p-1 rounded italic font-medium">
-                                 <MessageSquare className="size-2.5" /> {b.rejectionReason}
-                               </div>
-                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right px-4">
-                          {(b.status === "PENDING" || b.status === "APPROVED") ? (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => setCancellingId(b.id)}
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8 rounded-full transition-colors"
-                              title="Cancel Booking"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          ) : (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDelete(b.id)}
-                              className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8 rounded-full transition-colors"
-                              title="Delete Record"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          )}
-                        </TableCell>
+              ) : (
+                <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+                  <Table>
+                    <TableHeader className="bg-slate-50">
+                      <TableRow>
+                        <TableHead className="font-semibold text-slate-700 text-left">Resource</TableHead>
+                        <TableHead className="font-semibold text-slate-700 text-left">Schedule</TableHead>
+                        <TableHead className="font-semibold text-slate-700 text-left">Status</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {bookings.map((b) => (
+                        <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
+                          <TableCell className="font-semibold text-slate-900 text-sm text-left">
+                            {b.resourceName}
+                            <div className="text-xs text-slate-500 font-normal mt-1 flex items-center gap-1">
+                              <Users className="size-3" /> {b.attendees} attendees
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-left">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-slate-700">{b.date}</span>
+                              <span className="text-xs font-medium text-slate-500 mt-0.5">{formatTime(b.startTime)} - {formatTime(b.endTime)}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-left">
+                            <div className="flex flex-col gap-1.5 items-start">
+                               <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-1 rounded-md text-xs font-bold tracking-wide shadow-sm`} variant="outline">
+                                 {b.status}
+                               </Badge>
+                               {b.rejectionReason && (
+                                 <div className="flex items-start gap-1.5 text-xs text-red-600 bg-red-50/80 p-2 rounded-md italic font-medium max-w-[200px] mt-1">
+                                   <MessageSquare className="size-3.5 shrink-0 mt-0.5" /> 
+                                   <span className="leading-snug">{b.rejectionReason}</span>
+                                 </div>
+                               )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      {/* Cancellation Confirmation Dialog */}
-      <Dialog open={!!cancellingId} onOpenChange={(open) => !open && setCancellingId(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="size-5" /> Confirm Cancellation
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel this booking? This action cannot be undone and the resource will be made available for others.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={() => setCancellingId(null)}>
-              No, keep it
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={confirmCancel}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Yes, cancel booking
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

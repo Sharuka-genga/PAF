@@ -42,7 +42,7 @@ app:
     secret: bXktc3VwZXItc2VjcmV0LWtleS13aGljaC1pcy1hdC1sZWFzdC0yNTYtYml0cy1sb25n
     expiration-ms: 86400000
   cors:
-    allowed-origins: http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,http://localhost:5177,http://localhost:5178,http://localhost:3000
+    allowed-origins: http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,http://localhost:5177,http://localhost:5178,http://localhost:5179,http://localhost:5180,http://localhost:3000
 file:
   upload-dir: ${file.upload-dir:uploads}
 
