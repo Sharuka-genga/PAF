@@ -21,7 +21,7 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -29,6 +29,11 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
+  }
+
+  // Redirect admin users away from user routes
+  if (user && isAdmin()) {
+    return <Navigate to="/admin" replace />;
   }
 
   return user ? <>{children}</> : <Navigate to="/login" replace />;
@@ -173,6 +178,14 @@ function App() {
             element={
               <AdminRoute>
                 <AdminResourcesPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminRoute>
+                <ComingSoon title="Admin Settings" />
               </AdminRoute>
             }
           />

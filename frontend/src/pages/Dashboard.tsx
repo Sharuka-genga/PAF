@@ -6,7 +6,7 @@ import { FiGrid, FiCalendar, FiAlertCircle, FiBell, FiPlus, FiArrowRight } from 
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import ProfileDropdown from '../components/ui/ProfileDropdown';
+import Sidebar from '../components/ui/Sidebar';
 import NotificationDropdown from '../components/ui/NotificationDropdown';
 import type { Booking, Ticket } from '../types';
 
@@ -53,28 +53,28 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const statCards = [
-    { label: 'Resources', value: stats.resources, icon: <FiGrid className="w-5 h-5" />, color: 'bg-blue-500', link: '/resources' },
-    { label: 'My Bookings', value: stats.bookings, icon: <FiCalendar className="w-5 h-5" />, color: 'bg-green-500', link: '/bookings' },
-    { label: 'My Tickets', value: stats.tickets, icon: <FiAlertCircle className="w-5 h-5" />, color: 'bg-orange-500', link: '/tickets' },
-    { label: 'Unread Alerts', value: stats.notifications, icon: <FiBell className="w-5 h-5" />, color: 'bg-purple-500', link: '/notifications' },
+    { label: 'Resources', value: stats.resources, icon: <FiGrid className="w-5 h-5" />, color: 'bg-purple-600', link: '/resources' },
+    { label: 'My Bookings', value: stats.bookings, icon: <FiCalendar className="w-5 h-5" />, color: 'bg-green-600', link: '/bookings' },
+    { label: 'My Tickets', value: stats.tickets, icon: <FiAlertCircle className="w-5 h-5" />, color: 'bg-amber-600', link: '/tickets' },
+    { label: 'Unread Alerts', value: stats.notifications, icon: <FiBell className="w-5 h-5" />, color: 'bg-purple-600', link: '/notifications' },
   ];
 
   const getBadgeProps = (status: string) => {
     switch (status) {
       case 'APPROVED':
       case 'RESOLVED':
-        return { variant: 'default' as const, className: 'bg-green-500 hover:bg-green-600 text-white' };
+        return { variant: 'default' as const, className: 'status-pill status-active' };
       case 'REJECTED':
-        return { variant: 'destructive' as const, className: '' };
+        return { variant: 'destructive' as const, className: 'status-pill status-out-of-service' };
       case 'PENDING':
       case 'IN_PROGRESS':
-        return { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' };
+        return { variant: 'secondary' as const, className: 'status-pill status-maintenance' };
       case 'OPEN':
-        return { variant: 'default' as const, className: 'bg-blue-500 hover:bg-blue-600 text-white' };
+        return { variant: 'default' as const, className: 'status-pill status-active' };
       case 'CANCELLED':
       case 'CLOSED':
       default:
-        return { variant: 'outline' as const, className: 'text-gray-500' };
+        return { variant: 'outline' as const, className: 'status-pill text-muted-foreground border border-border' };
     }
   };
 
@@ -87,24 +87,27 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Smart Campus Hub</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <NotificationDropdown />
-              <ProfileDropdown />
+    <div className="flex min-h-screen bg-background font-body">
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1">
+        {/* Header */}
+        <header className="bg-card shadow-sm border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-foreground">Smart Campus Hub</h1>
+              </div>
+              <div className="flex items-center">
+                <NotificationDropdown />
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Welcome */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">Welcome back, {user?.name}!</h1>
@@ -119,7 +122,7 @@ const Dashboard: React.FC = () => {
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">{card.label}</p>
-                  <p className="text-3xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-3xl font-bold text-foreground font-mono">{card.value}</p>
                 </div>
                 <div className={`${card.color} p-3 rounded-xl text-white shadow-sm`}>
                   {card.icon}
@@ -132,19 +135,19 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <Button asChild size="lg" className="h-auto py-4 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
+        <Button asChild size="lg" className="h-auto py-4 bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all rounded-[12px] justify-start space-x-3">
           <Link to="/bookings/create">
             <FiPlus className="w-5 h-5 shrink-0" />
             <span className="font-semibold text-base">New Booking</span>
           </Link>
         </Button>
-        <Button asChild size="lg" className="h-auto py-4 bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
+        <Button asChild size="lg" className="h-auto py-4 bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg transition-all rounded-[12px] justify-start space-x-3">
           <Link to="/tickets/create">
             <FiPlus className="w-5 h-5 shrink-0" />
             <span className="font-semibold text-base">Report Issue</span>
           </Link>
         </Button>
-        <Button asChild size="lg" className="h-auto py-4 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
+        <Button asChild size="lg" className="h-auto py-4 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all rounded-[12px] justify-start space-x-3">
           <Link to="/resources">
             <FiGrid className="w-5 h-5 shrink-0" />
             <span className="font-semibold text-base">Browse Resources</span>
@@ -155,10 +158,10 @@ const Dashboard: React.FC = () => {
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Bookings */}
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-bold">Recent Bookings</CardTitle>
-            <Button variant="ghost" size="sm" asChild className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+            <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary/80 hover:bg-primary/10">
               <Link to="/bookings">
                 View all <FiArrowRight className="ml-1 w-4 h-4" />
               </Link>
@@ -170,10 +173,10 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="space-y-3 mt-2">
                 {recentBookings.map(b => (
-                  <div key={b.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-accent transition-colors">
+                  <div key={b.id} className="flex justify-between items-center p-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{b.resourceName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{(b as any).bookingDate} · {b.startTime} - {b.endTime}</p>
+                      <p className="text-xs text-muted-foreground mt-1 font-mono">{(b as any).bookingDate} · {b.startTime} - {b.endTime}</p>
                     </div>
                     <Badge {...getBadgeProps(b.status)}>{b.status}</Badge>
                   </div>
@@ -184,10 +187,10 @@ const Dashboard: React.FC = () => {
         </Card>
 
         {/* Recent Tickets */}
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-bold">Recent Tickets</CardTitle>
-            <Button variant="ghost" size="sm" asChild className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+            <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary/80 hover:bg-primary/10">
               <Link to="/tickets">
                 View all <FiArrowRight className="ml-1 w-4 h-4" />
               </Link>
@@ -199,7 +202,7 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="space-y-3 mt-2">
                 {recentTickets.map(t => (
-                  <Link key={t.id} to={`/tickets/${t.id}`} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-accent transition-colors block">
+                  <Link key={t.id} to={`/tickets/${t.id}`} className="flex justify-between items-center p-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors block">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{t.title}</p>
                       <p className="text-xs text-muted-foreground mt-1">{t.category} · {t.priority}</p>
@@ -212,7 +215,8 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
