@@ -8,8 +8,11 @@ import OAuth2RedirectHandler from './pages/auth/OAuth2RedirectHandler';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
+import TicketsPage from './pages/TicketsPage';
+import ResourcesPage from './pages/ResourcesPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -107,7 +110,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          {/* Placeholder routes for bookings/tickets/resources (not your part) */}
           <Route
             path="/bookings"
             element={<PrivateRoute><ComingSoon title="My Bookings" /></PrivateRoute>}
@@ -118,7 +120,11 @@ function App() {
           />
           <Route
             path="/tickets"
-            element={<PrivateRoute><ComingSoon title="My Tickets" /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <TicketsPage />
+              </PrivateRoute>
+            }
           />
           <Route
             path="/tickets/create"
@@ -130,7 +136,11 @@ function App() {
           />
           <Route
             path="/resources"
-            element={<PrivateRoute><ComingSoon title="Browse Resources" /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <ResourcesPage />
+              </PrivateRoute>
+            }
           />
 
           {/* Admin Routes */}
@@ -160,7 +170,11 @@ function App() {
           />
           <Route
             path="/admin/resources"
-            element={<AdminRoute><ComingSoon title="Admin - Resources" /></AdminRoute>}
+            element={
+              <AdminRoute>
+                <AdminResourcesPage />
+              </AdminRoute>
+            }
           />
 
           {/* Fallback */}
