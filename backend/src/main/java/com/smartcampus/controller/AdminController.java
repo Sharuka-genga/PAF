@@ -36,7 +36,6 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(users));
     }
 
-    // PUT - Update user roles
     @PutMapping("/users/{userId}/roles")
     public ResponseEntity<ApiResponse<User>> updateUserRoles(
             @PathVariable String userId,
@@ -44,6 +43,16 @@ public class AdminController {
         User user = userService.updateUserRoles(userId, roles);
         user.setPassword(null);
         return ResponseEntity.ok(ApiResponse.success("User roles updated successfully", user));
+    }
+
+    // PUT - Update user details
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<ApiResponse<User>> updateUserDetails(
+            @PathVariable String userId,
+            @RequestBody User userDetails) {
+        User user = userService.updateUser(userId, userDetails);
+        user.setPassword(null);
+        return ResponseEntity.ok(ApiResponse.success("User details updated successfully", user));
     }
 
     // DELETE - Remove user account

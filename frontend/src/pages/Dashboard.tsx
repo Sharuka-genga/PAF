@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { resourceAPI, bookingAPI, ticketAPI, notificationAPI } from '../services/api';
-import { FiGrid, FiCalendar, FiAlertCircle, FiBell, FiPlus, FiArrowRight, FiSettings } from 'react-icons/fi';
+import { FiGrid, FiCalendar, FiAlertCircle, FiBell, FiPlus, FiArrowRight } from 'react-icons/fi';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import ProfileDropdown from '../components/ui/ProfileDropdown';
 import NotificationDropdown from '../components/ui/NotificationDropdown';
+import type { Booking, Ticket } from '../types';
 
-const Dashboard = () => {
-  const { user, isAdmin } = useAuth();
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState({ resources: 0, bookings: 0, tickets: 0, notifications: 0 });
-  const [recentBookings, setRecentBookings] = useState([]);
-  const [recentTickets, setRecentTickets] = useState([]);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +24,12 @@ const Dashboard = () => {
           resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
           bookingAPI.getMyBookings().catch(() => ({ data: { data: [] } })),
           ticketAPI.getMyTickets().catch(() => ({ data: { data: [] } })),
-          notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
+          notificationAPI.getUnreadCount().catch(() => ({ data: { data: 0 } }))
         ]);
 
-        const getValue = (result, isCount = false) => {
-          if (result.status === 'fulfilled' && result.value?.data?.data) {
-            return isCount ? (result.value.data.data.count || 0) : (result.value.data.data.length || 0);
+        const getValue = (result: any, isCount = false) => {
+          if (result.status === 'fulfilled' && result.value?.data?.data !== undefined) {
+            return isCount ? (result.value.data.data || 0) : (result.value.data.data.length || 0);
           }
           return 0;
         };
@@ -37,11 +38,11 @@ const Dashboard = () => {
           resources: getValue(results[0]),
           bookings: getValue(results[1]),
           tickets: getValue(results[2]),
-          notifications: getValue(results[3], true)
+          notifications: (results[3] as any).value?.data?.data?.count || 0
         });
         
-        setRecentBookings(results[1].status === 'fulfilled' ? (results[1].value.data?.data || []).slice(0, 5) : []);
-        setRecentTickets(results[2].status === 'fulfilled' ? (results[2].value.data?.data || []).slice(0, 5) : []);
+        setRecentBookings(results[1].status === 'fulfilled' ? (results[1].value as any).data?.data?.slice(0, 5) || [] : []);
+        setRecentTickets(results[2].status === 'fulfilled' ? (results[2].value as any).data?.data?.slice(0, 5) || [] : []);
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       } finally {
@@ -58,22 +59,22 @@ const Dashboard = () => {
     { label: 'Unread Alerts', value: stats.notifications, icon: <FiBell className="w-5 h-5" />, color: 'bg-purple-500', link: '/notifications' },
   ];
 
-  const getBadgeProps = (status) => {
+  const getBadgeProps = (status: string) => {
     switch (status) {
       case 'APPROVED':
       case 'RESOLVED':
-        return { variant: 'default', className: 'bg-green-500 hover:bg-green-600 text-white' };
+        return { variant: 'default' as const, className: 'bg-green-500 hover:bg-green-600 text-white' };
       case 'REJECTED':
-        return { variant: 'destructive', className: '' };
+        return { variant: 'destructive' as const, className: '' };
       case 'PENDING':
       case 'IN_PROGRESS':
-        return { variant: 'secondary', className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' };
+        return { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' };
       case 'OPEN':
-        return { variant: 'default', className: 'bg-blue-500 hover:bg-blue-600 text-white' };
+        return { variant: 'default' as const, className: 'bg-blue-500 hover:bg-blue-600 text-white' };
       case 'CANCELLED':
       case 'CLOSED':
       default:
-        return { variant: 'outline', className: 'text-gray-500' };
+        return { variant: 'outline' as const, className: 'text-gray-500' };
     }
   };
 
@@ -172,7 +173,7 @@ const Dashboard = () => {
                   <div key={b.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-accent transition-colors">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{b.resourceName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{b.bookingDate} · {b.startTime} - {b.endTime}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{(b as any).bookingDate} · {b.startTime} - {b.endTime}</p>
                     </div>
                     <Badge {...getBadgeProps(b.status)}>{b.status}</Badge>
                   </div>
@@ -217,4 +218,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

@@ -1,37 +1,20 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notificationAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { FiBell, FiCheck, FiCheckCircle, FiTrash2, FiCalendar, FiAlertCircle, FiMessageCircle } from 'react-icons/fi';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import type { Notification } from '../types';
 
 const NOTIFICATION_CHANGE_EVENT = 'notifications:changed';
 
-const Notifications = () => {
+const Notifications: React.FC = () => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUnread, setShowUnread] = useState(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await notificationAPI.getAll();
-        setNotifications(res.data.data || []);
-        toast.success('Notifications loaded successfully!');
-      } catch (err) {
-        console.error('Notifications fetch error:', err);
-        toast.error('Failed to load notifications');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotifications();
-  }, []);
-
-  useEffect(() => { fetchNotifications(); }, [showUnread]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -47,11 +30,15 @@ const Notifications = () => {
     }
   };
 
+  useEffect(() => {
+    fetchNotifications();
+  }, [showUnread]);
+
   const emitNotificationChange = () => {
     window.dispatchEvent(new Event(NOTIFICATION_CHANGE_EVENT));
   };
 
-  const handleMarkRead = async (id) => {
+  const handleMarkRead = async (id: string) => {
     try {
       await notificationAPI.markAsRead(id);
       emitNotificationChange();
@@ -72,7 +59,7 @@ const Notifications = () => {
     }
   };
 
-  const triggerDelete = (id) => {
+  const triggerDelete = (id: string) => {
     setConfirmDeleteId(id);
   };
 
@@ -89,7 +76,7 @@ const Notifications = () => {
     }
   };
 
-  const handleNotificationClick = async (notif) => {
+  const handleNotificationClick = async (notif: Notification) => {
     if (!notif.read) {
       try {
         await notificationAPI.markAsRead(notif.id);
@@ -104,15 +91,16 @@ const Notifications = () => {
       return;
     }
 
-    if (notif.referenceId && notif.type?.startsWith('TICKET_')) {
-      navigate(`/tickets/${notif.referenceId}`);
+    const referenceId = (notif as any).referenceId;
+    if (referenceId && notif.type?.startsWith('TICKET_')) {
+      navigate(`/tickets/${referenceId}`);
       return;
     }
 
     navigate('/notifications');
   };
 
-  const getIcon = (type) => {
+  const getIcon = (type: string) => {
     switch (type) {
       case 'BOOKING_APPROVED': return <FiCheckCircle className="w-5 h-5 text-green-500" />;
       case 'BOOKING_REJECTED': return <FiCalendar className="w-5 h-5 text-red-500" />;
@@ -255,4 +243,3 @@ const Notifications = () => {
 };
 
 export default Notifications;
-

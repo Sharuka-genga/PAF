@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
@@ -10,21 +10,23 @@ import { Button } from '../../components/ui/button';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const Login = () => {
+const Login: React.FC = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
+    console.log('Login component mounted');
     const params = new URLSearchParams(location.search);
     if (params.get('error') === 'oauth2') {
       toast.error('Google Authentication failed or was cancelled.', { toastId: 'oauth2-err' });
     }
   }, [location]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
@@ -38,14 +40,14 @@ const Login = () => {
     try {
       const userData = await login(form.email, form.password);
       toast.success('Login successful!');
-      
-      // Redirect based on user role
+
+      // Redirect based on user role using React Router
       if (userData.roles.includes('ADMIN')) {
-        window.location.href = '/admin';
+        navigate('/admin', { replace: true });
       } else {
-        window.location.href = '/dashboard';
+        navigate('/', { replace: true });
       }
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -151,4 +153,3 @@ const Login = () => {
 };
 
 export default Login;
-

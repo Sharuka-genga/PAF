@@ -33,6 +33,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuth2UserService oAuth2UserService;
+    private final com.smartcampus.security.CustomOidcUserService customOidcUserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
 
@@ -84,7 +85,10 @@ public class SecurityConfig {
                 .authorizationEndpoint(authz -> authz
                     .authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository())
                 )
-                .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(oAuth2UserService)
+                    .oidcUserService(customOidcUserService)
+                )
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(new SimpleUrlAuthenticationFailureHandler(allowedOrigins.split(",")[0] + "/login?error=oauth2"))
             )

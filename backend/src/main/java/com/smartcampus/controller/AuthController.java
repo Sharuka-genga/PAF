@@ -12,6 +12,7 @@ import com.smartcampus.model.User;
 import com.smartcampus.service.AuthService;
 import com.smartcampus.service.NotificationService;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,7 +67,7 @@ public class AuthController {
     @GetMapping("/me/preferences")
     public ResponseEntity<ApiResponse<UserPreferencesResponse>> getUserPreferences() {
         User currentUser = authService.getCurrentUser();
-        User userWithPrefs = notificationService.getUserPreferences(currentUser.getId());
+        User userWithPrefs = notificationService.getUserPreferences(Objects.requireNonNull(currentUser.getId()));
         UserPreferencesResponse response = UserPreferencesResponse.builder()
                 .userId(userWithPrefs.getId())
                 .emailAlerts(userWithPrefs.isEmailAlerts())
@@ -81,7 +82,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserPreferencesResponse>> updateUserPreferences(@Valid @RequestBody UpdatePreferencesRequest request) {
         User currentUser = authService.getCurrentUser();
         User updated = notificationService.updateUserPreferences(
-                currentUser.getId(),
+                Objects.requireNonNull(currentUser.getId()),
                 request.getEmailAlerts() != null ? request.getEmailAlerts() : currentUser.isEmailAlerts(),
                 request.getTicketAlerts() != null ? request.getTicketAlerts() : currentUser.isTicketAlerts(),
                 request.getBookingAlerts() != null ? request.getBookingAlerts() : currentUser.isBookingAlerts(),

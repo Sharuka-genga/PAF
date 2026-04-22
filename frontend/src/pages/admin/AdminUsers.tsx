@@ -1,25 +1,24 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import { toast } from 'react-toastify';
-import { FiShield, FiSearch, FiTrash2, FiEdit2, FiSave, FiX, FiUser, FiMail } from 'react-icons/fi';
+import { FiShield, FiSearch, FiTrash2, FiEdit2, FiSave, FiX } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import type { User, Role } from '../../types';
 
-const AdminUsers = () => {
+const AdminUsers: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [editingUser, setEditingUser] = useState(null);
-  const [selectedRoles, setSelectedRoles] = useState([]);
-  const [editingDetails, setEditingDetails] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<Role[]>([]);
+  const [editingDetails, setEditingDetails] = useState<User | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
 
-  const allRoles = ['USER', 'ADMIN', 'TECHNICIAN'];
-
-  useEffect(() => { fetchUsers(); }, []);
+  const allRoles: Role[] = ['USER', 'ADMIN', 'TECHNICIAN'];
 
   const fetchUsers = async () => {
     try {
@@ -32,18 +31,21 @@ const AdminUsers = () => {
     }
   };
 
-  const handleUpdateRoles = async (userId) => {
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleUpdateRoles = async (userId: string) => {
     try {
       await adminAPI.updateUserRoles(userId, selectedRoles);
       toast.success('User roles updated successfully!');
       setEditingUser(null);
       fetchUsers();
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update roles');
     }
   };
 
   const handleUpdateUserDetails = async () => {
+    if (!editingDetails) return;
     try {
       await adminAPI.updateUser(editingDetails.id, {
         name: editingDetails.name,
@@ -52,12 +54,12 @@ const AdminUsers = () => {
       toast.success('User details updated successfully!');
       setEditingDetails(null);
       fetchUsers();
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update user details');
     }
   };
 
-  const handleDeleteUser = async (targetUser) => {
+  const handleDeleteUser = async (targetUser: User) => {
     if (targetUser.id === currentUser?.id) {
       toast.info('Use "Delete My Account" from your profile menu to remove your own account.');
       return;
@@ -67,6 +69,7 @@ const AdminUsers = () => {
   };
 
   const confirmDeleteUser = async () => {
+    if (!confirmDelete) return;
     try {
       await adminAPI.deleteUser(confirmDelete.id);
       toast.success(`User account for ${confirmDelete.name || confirmDelete.email} has been deleted successfully!`);
@@ -78,12 +81,12 @@ const AdminUsers = () => {
         setEditingDetails(null);
       }
       fetchUsers();
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to delete user account');
     }
   };
 
-  const toggleRole = (role) => {
+  const toggleRole = (role: Role) => {
     setSelectedRoles(prev =>
       prev.includes(role)
         ? prev.filter(r => r !== role)
@@ -91,8 +94,8 @@ const AdminUsers = () => {
     );
   };
 
-  const roleColor = (role) => {
-    const colors = {
+  const roleColor = (role: string) => {
+    const colors: Record<string, string> = {
       USER: 'bg-blue-100 text-blue-800',
       ADMIN: 'bg-red-100 text-red-800',
       TECHNICIAN: 'bg-green-100 text-green-800',

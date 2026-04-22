@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { adminAPI, bookingAPI, ticketAPI, resourceAPI } from '../../services/api';
-import { FiGrid, FiCalendar, FiAlertCircle, FiUsers, FiSettings } from 'react-icons/fi';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
+import { FiGrid, FiCalendar, FiAlertCircle, FiUsers } from 'react-icons/fi';
+import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProfileDropdown from '../../components/ui/ProfileDropdown';
 import NotificationDropdown from '../../components/ui/NotificationDropdown';
 
-const AdminDashboard = () => {
+const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({ users: 0, bookings: 0, tickets: 0, resources: 0 });
   const [loading, setLoading] = useState(true);
@@ -19,12 +18,12 @@ const AdminDashboard = () => {
       try {
         const results = await Promise.allSettled([
           adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
-          bookingAPI.getAll().catch(() => ({ data: { data: [] } })),
-          ticketAPI.getAll().catch(() => ({ data: { data: [] } })),
+          bookingAPI.getAll({}).catch(() => ({ data: { data: [] } })),
+          ticketAPI.getAll({}).catch(() => ({ data: { data: [] } })),
           resourceAPI.getAll().catch(() => ({ data: { data: [] } }))
         ]);
 
-        const getValue = (result) => {
+        const getValue = (result: any) => {
           if (result.status === 'fulfilled' && result.value?.data?.data) {
             return result.value.data.data.length || 0;
           }

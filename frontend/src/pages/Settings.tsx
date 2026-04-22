@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2 } from 'react-icons/fi';
 import { authAPI } from '../services/api';
@@ -7,10 +7,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
+import type { UserPreferences } from '../types';
 
 const SETTINGS_STORAGE_KEY = 'smartCampusSettings';
 
-const Settings = () => {
+const Settings: React.FC = () => {
   const { user, loadUser, isAdmin, isTechnician, deleteAccount } = useAuth();
   const [profileName, setProfileName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -20,7 +21,7 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<Omit<UserPreferences, 'userId'>>({
     emailAlerts: true,
     ticketAlerts: true,
     bookingAlerts: true,
@@ -68,7 +69,7 @@ const Settings = () => {
 
   const roleLabel = useMemo(() => (user?.roles || []).join(', ') || 'USER', [user]);
 
-  const handleSaveProfile = async (e) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileName.trim()) {
       toast.error('Name cannot be empty');
@@ -80,14 +81,14 @@ const Settings = () => {
       await authAPI.updateMe({ name: profileName.trim() });
       await loadUser();
       toast.success('Account profile updated');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setSavingProfile(false);
     }
   };
 
-  const handleChangePassword = async (e) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('All password fields are required');
@@ -109,14 +110,14 @@ const Settings = () => {
       setNewPassword('');
       setConfirmPassword('');
       toast.success('Password changed successfully');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to change password');
     } finally {
       setSavingPassword(false);
     }
   };
 
-  const togglePreference = (key) => {
+  const togglePreference = (key: keyof typeof preferences) => {
     setPreferences((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -125,7 +126,7 @@ const Settings = () => {
       setSavingPreferences(true);
       await authAPI.updatePreferences(preferences);
       toast.success('Preferences saved successfully');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to save preferences');
     } finally {
       setSavingPreferences(false);
@@ -141,7 +142,7 @@ const Settings = () => {
       await deleteAccount();
       toast.success('Your account has been deleted permanently from the system');
       window.location.href = '/login';
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to delete account');
       setConfirmDeleteAccount(false);
     }
@@ -264,8 +265,8 @@ const Settings = () => {
                     <span className="text-sm text-foreground">{item.label}</span>
                     <input
                       type="checkbox"
-                      checked={preferences[item.key]}
-                      onChange={() => togglePreference(item.key)}
+                      checked={preferences[item.key as keyof typeof preferences]}
+                      onChange={() => togglePreference(item.key as keyof typeof preferences)}
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </Label>

@@ -1,11 +1,13 @@
 package com.smartcampus.security;
 
+import com.smartcampus.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -17,6 +19,7 @@ import java.io.IOException;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -36,8 +39,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     protected String determineTargetUrl(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String token = tokenProvider.generateTokenFromUserId(userPrincipal.getId());
+        String userId;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserPrincipal userPrincipal) {
+            userId = userPrincipal.getId();
+        } else {
+            // OIDC login returns DefaultOidcUser — look up by email
+            String email = ((OAuth2User) principal).getAttribute("email");
+            userId = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalStateException("User not found after OAuth2 login: " + email))
+                    .getId();
+        }
+        String token = tokenProvider.generateTokenFromUserId(userId);
 
         String frontendUrl = allowedOrigins.split(",")[0];
 
