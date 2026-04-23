@@ -188,6 +188,7 @@ export default function AdminResourcesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [newWin, setNewWin] = useState<AvailabilityWindow>(EMPTY_WIN);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<Resource | null>(null);
@@ -297,6 +298,7 @@ export default function AdminResourcesPage() {
   const openCreate = () => {
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setErrors({});
     setNewWin(EMPTY_WIN);
     setShowModal(true);
   };
@@ -312,6 +314,7 @@ export default function AdminResourcesPage() {
       description: r.description || '',
       availabilityWindows: [...(r.availabilityWindows || [])],
     });
+    setErrors({});
     setNewWin(EMPTY_WIN);
     setImageFile(null);
     setImagePreview(r.imageUrl || null);
@@ -323,6 +326,7 @@ export default function AdminResourcesPage() {
     setShowModal(false);
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setErrors({});
     setNewWin(EMPTY_WIN);
     setImageFile(null);
     setImagePreview(null);
@@ -343,8 +347,26 @@ export default function AdminResourcesPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.type) { toast.error('Please select a type'); return; }
-    const cap = form.capacity !== '' ? parseInt(form.capacity, 10) : null;
+    
+    // Validation
+    const newErrors: Partial<Record<keyof FormState, string>> = {};
+    if (!form.name.trim()) newErrors.name = 'Resource name is required';
+    if (!form.type) newErrors.type = 'Resource type is required';
+    if (!form.location.trim()) newErrors.location = 'Location is required';
+    
+    const capNum = form.capacity !== '' ? parseInt(form.capacity as string, 10) : null;
+    if (form.capacity !== '' && (isNaN(capNum as number) || (capNum as number) < 0)) {
+      newErrors.capacity = 'Capacity must be a positive number';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+
+    setErrors({});
+    const cap = form.capacity !== '' ? parseInt(form.capacity as string, 10) : null;
     const payload: ResourceRequest = {
       name: form.name,
       type: form.type as ResourceType,
@@ -714,9 +736,13 @@ export default function AdminResourcesPage() {
                       type="text"
                       placeholder="e.g. Main Research Laboratory"
                       value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full bg-ch-surface border-2 border-transparent focus:border-ch-purple/20 focus:bg-white rounded-2xl px-5 py-3 text-sm outline-none transition-all placeholder:text-gray-400 text-gray-900 font-semibold"
+                      onChange={(e) => {
+                        setForm({ ...form, name: e.target.value });
+                        if (errors.name) setErrors({ ...errors, name: undefined });
+                      }}
+                      className={`w-full bg-ch-surface border-2 ${errors.name ? 'border-red-400 focus:border-red-500' : 'border-transparent focus:border-ch-purple/20'} focus:bg-white rounded-2xl px-5 py-3 text-sm outline-none transition-all placeholder:text-gray-400 text-gray-900 font-semibold`}
                     />
+                    {errors.name && <p className="text-[10px] font-bold text-red-500 ml-1 mt-1">{errors.name}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
@@ -724,14 +750,18 @@ export default function AdminResourcesPage() {
                       <label className="text-[10px] font-black text-gray-700 uppercase tracking-wider ml-1">Type</label>
                       <select
                         value={form.type}
-                        onChange={(e) => setForm({ ...form, type: e.target.value as ResourceType })}
-                        className="w-full bg-ch-surface border-2 border-transparent focus:border-ch-purple/20 focus:bg-white rounded-2xl px-5 py-3 text-sm outline-none transition-all text-gray-900 font-semibold appearance-none"
+                        onChange={(e) => {
+                          setForm({ ...form, type: e.target.value as ResourceType });
+                          if (errors.type) setErrors({ ...errors, type: undefined });
+                        }}
+                        className={`w-full bg-ch-surface border-2 ${errors.type ? 'border-red-400 focus:border-red-500' : 'border-transparent focus:border-ch-purple/20'} focus:bg-white rounded-2xl px-5 py-3 text-sm outline-none transition-all text-gray-900 font-semibold appearance-none`}
                       >
                         <option value="">Select Type</option>
                         {ALL_TYPES.map(t => (
                           <option key={t} value={t}>{TYPE_CFG[t].label}</option>
                         ))}
                       </select>
+                      {errors.type && <p className="text-[10px] font-bold text-red-500 ml-1 mt-1">{errors.type}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-gray-700 uppercase tracking-wider ml-1">Status</label>
@@ -751,28 +781,36 @@ export default function AdminResourcesPage() {
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-gray-700 uppercase tracking-wider ml-1">Capacity</label>
                       <div className="relative">
-                        <Users size={14} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <Users size={14} className={`absolute left-5 top-1/2 -translate-y-1/2 ${errors.capacity ? 'text-red-400' : 'text-gray-500'}`} />
                         <input
                           type="number"
                           placeholder="e.g. 50"
                           value={form.capacity}
-                          onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                          className="w-full bg-ch-surface border-2 border-transparent focus:border-ch-purple/20 focus:bg-white rounded-2xl pl-12 pr-5 py-3 text-sm outline-none transition-all placeholder:text-gray-400 text-gray-900 font-semibold"
+                          onChange={(e) => {
+                            setForm({ ...form, capacity: e.target.value });
+                            if (errors.capacity) setErrors({ ...errors, capacity: undefined });
+                          }}
+                          className={`w-full bg-ch-surface border-2 ${errors.capacity ? 'border-red-400 focus:border-red-500' : 'border-transparent focus:border-ch-purple/20'} focus:bg-white rounded-2xl pl-12 pr-5 py-3 text-sm outline-none transition-all placeholder:text-gray-400 text-gray-900 font-semibold`}
                         />
                       </div>
+                      {errors.capacity && <p className="text-[10px] font-bold text-red-500 ml-1 mt-1">{errors.capacity}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-gray-700 uppercase tracking-wider ml-1">Location</label>
                       <div className="relative">
-                        <MapPin size={14} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <MapPin size={14} className={`absolute left-5 top-1/2 -translate-y-1/2 ${errors.location ? 'text-red-400' : 'text-gray-500'}`} />
                         <input
                           type="text"
                           placeholder="e.g. Block C, Floor 2"
                           value={form.location}
-                          onChange={(e) => setForm({ ...form, location: e.target.value })}
-                          className="w-full bg-ch-surface border-2 border-transparent focus:border-ch-purple/20 focus:bg-white rounded-2xl pl-12 pr-5 py-3 text-sm outline-none transition-all placeholder:text-gray-400 text-gray-900 font-semibold"
+                          onChange={(e) => {
+                            setForm({ ...form, location: e.target.value });
+                            if (errors.location) setErrors({ ...errors, location: undefined });
+                          }}
+                          className={`w-full bg-ch-surface border-2 ${errors.location ? 'border-red-400 focus:border-red-500' : 'border-transparent focus:border-ch-purple/20'} focus:bg-white rounded-2xl pl-12 pr-5 py-3 text-sm outline-none transition-all placeholder:text-gray-400 text-gray-900 font-semibold`}
                         />
                       </div>
+                      {errors.location && <p className="text-[10px] font-bold text-red-500 ml-1 mt-1">{errors.location}</p>}
                     </div>
                   </div>
 

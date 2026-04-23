@@ -24,23 +24,27 @@ public class CustomOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser oidcUser = super.loadUser(userRequest);
-        Map<String, Object> attributes = oidcUser.getAttributes();
+        return processOidcUser(oidcUser);
+    }
 
+    private OidcUser processOidcUser(OidcUser oidcUser) {
+        Map<String, Object> attributes = oidcUser.getAttributes();
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
         String picture = (String) attributes.get("picture");
         String providerId = (String) attributes.get("sub");
 
         Optional<User> userOptional = userRepository.findByEmail(email);
+        User user;
         if (userOptional.isPresent()) {
-            User user = userOptional.get();
+            user = userOptional.get();
             user.setName(name);
             user.setProfilePicture(picture);
-            userRepository.save(user);
+            user = userRepository.save(user);
         } else {
             Set<Role> roles = new HashSet<>();
             roles.add(Role.USER);
-            User user = User.builder()
+            user = User.builder()
                     .name(name)
                     .email(email)
                     .profilePicture(picture)
@@ -48,9 +52,9 @@ public class CustomOidcUserService extends OidcUserService {
                     .providerId(providerId)
                     .roles(roles)
                     .build();
-            userRepository.save(user);
+            user = userRepository.save(user);
         }
 
-        return oidcUser;
+        return UserPrincipal.create(user, attributes);
     }
 }

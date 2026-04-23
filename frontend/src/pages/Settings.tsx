@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
+import UserLayout from '../components/layouts/UserLayout';
 import type { UserPreferences } from '../types';
 
 const SETTINGS_STORAGE_KEY = 'smartCampusSettings';
@@ -214,7 +215,8 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
+    <UserLayout>
+      <div className="max-w-6xl mx-auto px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <FiSettings className="text-blue-600" />
@@ -521,7 +523,8 @@ const Settings: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </UserLayout>
   );
 };
 
