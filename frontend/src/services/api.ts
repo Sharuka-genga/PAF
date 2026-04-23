@@ -54,9 +54,15 @@ export const resourceAPI = {
   getAll: (): Promise<AxiosResponse> => api.get('/resources'),
   getById: (id: string): Promise<AxiosResponse> => api.get(`/resources/${id}`),
   search: (params: Record<string, string | number>): Promise<AxiosResponse> => api.get('/resources/search', { params }),
-  create: (data: object): Promise<AxiosResponse> => api.post('/resources', data),
-  update: (id: string, data: object): Promise<AxiosResponse> => api.put(`/resources/${id}`, data),
+  create: (data: object | FormData): Promise<AxiosResponse> => api.post('/resources', data),
+  update: (id: string, data: object | FormData): Promise<AxiosResponse> => api.put(`/resources/${id}`, data),
   delete: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}`),
+  uploadImage: (id: string, formData: FormData): Promise<AxiosResponse> =>
+    api.post(`/resources/${id}/image`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  deleteImage: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}/image`),
+  patchStatus: (id: string, status: string): Promise<AxiosResponse> => api.patch(`/resources/${id}/status`, { status }),
 };
 
 // Booking APIs
@@ -72,9 +78,7 @@ export const bookingAPI = {
 
 // Ticket APIs
 export const ticketAPI = {
-  create: (formData: FormData): Promise<AxiosResponse> => api.post('/tickets', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  create: (formData: FormData): Promise<AxiosResponse> => api.post('/tickets', formData),
   getMyTickets: (): Promise<AxiosResponse> => api.get('/tickets/my'),
   getById: (id: string): Promise<AxiosResponse> => api.get(`/tickets/${id}`),
   getAll: (params?: object): Promise<AxiosResponse> => api.get('/tickets', { params }),

@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
+@theme {
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -43,6 +39,23 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* ── Campus design tokens ── */
+    --color-ch-sidebar:       #12101F;
+    --color-ch-sidebar2:      #1A1730;
+    --color-ch-purple:        #7C3AED;
+    --color-ch-purple-light:  #A78BFA;
+    --color-ch-gold:          #D97706;
+    --color-ch-gold-light:    #F59E0B;
+    --color-ch-surface:       #F5F4F8;
+    --color-ch-t1:            #1A1730;
+    --color-ch-t2:            #5A5680;
+    --color-ch-t3:            #9B97B8;
+    --color-ch-border:        #E2E0EC;
+
+    /* ── Font families ── */
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'DM Mono', ui-monospace, monospace;
 }
 
 :root {
@@ -103,7 +116,7 @@
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
+    --chart-5: oklch(0.645 0.246 16.438);
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -117,8 +130,44 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+/* ── Campus shared animations ── */
+@keyframes ch-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes ch-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ch-card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ch-modal-in {
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes ch-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ch-slide-in { animation: ch-slide-in 0.28s cubic-bezier(0.16,1,0.3,1) both; }
+.ch-fade-in  { animation: ch-fade-in  0.2s  ease-out both; }
+.ch-card-in  { animation: ch-card-in  0.35s ease-out both; }
+.ch-modal-in { animation: ch-modal-in 0.22s ease-out both; }
+.ch-spin     { animation: ch-spin     0.75s linear infinite; }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

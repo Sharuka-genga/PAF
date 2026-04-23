@@ -19,6 +19,7 @@ public class ResourceResponse {
     private String location;
     private ResourceStatus status;
     private String description;
+    private String imageUrl;
     private List<AvailabilityWindowResponse> availabilityWindows;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

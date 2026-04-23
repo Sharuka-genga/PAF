@@ -1,6 +1,10 @@
 spring:
   application:
     name: smart-campus
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
   datasource:
     url: ${NEON_DB_URL}
@@ -37,8 +41,10 @@ app:
     expiration-ms: 86400000
   cors:
     allowed-origins: http://localhost:5173
-file:
-  upload-dir: ${file.upload-dir:uploads}
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
 
 server:
   port: 8080

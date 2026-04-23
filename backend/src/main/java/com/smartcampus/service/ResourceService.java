@@ -1,5 +1,6 @@
 package com.smartcampus.service;
 
+import com.cloudinary.Cloudinary;
 import com.smartcampus.dto.request.AvailabilityWindowRequest;
 import com.smartcampus.dto.request.ResourceRequest;
 import com.smartcampus.dto.response.AvailabilityWindowResponse;
@@ -11,17 +12,73 @@ import com.smartcampus.model.ResourceStatus;
 import com.smartcampus.model.ResourceType;
 import com.smartcampus.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.DayOfWeek;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
+    private final Cloudinary cloudinary;
+
+    private String uploadToCloudinary(MultipartFile image) {
+        if (image == null || image.isEmpty()) return null;
+        log.info("Uploading image to Cloudinary: name={}, size={}, type={}",
+                image.getOriginalFilename(), image.getSize(), image.getContentType());
+        try {
+            Map<String, Object> options = new HashMap<>();
+            options.put("folder", "smartcampus/resources");
+            Map<?, ?> result = cloudinary.uploader().upload(image.getBytes(), options);
+            String url = (String) result.get("secure_url");
+            log.info("Cloudinary upload success: {}", url);
+            return url;
+        } catch (Exception ex) {
+            log.error("Cloudinary upload failed", ex);
+            throw new RuntimeException("Image upload failed: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void deleteImage(String id) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
+        String imageUrl = resource.getImageUrl();
+        if (imageUrl != null) {
+            try {
+                // Extract public_id from Cloudinary URL: .../upload/v123/folder/name.ext → folder/name
+                String afterUpload = imageUrl.substring(imageUrl.indexOf("/upload/") + 8);
+                if (afterUpload.startsWith("v") && afterUpload.contains("/")) {
+                    afterUpload = afterUpload.substring(afterUpload.indexOf("/") + 1);
+                }
+                String publicId = afterUpload.contains(".")
+                        ? afterUpload.substring(0, afterUpload.lastIndexOf("."))
+                        : afterUpload;
+                cloudinary.uploader().destroy(publicId, new HashMap<>());
+            } catch (Exception ignored) {
+                // Best-effort Cloudinary deletion — DB record is cleared regardless
+            }
+        }
+        resource.setImageUrl(null);
+        resourceRepository.save(resource);
+    }
+
+    public String uploadImage(String id, MultipartFile file) {
+        String imageUrl = uploadToCloudinary(file);
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
+        resource.setImageUrl(imageUrl);
+        resourceRepository.save(resource);
+        return imageUrl;
+    }
 
     public List<ResourceResponse> getAll() {
         return resourceRepository.findAll()
@@ -46,7 +103,7 @@ public class ResourceService {
     }
 
     @Transactional
-    public ResourceResponse create(ResourceRequest request) {
+    public ResourceResponse create(ResourceRequest request, MultipartFile image) {
         Resource resource = Resource.builder()
                 .name(request.getName())
                 .type(request.getType())
@@ -54,6 +111,7 @@ public class ResourceService {
                 .location(request.getLocation())
                 .status(request.getStatus())
                 .description(request.getDescription())
+                .imageUrl(uploadToCloudinary(image))
                 .availabilityWindows(
                         request.getAvailabilityWindows() != null
                                 ? request.getAvailabilityWindows().stream()
@@ -64,7 +122,7 @@ public class ResourceService {
     }
 
     @Transactional
-    public ResourceResponse update(String id, ResourceRequest request) {
+    public ResourceResponse update(String id, ResourceRequest request, MultipartFile image) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
 
@@ -75,6 +133,10 @@ public class ResourceService {
         resource.setStatus(request.getStatus());
         resource.setDescription(request.getDescription());
 
+        if (image != null && !image.isEmpty()) {
+            resource.setImageUrl(uploadToCloudinary(image));
+        }
+
         resource.getAvailabilityWindows().clear();
         if (request.getAvailabilityWindows() != null) {
             resource.getAvailabilityWindows().addAll(
@@ -82,6 +144,14 @@ public class ResourceService {
                             .map(this::toWindowEntity).toList());
         }
 
+        return toResponse(resourceRepository.save(resource));
+    }
+
+    @Transactional
+    public ResourceResponse updateStatus(String id, String status) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
+        resource.setStatus(ResourceStatus.valueOf(status.toUpperCase()));
         return toResponse(resourceRepository.save(resource));
     }
 
@@ -117,6 +187,7 @@ public class ResourceService {
                 .location(r.getLocation())
                 .status(r.getStatus())
                 .description(r.getDescription())
+                .imageUrl(r.getImageUrl())
                 .availabilityWindows(
                         r.getAvailabilityWindows() != null
                                 ? r.getAvailabilityWindows().stream()
