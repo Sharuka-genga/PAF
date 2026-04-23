@@ -517,13 +517,6 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 92, 246, 0.5);
-=======
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  }
 }
 
 /* ── Campus shared animations ── */
@@ -559,5 +552,4 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
->>>>>>> origin/main
 }

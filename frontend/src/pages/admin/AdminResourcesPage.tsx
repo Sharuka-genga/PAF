@@ -10,6 +10,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
+import AdminLayout from '../../components/layouts/AdminLayout';
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 type IconComp = LucideIcon;
@@ -398,13 +399,12 @@ export default function AdminResourcesPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-ch-surface font-sans">
+    <AdminLayout>
       <main className="flex-1 flex flex-col min-w-0">
         {/* TOPBAR */}
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-20 sticky top-0 z-20 px-8 flex items-center justify-between shadow-sm">
           <div>
             <h1 className="text-2xl font-bold text-ch-purple">Resource Management</h1>
-
           </div>
           <div className="flex items-center gap-6">
             <button
@@ -942,6 +942,6 @@ export default function AdminResourcesPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }
