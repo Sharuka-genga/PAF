@@ -57,8 +57,12 @@ export const authAPI = {
   updateMe: (data: any) => api.put<ApiResponse<User>>('/auth/me', data),
   changePassword: (data: any) => api.patch<ApiResponse<void>>('/auth/me/password', data),
   deleteMe: () => api.delete<ApiResponse<void>>('/auth/me'),
-  getPreferences: () => api.get<ApiResponse<UserPreferences>>('/auth/me/preferences'),
-  updatePreferences: (data: any) => api.patch<ApiResponse<UserPreferences>>('/auth/me/preferences', data),
+  getPreferences: () => api.get<ApiResponse<UserPreferences>>('/auth/preferences'),
+  updatePreferences: (data: any) => api.put<ApiResponse<UserPreferences>>('/auth/preferences', data),
+  uploadProfileImage: (formData: FormData) => api.post<ApiResponse<User>>('/auth/me/profile-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  removeProfileImage: () => api.delete<ApiResponse<User>>('/auth/me/profile-image'),
 };
 
 // Resource APIs

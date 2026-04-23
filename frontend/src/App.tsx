@@ -182,6 +182,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/notifications"
+            element={
+              <AdminRoute>
+                <Notifications />
+              </AdminRoute>
+            }
+          />
+          <Route
             path="/admin/settings"
             element={
               <AdminRoute>

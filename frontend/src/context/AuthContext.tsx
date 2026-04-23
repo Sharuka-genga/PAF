@@ -67,12 +67,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<User> => {
     const response = await authAPI.login({ email, password });
-    const { token, id, name, email: userEmail, roles } = response.data.data;
+    const { token, id, name, email: userEmail, roles, profilePicture } = response.data.data;
     localStorage.setItem('token', token);
     const userData: User = {
       id,
       name,
       email: userEmail,
+      profilePicture,
       roles: Array.isArray(roles) ? roles : Object.values(roles),
     };
     localStorage.setItem('user', JSON.stringify(userData));
@@ -82,12 +83,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (name: string, email: string, password: string): Promise<User> => {
     const response = await authAPI.register({ name, email, password });
-    const { token, id, name: userName, email: userEmail, roles } = response.data.data;
+    const { token, id, name: userName, email: userEmail, roles, profilePicture } = response.data.data;
     localStorage.setItem('token', token);
     const userData: User = {
       id,
       name: userName,
       email: userEmail,
+      profilePicture,
       roles: Array.isArray(roles) ? roles : Object.values(roles),
     };
     localStorage.setItem('user', JSON.stringify(userData));

@@ -32,6 +32,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final FileStorageService fileStorageService;
 
         @Value("${app.auth.admin-email-regex:^(?i)admin[0-9]*@smartcampus\\.edu$}")
         private String adminEmailRegex;
@@ -70,6 +71,7 @@ public class AuthService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .profilePicture(user.getProfilePicture())
                 .roles(user.getRoles())
                 .build();
     }
@@ -92,6 +94,7 @@ public class AuthService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .profilePicture(user.getProfilePicture())
                 .roles(user.getRoles())
                 .build();
     }
@@ -138,7 +141,32 @@ public class AuthService {
 
         public void deleteCurrentUser() {
                 User currentUser = getCurrentUser();
+                if (currentUser.getProfilePicture() != null) {
+                        fileStorageService.deleteFile(currentUser.getProfilePicture());
+                }
                 userRepository.delete(Objects.requireNonNull(currentUser, "current user must not be null"));
+        }
+
+        public User uploadProfileImage(org.springframework.web.multipart.MultipartFile file) {
+                User currentUser = getCurrentUser();
+                
+                // Delete old image if exists
+                if (currentUser.getProfilePicture() != null) {
+                        fileStorageService.deleteFile(currentUser.getProfilePicture());
+                }
+
+                String filePath = fileStorageService.storeProfileImage(file, currentUser.getId());
+                currentUser.setProfilePicture(filePath);
+                return userRepository.save(currentUser);
+        }
+
+        public User removeProfileImage() {
+                User currentUser = getCurrentUser();
+                if (currentUser.getProfilePicture() != null) {
+                        fileStorageService.deleteFile(currentUser.getProfilePicture());
+                        currentUser.setProfilePicture(null);
+                }
+                return userRepository.save(currentUser);
         }
 
         private Set<Role> resolveRolesForEmail(String email) {

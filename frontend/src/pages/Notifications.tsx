@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { notificationAPI } from '../services/api';
+import AdminLayout from '../components/layouts/AdminLayout';
+import UserLayout from '../components/layouts/UserLayout';
+import PremiumTopbar from '../components/ui/PremiumTopbar';
 import { toast } from 'react-toastify';
 import { FiBell, FiCheck, FiCheckCircle, FiTrash2, FiCalendar, FiAlertCircle, FiMessageCircle } from 'react-icons/fi';
 import { Card, CardContent } from '../components/ui/card';
@@ -11,6 +15,7 @@ const NOTIFICATION_CHANGE_EVENT = 'notifications:changed';
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUnread, setShowUnread] = useState(false);
@@ -86,18 +91,20 @@ const Notifications: React.FC = () => {
       }
     }
 
+    const prefix = isAdmin() ? '/admin' : '';
+    
     if (notif.type?.startsWith('BOOKING_')) {
-      navigate('/bookings');
+      navigate(`${prefix}/bookings`);
       return;
     }
 
     const referenceId = (notif as any).referenceId;
     if (referenceId && notif.type?.startsWith('TICKET_')) {
-      navigate(`/tickets/${referenceId}`);
+      navigate(`${prefix}/tickets/${referenceId}`);
       return;
     }
 
-    navigate('/notifications');
+    navigate(`${prefix}/notifications`);
   };
 
   const getIcon = (type: string) => {
@@ -116,129 +123,134 @@ const Notifications: React.FC = () => {
     return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   }
 
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-          <p className="text-muted-foreground text-sm mt-1">Stay updated on your activities</p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            variant={showUnread ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setShowUnread(!showUnread)}
-            className="rounded-full"
-          >
-            {showUnread ? 'Show All' : 'Unread Only'}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleMarkAllRead}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-          >
-            <FiCheck className="w-4 h-4 mr-1" />
-            Mark all read
-          </Button>
-        </div>
-      </div>
+  const Layout = isAdmin() ? AdminLayout : UserLayout;
 
-      {notifications.length === 0 ? (
-        <Card className="text-center py-12 shadow-sm border-dashed">
-          <CardContent className="pt-6">
-            <FiBell className="w-12 h-12 text-muted mx-auto mb-3" />
-            <p className="text-muted-foreground">No notifications</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {notifications.map(notif => (
-            <Card key={notif.id} className={`shadow-sm overflow-hidden transition-colors hover:bg-accent/50 ${!notif.read ? 'border-l-4 border-l-blue-500' : ''}`}>
-              <CardContent className="p-4 flex items-start space-x-4">
-                <button
-                  type="button"
-                  onClick={() => handleNotificationClick(notif)}
-                  className="mt-1"
-                  title="Open related item"
-                >
-                  {getIcon(notif.type)}
-                </button>
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleNotificationClick(notif)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleNotificationClick(notif)}
-                  className="flex-1 text-left cursor-pointer outline-none"
-                >
-                  <p className={`text-sm ${!notif.read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
-                    {notif.title}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-0.5">{notif.message}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    {notif.createdAt ? new Date(notif.createdAt).toLocaleString() : 'Just now'}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-1 shrink-0">
-                  {!notif.read && (
+  return (
+    <Layout>
+      <PremiumTopbar title="Notifications" subtitle="Stay updated on your activities" />
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">All Notifications</h1>
+            <p className="text-gray-600 mt-1">Manage your system alerts and updates</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant={showUnread ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setShowUnread(!showUnread)}
+              className="rounded-xl px-4"
+            >
+              {showUnread ? 'Show All' : 'Unread Only'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMarkAllRead}
+              className="text-[#7C3AED] hover:text-[#6D28D9] hover:bg-[#7C3AED]/10 px-4"
+            >
+              <FiCheck className="w-4 h-4 mr-2" />
+              Mark all read
+            </Button>
+          </div>
+        </div>
+
+        {notifications.length === 0 ? (
+          <Card className="glass-card-white shadow-sm border-dashed py-16 text-center">
+            <CardContent>
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FiBell className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-600 font-medium">No notifications yet</p>
+              <p className="text-gray-400 text-sm mt-1">We'll notify you when something important happens.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {notifications.map(notif => (
+              <Card key={notif.id} className={`glass-card-white-strong shadow-sm overflow-hidden transition-all hover:shadow-md border border-[rgba(0,0,0,0.05)] ${!notif.read ? 'border-l-4 border-l-[#7C3AED]' : ''}`}>
+                <CardContent className="p-5 flex items-start gap-4">
+                  <div 
+                    onClick={() => handleNotificationClick(notif)}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer ${
+                      notif.type?.startsWith('BOOKING_') ? 'bg-green-100 text-green-600' :
+                      notif.type?.startsWith('TICKET_') ? 'bg-blue-100 text-blue-600' :
+                      'bg-purple-100 text-purple-600'
+                    }`}
+                  >
+                    {getIcon(notif.type)}
+                  </div>
+                  <div
+                    onClick={() => handleNotificationClick(notif)}
+                    className="flex-1 text-left cursor-pointer"
+                  >
+                    <p className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
+                      {notif.title}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">{notif.message}</p>
+                    <p className="text-xs text-gray-400 mt-2 font-medium">
+                      {notif.createdAt ? new Date(notif.createdAt).toLocaleString() : 'Just now'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {!notif.read && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-[#7C3AED] hover:bg-[#7C3AED]/10"
+                        onClick={() => handleMarkRead(notif.id)}
+                        title="Mark as read"
+                      >
+                        <FiCheck className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                      onClick={() => handleMarkRead(notif.id)}
-                      title="Mark as read"
+                      className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerDelete(notif.id);
+                      }}
+                      title="Delete"
                     >
-                      <FiCheck className="w-4 h-4" />
+                      <FiTrash2 className="w-4 h-4" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      triggerDelete(notif.id);
-                    }}
-                    title="Delete"
-                  >
-                    <FiTrash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {/* Delete Confirmation Modal */}
-      {confirmDeleteId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl border border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Delete Notification?</h2>
-            <p className="text-gray-600 mb-5 text-sm">
-              Are you sure you want to delete this notification?
-            </p>
-            <div className="flex space-x-3 justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setConfirmDeleteId(null)}
-                className="hover:bg-gray-50 border-gray-300"
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleDelete}
-                className="bg-red-600 text-white hover:bg-red-700 font-medium"
-              >
-                Delete
-              </Button>
+        {/* Delete Confirmation Modal */}
+        {confirmDeleteId && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000] p-4">
+            <div className="glass-card-white p-8 w-full max-w-sm shadow-2xl border border-[rgba(255,255,255,0.2)] scale-in-center">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Delete Alert</h2>
+              <p className="text-gray-600 mb-6 text-sm">
+                This action cannot be undone. Are you sure?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="rounded-xl"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  className="bg-red-500 text-white hover:bg-red-600 rounded-xl"
+                >
+                  Confirm Delete
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 
