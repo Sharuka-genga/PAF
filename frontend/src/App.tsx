@@ -28,7 +28,7 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   
   if (loading) {
     return (
@@ -37,8 +37,13 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
       </div>
     );
   }
-  
-  return user ? children : <Navigate to="/login" replace />;
+
+  // Redirect admin users away from user routes to their own dashboard
+  if (user && isAdmin()) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 interface AdminRouteProps {
@@ -60,8 +65,16 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  return isAdmin() ? children : <Navigate to="/dashboard" replace />;
+  return isAdmin() ? <>{children}</> : <Navigate to="/dashboard" replace />;
 };
+
+// Placeholder for missing components from notifications branch
+const ComingSoon = ({ title }: { title: string }) => (
+  <div className="p-8 text-center">
+    <h2 className="text-2xl font-bold">{title}</h2>
+    <p className="text-gray-500 mt-2">This feature is coming soon.</p>
+  </div>
+);
 
 function App() {
   return (
@@ -90,9 +103,14 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/bookings" element={<AdminRoute><AdminBookingsPage /></AdminRoute>} />
           <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/bookings" element={<AdminRoute><AdminBookingsPage /></AdminRoute>} />
           <Route path="/admin/resources" element={<AdminRoute><AdminResourcesPage /></AdminRoute>} />
+          
+          {/* Added from Notifications branch */}
+          <Route path="/admin/notifications" element={<AdminRoute><Notifications /></AdminRoute>} />
+          <Route path="/admin/tickets" element={<AdminRoute><ComingSoon title="Admin - Tickets" /></AdminRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute><ComingSoon title="Admin Settings" /></AdminRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />

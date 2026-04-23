@@ -64,6 +64,18 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Account deleted successfully", null));
     }
 
+    @PostMapping("/me/profile-image")
+    public ResponseEntity<ApiResponse<User>> uploadProfileImage(@RequestParam("profileImage") org.springframework.web.multipart.MultipartFile file) {
+        User updated = authService.uploadProfileImage(file);
+        return ResponseEntity.ok(ApiResponse.success("Profile image uploaded successfully", updated));
+    }
+
+    @DeleteMapping("/me/profile-image")
+    public ResponseEntity<ApiResponse<User>> removeProfileImage() {
+        User updated = authService.removeProfileImage();
+        return ResponseEntity.ok(ApiResponse.success("Profile image removed successfully", updated));
+    }
+
     @GetMapping("/me/preferences")
     public ResponseEntity<ApiResponse<UserPreferencesResponse>> getUserPreferences() {
         User currentUser = authService.getCurrentUser();

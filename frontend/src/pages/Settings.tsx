@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2 } from 'react-icons/fi';
+import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2, FiCamera, FiUpload } from 'react-icons/fi';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
@@ -15,6 +15,10 @@ const Settings: React.FC = () => {
   const { user, loadUser, isAdmin, isTechnician, deleteAccount } = useAuth();
   const [profileName, setProfileName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -68,6 +72,67 @@ const Settings: React.FC = () => {
   }, [preferences]);
 
   const roleLabel = useMemo(() => (user?.roles || []).join(', ') || 'USER', [user]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (!profileImage) return;
+    
+    try {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append('profileImage', profileImage);
+      
+      await authAPI.uploadProfileImage(formData);
+      await loadUser();
+      toast.success('Profile image updated successfully');
+      setProfileImage(null);
+      setImagePreview('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to upload profile image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    try {
+      setUploadingImage(true);
+      await authAPI.removeProfileImage();
+      await loadUser();
+      toast.success('Profile image removed successfully');
+      setImagePreview('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to remove profile image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,6 +234,84 @@ const Settings: React.FC = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSaveProfile} className="space-y-4">
+                {/* Profile Image Section */}
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                      {imagePreview || user?.profilePicture ? (
+                        <img 
+                          src={imagePreview || (user?.profilePicture?.startsWith('http') ? user.profilePicture : `${window.location.origin}${user?.profilePicture}`)} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold">
+                          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+                    >
+                      <FiCamera className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-gray-900">Profile Picture</h3>
+                    <p className="text-xs text-gray-500">JPG, PNG or GIF. Max size 5MB</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <div className="flex space-x-2 mt-2">
+                      {profileImage && (
+                        <>
+                          <Button
+                            type="button"
+                            onClick={handleImageUpload}
+                            disabled={uploadingImage}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white gap-1"
+                          >
+                            <FiUpload className="w-3 h-3" />
+                            {uploadingImage ? 'Uploading...' : 'Upload'}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setProfileImage(null);
+                              setImagePreview('');
+                              if (fileInputRef.current) fileInputRef.current.value = '';
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-300"
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      )}
+                      {user?.profilePicture && !profileImage && (
+                        <Button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          disabled={uploadingImage}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <Label htmlFor="profileName">Full Name</Label>
                   <Input
@@ -189,7 +332,7 @@ const Settings: React.FC = () => {
                 </div>
                 <Button
                   type="submit"
-                  disabled={savingProfile}
+                  disabled={savingProfile || uploadingImage}
                   className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
                 >
                   <FiSave />

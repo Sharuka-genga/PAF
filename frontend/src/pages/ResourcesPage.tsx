@@ -494,10 +494,12 @@ export default function ResourcesPage() {
 
 /* ── Resource Card ── */
 function ResourceCard({ resource, index, onClick }: { resource: Resource; index: number; onClick: () => void }) {
+  const [imgError, setImgError] = useState(false);
   const tc = T[resource.type];
   const sc = S[resource.status];
   const avail = resource.availabilityWindows?.length > 0 ? Math.min(100, (resource.availabilityWindows.length / 7) * 100) : 0;
   const barColor = avail > 60 ? '#22c55e' : avail > 30 ? '#f59e0b' : '#ef4444';
+  const showImg = resource.imageUrl && !imgError;
 
   const Icon = tc.Icon;
 
@@ -508,10 +510,10 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
       style={{ animationDelay:`${Math.min(index,10)*0.04}s` }}
     >
       {/* Gradient photo area */}
-      <div style={{ height:144, background: resource.imageUrl ? 'transparent' : tc.grad, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+      <div style={{ height:144, background: showImg ? 'transparent' : tc.grad, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
         <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
-          {resource.imageUrl ? (
-            <img src={resource.imageUrl} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt={resource.name} />
+          {showImg ? (
+            <img src={resource.imageUrl!} onError={() => setImgError(true)} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt={resource.name} />
           ) : (
             <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background: tc.grad }}>
               <Icon size={32} color="rgba(255,255,255,0.9)" />
@@ -562,12 +564,14 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
 
 /* ── Detail Drawer ── */
 function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () => void }) {
+  const [imgError, setImgError] = useState(false);
   const tc = T[resource.type];
   const sc = S[resource.status];
   const sorted = [...(resource.availabilityWindows||[])].sort((a,b) =>
     ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'].indexOf(a.dayOfWeek) -
     ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'].indexOf(b.dayOfWeek)
   );
+  const showImg = resource.imageUrl && !imgError;
 
   const Icon = tc.Icon;
 
@@ -583,10 +587,10 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
         onClick={e => e.stopPropagation()}
       >
         {/* Header gradient */}
-        <div style={{ height:160,background:resource.imageUrl ? 'transparent' : tc.grad,position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'0 16px' }}>
-          {resource.imageUrl ? (
+        <div style={{ height:160,background:showImg ? 'transparent' : tc.grad,position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'0 16px' }}>
+          {showImg ? (
             <div style={{ position:'absolute', inset:0 }}>
-              <img src={resource.imageUrl} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              <img src={resource.imageUrl!} onError={() => setImgError(true)} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
               <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }} />
             </div>
           ) : (
@@ -595,7 +599,7 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
           <button onClick={onClose} style={{ position:'absolute',top:10,right:10,width:30,height:30,borderRadius:8,background:'rgba(0,0,0,0.3)',backdropFilter:'blur(4px)',border:'none',color:'white',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',zIndex:10 }}>
             <X size={14} />
           </button>
-          {resource.imageUrl ? (
+          {showImg ? (
             <div style={{ position:'absolute',bottom:12,left:16,zIndex:5,display:'flex',flexDirection:'column',alignItems:'flex-start' }}>
               <p style={{ fontSize:16,fontWeight:700,color:'white',margin:0 }}>{resource.name}</p>
               <p style={{ fontSize:11,color:'white',margin:0,marginTop:2,opacity:0.9 }}>{tc.label}</p>
@@ -820,10 +824,12 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
 
 /* ── Resource List Item ── */
 function ResourceListItem({ resource, index, onClick }: { resource: Resource; index: number; onClick: () => void }) {
+  const [imgError, setImgError] = useState(false);
   const tc = T[resource.type];
   const sc = S[resource.status];
   const avail = resource.availabilityWindows?.length > 0 ? Math.min(100, (resource.availabilityWindows.length / 7) * 100) : 0;
   const barColor = avail > 60 ? '#22c55e' : avail > 30 ? '#f59e0b' : '#ef4444';
+  const showImg = resource.imageUrl && !imgError;
 
   const Icon = tc.Icon;
 
@@ -839,9 +845,9 @@ function ResourceListItem({ resource, index, onClick }: { resource: Resource; in
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor='#a855f7'; (e.currentTarget as HTMLDivElement).style.boxShadow='0 8px 30px rgba(124,58,237,0.12)'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor='#E2E0EC'; (e.currentTarget as HTMLDivElement).style.boxShadow='none'; }}
     >
-      <div style={{ width:60, height:60, borderRadius:8, background: resource.imageUrl ? 'transparent' : tc.grad, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', flexShrink:0 }}>
-        {resource.imageUrl ? (
-          <img src={resource.imageUrl} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt={resource.name} />
+      <div style={{ width:60, height:60, borderRadius:8, background: showImg ? 'transparent' : tc.grad, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', flexShrink:0 }}>
+        {showImg ? (
+          <img src={resource.imageUrl!} onError={() => setImgError(true)} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt={resource.name} />
         ) : (
           <Icon size={24} color="rgba(255,255,255,0.9)" />
         )}

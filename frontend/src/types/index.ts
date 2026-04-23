@@ -6,6 +6,7 @@ export interface User {
   email: string;
   roles: Role[];
   provider?: string;
+  profilePicture?: string;
   emailAlerts?: boolean;
   ticketAlerts?: boolean;
   bookingAlerts?: boolean;
@@ -23,6 +24,7 @@ export interface AuthResponse {
   id: string;
   name: string;
   email: string;
+  profilePicture?: string;
   roles: Role[];
 }
 

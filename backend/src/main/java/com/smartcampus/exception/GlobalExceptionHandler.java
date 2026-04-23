@@ -48,12 +48,5 @@ public class GlobalExceptionHandler {
                 "message", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-    }}  
-
-    
-    
-    
-    
-    
-
-    
+    }
+}
