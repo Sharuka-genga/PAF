@@ -19,11 +19,11 @@ import { Calendar, Clock, Users, FileText, MessageSquare, ArrowLeft } from "luci
 import type { Booking } from "../lib/types";
 
 const RESOURCES = [
-  { id: "101", name: "Main Lecture Hall (LH-01)", status: "AVAILABLE" },
-  { id: "102", name: "Computer Lab (LAB-A)", status: "OUT_OF_SERVICE" },
-  { id: "103", name: "Projector (Asset #PRJ-01)", status: "AVAILABLE" },
-  { id: "104", name: "Meeting Room (MR-05)", status: "UNAVAILABLE" },
-  { id: "105", name: "Faculty Boardroom", status: "AVAILABLE" },
+  { id: "101", name: "Lecture Hall", status: "AVAILABLE" },
+  { id: "102", name: "Laboratory", status: "OUT_OF_SERVICE" },
+  { id: "103", name: "Meeting Room", status: "UNAVAILABLE" },
+  { id: "104", name: "Projector", status: "AVAILABLE" },
+  { id: "105", name: "Camera", status: "AVAILABLE" },
 ];
 
 export default function BookingPage() {
@@ -252,15 +252,27 @@ export default function BookingPage() {
                       <SelectTrigger className={`w-full bg-white h-11 rounded-[10px] border-[#E2E0EC] focus:border-[#7C3AED] focus:ring-[#7C3AED] text-[#1A1730] ${errors.resourceName ? 'border-[#DC2626] focus:ring-[#DC2626]' : ''}`}>
                         <SelectValue placeholder="Choose a resource..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white border border-[#E2E0EC] rounded-[12px] shadow-lg p-1 min-w-[400px]">
                         {RESOURCES.map(r => (
                           <SelectItem 
                             key={r.id} 
                             value={r.name}
                             disabled={r.status === 'OUT_OF_SERVICE' || r.status === 'UNAVAILABLE'}
-                            className="text-[#1A1730]"
+                            className={`rounded-[8px] py-2.5 px-3 my-0.5 cursor-pointer text-sm font-medium
+                              ${r.status === 'OUT_OF_SERVICE' || r.status === 'UNAVAILABLE'
+                                ? 'text-[#9B97B8] opacity-50 cursor-not-allowed'
+                                : 'text-[#1A1730] hover:bg-[#F5F4F8] focus:bg-[#F5F4F8]'
+                              }`}
                           >
-                            {r.name} {r.status === 'OUT_OF_SERVICE' ? '(Out of Service)' : r.status === 'UNAVAILABLE' ? '(Unavailable)' : ''}
+                            <span className="flex items-center justify-between w-full gap-3">
+                              <span>{r.name}</span>
+                              {r.status === 'OUT_OF_SERVICE' && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#DC2626] bg-[#DC2626]/10 px-2 py-0.5 rounded-full shrink-0">Out of Service</span>
+                              )}
+                              {r.status === 'UNAVAILABLE' && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97706] bg-[#D97706]/10 px-2 py-0.5 rounded-full shrink-0">Unavailable</span>
+                              )}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
