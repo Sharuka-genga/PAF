@@ -41,6 +41,9 @@ public class Resource {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column
+    private String imageUrl;
+
     @ElementCollection
     @CollectionTable(
             name = "resource_availability_windows",

@@ -42,10 +42,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
         log.error("An unexpected error occurred in the backend:", ex);
+        ex.printStackTrace();
         Map<String, Object> body = Map.of(
                 "timestamp", Instant.now(),
                 "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "message", "An unexpected error occurred: " + ex.getMessage());
+                "message", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }

@@ -54,7 +54,7 @@ const AdminRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return isAdmin() ? <>{children}</> : <Navigate to="/" replace />;
+return isAdmin?.() ? <>{children}</> : <Navigate to="/dashboard" replace />;
 };
 
 // Simple placeholder for pages not yet built

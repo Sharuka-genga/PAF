@@ -73,6 +73,11 @@ export const resourceAPI = {
   create: (data: any) => api.post<ApiResponse<Resource>>('/resources', data),
   update: (id: string, data: any) => api.put<ApiResponse<Resource>>(`/resources/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}`),
+  uploadImage: (id: string, formData: FormData) => api.post<ApiResponse<Resource>>(`/resources/${id}/image`, formData, {
+    headers: { 'Content-Type': undefined },
+  }),
+  deleteImage: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}/image`),
+  patchStatus: (id: string, status: string) => api.patch<ApiResponse<Resource>>(`/resources/${id}/status`, { status }),
 };
 
 // Booking APIs
@@ -93,7 +98,7 @@ export const ticketAPI = {
   }),
   getMyTickets: () => api.get<ApiResponse<Ticket[]>>('/tickets/my'),
   getById: (id: string) => api.get<ApiResponse<Ticket>>(`/tickets/${id}`),
-  getAll: (params: any) => api.get<ApiResponse<Ticket[]>>('/tickets', { params }),
+  getAll: (params?: any) => api.get<ApiResponse<Ticket[]>>('/tickets', { params }),
   updateStatus: (id: string, data: any) => api.put<ApiResponse<Ticket>>(`/tickets/${id}/status`, data),
   assignTechnician: (id: string, techId: string) => api.patch<ApiResponse<Ticket>>(`/tickets/${id}/assign/${techId}`),
   getAssigned: () => api.get<ApiResponse<Ticket[]>>('/tickets/assigned'),
