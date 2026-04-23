@@ -24,8 +24,16 @@ const AdminDashboard: React.FC = () => {
         ]);
 
         const getValue = (result: any) => {
-          if (result.status === 'fulfilled' && result.value?.data?.data) {
-            return result.value.data.data.length || 0;
+          if (result.status === 'fulfilled' && result.value?.data) {
+            const resData = result.value.data;
+            // If it's wrapped in ApiResponse { success, data, ... }
+            if (resData.data && Array.isArray(resData.data)) {
+              return resData.data.length;
+            }
+            // If it's a direct array
+            if (Array.isArray(resData)) {
+              return resData.length;
+            }
           }
           return 0;
         };
@@ -115,25 +123,25 @@ const AdminDashboard: React.FC = () => {
         <Button asChild size="lg" className="h-auto py-4 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
           <Link to="/admin/users">
             <FiUsers className="w-5 h-5 shrink-0" />
-            <span className="font-semibold text-base">Manage Users</span>
+            <span className="font-semibold text-base">Manage Users ({stats.users})</span>
           </Link>
         </Button>
         <Button asChild size="lg" className="h-auto py-4 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
           <Link to="/admin/bookings">
             <FiCalendar className="w-5 h-5 shrink-0" />
-            <span className="font-semibold text-base">Bookings</span>
+            <span className="font-semibold text-base">Bookings ({stats.bookings})</span>
           </Link>
         </Button>
         <Button asChild size="lg" className="h-auto py-4 bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
           <Link to="/admin/tickets">
             <FiAlertCircle className="w-5 h-5 shrink-0" />
-            <span className="font-semibold text-base">Tickets</span>
+            <span className="font-semibold text-base">Tickets ({stats.tickets})</span>
           </Link>
         </Button>
         <Button asChild size="lg" className="h-auto py-4 bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all rounded-xl justify-start space-x-3">
           <Link to="/admin/resources">
             <FiGrid className="w-5 h-5 shrink-0" />
-            <span className="font-semibold text-base">Resources</span>
+            <span className="font-semibold text-base">Resources ({stats.resources})</span>
           </Link>
         </Button>
       </div>
