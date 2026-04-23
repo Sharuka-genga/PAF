@@ -1,12 +1,24 @@
 import axios from 'axios';
-import type { AxiosResponse } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import type { 
+  ApiResponse, 
+  AuthResponse, 
+  User, 
+  Booking, 
+  Ticket, 
+  Notification, 
+  UserPreferences,
+  Role
+} from '../types';
+import type { Resource, ResourceRequest, ResourceStatus } from '../types/resource';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : '/api';
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000, // 10 seconds timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,9 +26,9 @@ const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -39,86 +51,92 @@ api.interceptors.response.use(
 
 // Auth APIs
 export const authAPI = {
-  login: (data: object): Promise<AxiosResponse> => api.post('/auth/login', data),
-  register: (data: object): Promise<AxiosResponse> => api.post('/auth/register', data),
-  getMe: (): Promise<AxiosResponse> => api.get('/auth/me'),
-  updateMe: (data: object): Promise<AxiosResponse> => api.put('/auth/me', data),
-  changePassword: (data: object): Promise<AxiosResponse> => api.patch('/auth/me/password', data),
-  deleteMe: (): Promise<AxiosResponse> => api.delete('/auth/me'),
-  getPreferences: (): Promise<AxiosResponse> => api.get('/auth/me/preferences'),
-  updatePreferences: (data: object): Promise<AxiosResponse> => api.patch('/auth/me/preferences', data),
+  login: (data: any) => api.post<ApiResponse<AuthResponse>>('/auth/login', data),
+  register: (data: any) => api.post<ApiResponse<AuthResponse>>('/auth/register', data),
+  getMe: () => api.get<ApiResponse<User>>('/auth/me'),
+  updateMe: (data: any) => api.put<ApiResponse<User>>('/auth/me', data),
+  changePassword: (data: any) => api.patch<ApiResponse<void>>('/auth/me/password', data),
+  deleteMe: () => api.delete<ApiResponse<void>>('/auth/me'),
+  getPreferences: () => api.get<ApiResponse<UserPreferences>>('/auth/me/preferences'),
+  updatePreferences: (data: any) => api.patch<ApiResponse<UserPreferences>>('/auth/me/preferences', data),
+  uploadProfileImage: (formData: FormData) => api.post<ApiResponse<User>>('/auth/me/profile-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  removeProfileImage: () => api.delete<ApiResponse<User>>('/auth/me/profile-image'),
 };
 
 // Resource APIs
 export const resourceAPI = {
-  getAll: (): Promise<AxiosResponse> => api.get('/resources'),
-  getById: (id: string): Promise<AxiosResponse> => api.get(`/resources/${id}`),
-  search: (params: Record<string, string | number>): Promise<AxiosResponse> => api.get('/resources/search', { params }),
-  create: (data: object | FormData): Promise<AxiosResponse> => api.post('/resources', data),
-  update: (id: string, data: object | FormData): Promise<AxiosResponse> => api.put(`/resources/${id}`, data),
-  delete: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}`),
-  uploadImage: (id: string, formData: FormData): Promise<AxiosResponse> =>
-    api.post(`/resources/${id}/image`, formData, {
-      headers: { 'Content-Type': undefined },
-    }),
-  deleteImage: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}/image`),
-  patchStatus: (id: string, status: string): Promise<AxiosResponse> => api.patch(`/resources/${id}/status`, { status }),
+  getAll: () => api.get<ApiResponse<Resource[]>>('/resources'),
+  getById: (id: string) => api.get<ApiResponse<Resource>>(`/resources/${id}`),
+  search: (params: any) => api.get<ApiResponse<Resource[]>>('/resources/search', { params }),
+  create: (data: any) => api.post<ApiResponse<Resource>>('/resources', data),
+  update: (id: string, data: any) => api.put<ApiResponse<Resource>>(`/resources/${id}`, data),
+  delete: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}`),
+  uploadImage: (id: string, formData: FormData) => api.post<ApiResponse<Resource>>(`/resources/${id}/image`, formData, {
+    headers: { 'Content-Type': undefined },
+  }),
+  deleteImage: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}/image`),
+  patchStatus: (id: string, status: string) => api.patch<ApiResponse<Resource>>(`/resources/${id}/status`, { status }),
 };
 
 // Booking APIs
 export const bookingAPI = {
-  create: (data: object): Promise<AxiosResponse> => api.post('/bookings', data),
-  getMyBookings: (): Promise<AxiosResponse> => api.get('/bookings/my'),
-  getById: (id: string): Promise<AxiosResponse> => api.get(`/bookings/${id}`),
-  getAll: (params?: object): Promise<AxiosResponse> => api.get('/bookings', { params }),
-  review: (id: string, data: object): Promise<AxiosResponse> => api.put(`/bookings/${id}/review`, data),
-  cancel: (id: string): Promise<AxiosResponse> => api.patch(`/bookings/${id}/cancel`),
-  getByResource: (resourceId: string): Promise<AxiosResponse> => api.get(`/bookings/resource/${resourceId}`),
+  create: (data: any) => api.post<ApiResponse<Booking>>('/bookings', data),
+  getMyBookings: () => api.get<ApiResponse<Booking[]>>('/bookings/my'),
+  getById: (id: string) => api.get<ApiResponse<Booking>>(`/bookings/${id}`),
+  getAll: (params: any) => api.get<ApiResponse<Booking[]>>('/bookings', { params }),
+  review: (id: string, data: any) => api.put<ApiResponse<Booking>>(`/bookings/${id}/review`, data),
+  cancel: (id: string) => api.patch<ApiResponse<void>>(`/bookings/${id}/cancel`),
+  getByResource: (resourceId: string) => api.get<ApiResponse<Booking[]>>(`/bookings/resource/${resourceId}`),
 };
 
 // Ticket APIs
 export const ticketAPI = {
-  create: (formData: FormData): Promise<AxiosResponse> => api.post('/tickets', formData),
-  getMyTickets: (): Promise<AxiosResponse> => api.get('/tickets/my'),
-  getById: (id: string): Promise<AxiosResponse> => api.get(`/tickets/${id}`),
-  getAll: (params?: object): Promise<AxiosResponse> => api.get('/tickets', { params }),
-  updateStatus: (id: string, data: object): Promise<AxiosResponse> => api.put(`/tickets/${id}/status`, data),
-  assignTechnician: (id: string, techId: string): Promise<AxiosResponse> => api.patch(`/tickets/${id}/assign/${techId}`),
-  getAssigned: (): Promise<AxiosResponse> => api.get('/tickets/assigned'),
-  delete: (id: string): Promise<AxiosResponse> => api.delete(`/tickets/${id}`),
+  create: (formData: FormData) => api.post<ApiResponse<Ticket>>('/tickets', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  getMyTickets: () => api.get<ApiResponse<Ticket[]>>('/tickets/my'),
+  getById: (id: string) => api.get<ApiResponse<Ticket>>(`/tickets/${id}`),
+  getAll: (params?: any) => api.get<ApiResponse<Ticket[]>>('/tickets', { params }),
+  updateStatus: (id: string, data: any) => api.put<ApiResponse<Ticket>>(`/tickets/${id}/status`, data),
+  assignTechnician: (id: string, techId: string) => api.patch<ApiResponse<Ticket>>(`/tickets/${id}/assign/${techId}`),
+  getAssigned: () => api.get<ApiResponse<Ticket[]>>('/tickets/assigned'),
+  delete: (id: string) => api.delete<ApiResponse<void>>(`/tickets/${id}`),
 };
 
 // Comment APIs
 export const commentAPI = {
-  getByTicket: (ticketId: string): Promise<AxiosResponse> => api.get(`/tickets/${ticketId}/comments`),
-  add: (ticketId: string, data: object): Promise<AxiosResponse> => api.post(`/tickets/${ticketId}/comments`, data),
-  update: (ticketId: string, commentId: string, data: object): Promise<AxiosResponse> => api.put(`/tickets/${ticketId}/comments/${commentId}`, data),
-  delete: (ticketId: string, commentId: string): Promise<AxiosResponse> => api.delete(`/tickets/${ticketId}/comments/${commentId}`),
+  getByTicket: (ticketId: string) => api.get<ApiResponse<any[]>>(`/tickets/${ticketId}/comments`),
+  add: (ticketId: string, data: any) => api.post<ApiResponse<any>>(`/tickets/${ticketId}/comments`, data),
+  update: (ticketId: string, commentId: string, data: any) => api.put<ApiResponse<any>>(`/tickets/${ticketId}/comments/${commentId}`, data),
+  delete: (ticketId: string, commentId: string) => api.delete<ApiResponse<void>>(`/tickets/${ticketId}/comments/${commentId}`),
 };
 
 // Notification APIs
 export const notificationAPI = {
-  getAll: (): Promise<AxiosResponse> => api.get('/notifications'),
-  getUnread: (): Promise<AxiosResponse> => api.get('/notifications/unread'),
-  getUnreadCount: (): Promise<AxiosResponse> => api.get('/notifications/unread/count'),
-  markAsRead: (id: string): Promise<AxiosResponse> => api.patch(`/notifications/${id}/read`),
-  markAllAsRead: (): Promise<AxiosResponse> => api.patch('/notifications/read-all'),
-  delete: (id: string): Promise<AxiosResponse> => api.delete(`/notifications/${id}`),
+  getAll: () => api.get<ApiResponse<Notification[]>>('/notifications'),
+  getUnread: () => api.get<ApiResponse<Notification[]>>('/notifications/unread'),
+  getUnreadCount: () => api.get<ApiResponse<{ count: number }>>('/notifications/unread/count'),
+  markAsRead: (id: string) => api.patch<ApiResponse<void>>(`/notifications/${id}/read`),
+  markAllAsRead: () => api.patch<ApiResponse<void>>('/notifications/read-all'),
+  delete: (id: string) => api.delete<ApiResponse<void>>(`/notifications/${id}`),
 };
 
 // Admin APIs
 export const adminAPI = {
-  getAllUsers: (): Promise<AxiosResponse> => api.get('/admin/users'),
-  getUsersByRole: (role: string): Promise<AxiosResponse> => api.get(`/admin/users/role/${role}`),
-  updateUserRoles: (userId: string, roles: string[]): Promise<AxiosResponse> => api.put(`/admin/users/${userId}/roles`, roles),
-  deleteUser: (userId: string): Promise<AxiosResponse> => api.delete(`/admin/users/${userId}`),
+  getAllUsers: () => api.get<ApiResponse<User[]>>('/admin/users'),
+  getUsersByRole: (role: Role) => api.get<ApiResponse<User[]>>(`/admin/users/role/${role}`),
+  updateUser: (userId: string, data: any) => api.put<ApiResponse<User>>(`/admin/users/${userId}`, data),
+  updateUserRoles: (userId: string, roles: Role[]) => api.put<ApiResponse<User>>(`/admin/users/${userId}/roles`, roles),
+  deleteUser: (userId: string) => api.delete<ApiResponse<void>>(`/admin/users/${userId}`),
 };
 
 // Chat APIs
 export const chatAPI = {
-  sendMessage: (message: string): Promise<AxiosResponse> => api.post('/chat', { message }),
-  createBooking: (data: object): Promise<AxiosResponse> => api.post('/chat/book', data),
-  createTicket: (data: object): Promise<AxiosResponse> => api.post('/chat/ticket', data),
+  sendMessage: (message: string) => api.post<ApiResponse<any>>('/chat', { message }),
+  createBooking: (data: any) => api.post<ApiResponse<any>>('/chat/book', data),
+  createTicket: (data: any) => api.post<ApiResponse<any>>('/chat/ticket', data),
 };
 
 export default api;

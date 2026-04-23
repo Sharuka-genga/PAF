@@ -12,6 +12,7 @@ import com.smartcampus.model.User;
 import com.smartcampus.service.AuthService;
 import com.smartcampus.service.NotificationService;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,10 +64,22 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Account deleted successfully", null));
     }
 
+    @PostMapping("/me/profile-image")
+    public ResponseEntity<ApiResponse<User>> uploadProfileImage(@RequestParam("profileImage") org.springframework.web.multipart.MultipartFile file) {
+        User updated = authService.uploadProfileImage(file);
+        return ResponseEntity.ok(ApiResponse.success("Profile image uploaded successfully", updated));
+    }
+
+    @DeleteMapping("/me/profile-image")
+    public ResponseEntity<ApiResponse<User>> removeProfileImage() {
+        User updated = authService.removeProfileImage();
+        return ResponseEntity.ok(ApiResponse.success("Profile image removed successfully", updated));
+    }
+
     @GetMapping("/me/preferences")
     public ResponseEntity<ApiResponse<UserPreferencesResponse>> getUserPreferences() {
         User currentUser = authService.getCurrentUser();
-        User userWithPrefs = notificationService.getUserPreferences(currentUser.getId());
+        User userWithPrefs = notificationService.getUserPreferences(Objects.requireNonNull(currentUser.getId()));
         UserPreferencesResponse response = UserPreferencesResponse.builder()
                 .userId(userWithPrefs.getId())
                 .emailAlerts(userWithPrefs.isEmailAlerts())
@@ -81,7 +94,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserPreferencesResponse>> updateUserPreferences(@Valid @RequestBody UpdatePreferencesRequest request) {
         User currentUser = authService.getCurrentUser();
         User updated = notificationService.updateUserPreferences(
-                currentUser.getId(),
+                Objects.requireNonNull(currentUser.getId()),
                 request.getEmailAlerts() != null ? request.getEmailAlerts() : currentUser.isEmailAlerts(),
                 request.getTicketAlerts() != null ? request.getTicketAlerts() : currentUser.isTicketAlerts(),
                 request.getBookingAlerts() != null ? request.getBookingAlerts() : currentUser.isBookingAlerts(),

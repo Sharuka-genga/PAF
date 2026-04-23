@@ -9,9 +9,9 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
 import TicketsPage from './pages/TicketsPage';
+import ResourcesPage from './pages/ResourcesPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
-import ResourcesPage from './pages/ResourcesPage';
 import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,12 +20,8 @@ interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
-interface AdminRouteProps {
-  children: React.ReactNode;
-}
-
-const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { user, loading } = useAuth();
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+  const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -35,10 +31,15 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
     );
   }
 
-  return user ? children : <Navigate to="/login" replace />;
+  // Redirect admin users away from user routes
+  if (user && isAdmin()) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-const AdminRoute = ({ children }: AdminRouteProps) => {
+const AdminRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
@@ -53,8 +54,19 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  return isAdmin?.() ? children : <Navigate to="/dashboard" replace />;
+return isAdmin?.() ? <>{children}</> : <Navigate to="/dashboard" replace />;
 };
+
+// Simple placeholder for pages not yet built
+const ComingSoon: React.FC<{ title: string }> = ({ title }) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">{title}</h1>
+      <p className="text-gray-500">This page is coming soon.</p>
+      <a href="/" className="mt-4 inline-block text-blue-600 hover:underline">← Back to Dashboard</a>
+    </div>
+  </div>
+);
 
 function App() {
   return (
@@ -104,12 +116,28 @@ function App() {
             }
           />
           <Route
+            path="/bookings"
+            element={<PrivateRoute><ComingSoon title="My Bookings" /></PrivateRoute>}
+          />
+          <Route
+            path="/bookings/create"
+            element={<PrivateRoute><ComingSoon title="New Booking" /></PrivateRoute>}
+          />
+          <Route
             path="/tickets"
             element={
               <PrivateRoute>
                 <TicketsPage />
               </PrivateRoute>
             }
+          />
+          <Route
+            path="/tickets/create"
+            element={<PrivateRoute><ComingSoon title="Report Issue" /></PrivateRoute>}
+          />
+          <Route
+            path="/tickets/:id"
+            element={<PrivateRoute><ComingSoon title="Ticket Details" /></PrivateRoute>}
           />
           <Route
             path="/resources"
@@ -138,10 +166,34 @@ function App() {
             }
           />
           <Route
+            path="/admin/bookings"
+            element={<AdminRoute><ComingSoon title="Admin - Bookings" /></AdminRoute>}
+          />
+          <Route
+            path="/admin/tickets"
+            element={<AdminRoute><ComingSoon title="Admin - Tickets" /></AdminRoute>}
+          />
+          <Route
             path="/admin/resources"
             element={
               <AdminRoute>
                 <AdminResourcesPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/notifications"
+            element={
+              <AdminRoute>
+                <Notifications />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminRoute>
+                <ComingSoon title="Admin Settings" />
               </AdminRoute>
             }
           />

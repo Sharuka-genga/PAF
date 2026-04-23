@@ -21,7 +21,6 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
-    @SuppressWarnings("null")
     public Notification createNotification(@NonNull String userId, String title, String message,
                                             Notification.NotificationType type, String referenceId) {
         // Check user preferences before creating notification
@@ -72,7 +71,6 @@ public class NotificationService {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
 
-    @SuppressWarnings("null")
     public Notification markAsRead(@NonNull String notificationId, @NonNull User currentUser) {
         Notification notification = getOwnedNotification(notificationId, currentUser);
         notification.setRead(true);

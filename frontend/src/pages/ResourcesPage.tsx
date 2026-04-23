@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 import type { Resource, ResourceType, ResourceStatus, DayOfWeek } from '../types/resource';
 import { resourceAPI } from '../services/api';
-import { BookOpen, Cpu, MessageSquare, Monitor, Camera, LayoutGrid, Search, X, MapPin, Clock, Users, ChevronRight, Layers, CheckCircle2, Settings, AlertCircle, ChevronDown } from 'lucide-react';
+import { BookOpen, Cpu, MessageSquare, Monitor, Camera, LayoutGrid, Search, X, MapPin, Clock, Users, ChevronRight, Layers, CheckCircle2, Settings, AlertCircle, ChevronDown, Filter } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-toastify';
+import UserLayout from '../components/layouts/UserLayout';
+import PremiumTopbar from '../components/ui/PremiumTopbar';
 import FloorMap from '../components/FloorMap';
 
 type IconComp = LucideIcon;
@@ -97,6 +99,7 @@ export default function ResourcesPage() {
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
   const [typeFilter, setTypeFilter]     = useState<ResourceType | ''>('');
+  const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ResourceStatus | ''>('');
   const [dayFilter, setDayFilter]       = useState<DayOfWeek | ''>('');
   const [minCapacity, setMinCapacity]   = useState<number | ''>('');
@@ -105,8 +108,6 @@ export default function ResourcesPage() {
   const [view, setView]                 = useState<'Grid'|'List'|'Map'>('Grid');
   const [sortBy, setSortBy]             = useState<'name' | 'capacity' | 'availability' | 'status'>('name');
   const [sortOrder, setSortOrder]       = useState<'asc' | 'desc'>('asc');
-  const [filterOpen, setFilterOpen]     = useState(false);
-  const [sortOpen, setSortOpen]         = useState(false);
 
   useEffect(() => {
     resourceAPI.getAll()
@@ -165,129 +166,80 @@ export default function ResourcesPage() {
   };
 
   const maxCap = resources.length > 0 ? Math.max(...resources.map(r => r.capacity || 0)) : 100;
-
+  const activeFilterCount = [typeFilter, statusFilter, dayFilter, minCapacity !== '' ? 'cap' : ''].filter(Boolean).length;
   const isAdminUser = user?.roles?.includes('ADMIN');
 
-  const activeFilterCount = [typeFilter, statusFilter, dayFilter, minCapacity !== '' ? 'cap' : ''].filter(Boolean).length;
-
-  const SORT_OPTIONS: { value: string; label: string }[] = [
-    { value: 'name-asc',        label: 'Name A–Z' },
-    { value: 'name-desc',       label: 'Name Z–A' },
-    { value: 'capacity-desc',   label: 'Capacity (High–Low)' },
-    { value: 'capacity-asc',    label: 'Capacity (Low–High)' },
-    { value: 'availability-desc', label: 'Availability %' },
-    { value: 'status-asc',      label: 'Status' },
-  ];
-  const currentSortLabel = SORT_OPTIONS.find(o => o.value === `${sortBy}-${sortOrder}`)?.label ?? 'Name A–Z';
-
   return (
-    <div style={{ display:'flex', minHeight:'100vh', background:'#F5F4F8', fontFamily:"'DM Sans',sans-serif" }}>
-      {/* Main area */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0 }}>
-
-        {/* Topbar */}
-        <div className="bg-white/80 backdrop-blur-lg border-b border-gray-100 h-20 flex items-center justify-between px-8 sticky top-0 z-30 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.02)] transition-all">
-          {/* Left side: title */}
-          <div>
-            <h1 className="text-2xl font-black text-[#7C3AED] tracking-tight">Facilities &amp; Assets</h1>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Campus Operations Hub</p>
+    <UserLayout>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0, height: '100vh', overflow: 'hidden' }}>
+        {/* Main Toolbar */}
+        <div className="bg-white border-b border-gray-100 px-8 h-20 flex items-center justify-between sticky top-0 z-30 shadow-sm transition-all">
+          {/* Left: Title & Subtitle */}
+          <div className="flex-shrink-0 mr-8">
+            <h1 className="text-2xl font-black text-[#7C3AED] tracking-tight leading-none">Facilities & Assets</h1>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Campus Operations Hub</p>
           </div>
 
-          {/* Right side controls */}
-          <div className="flex items-center gap-4">
-            {/* Search */}
+          {/* Middle: Local Search */}
+          <div className="flex-1 max-w-md mr-6">
             <div className="relative group">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#7C3AED] transition-all duration-300" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#7C3AED] transition-colors" />
               <input
-                value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Find resources..."
-                className="h-11 pl-11 pr-10 border-2 border-transparent bg-gray-50/50 rounded-2xl text-[13px] font-semibold text-gray-900 focus:bg-white outline-none focus:border-[#7C3AED]/20 w-64 transition-all duration-300 placeholder:text-gray-400"
+                type="text"
+                placeholder="Search resources..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-11 pl-11 pr-4 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-semibold text-gray-900 focus:bg-white focus:border-[#7C3AED]/10 outline-none transition-all duration-300 placeholder:text-gray-400"
               />
-              {search && (
-                <button onClick={() => setSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors">
-                  <X size={16} />
-                </button>
-              )}
             </div>
+          </div>
 
-            <div className="h-8 w-[1px] bg-gray-100 mx-1" />
-
-            {/* Filter button */}
+          {/* Right: Actions & Controls */}
+          <div className="flex items-center gap-4">
             <button
-              onClick={() => setFilterOpen(p => !p)}
-              className={`flex items-center gap-2 h-11 px-5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 relative active:scale-95 ${
-                activeFilterCount > 0 
-                  ? 'bg-[#7C3AED] text-white shadow-lg shadow-purple-200' 
-                  : 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50 hover:text-[#7C3AED]'
+              onClick={() => setShowFilters(!showFilters)}
+              className={`h-11 px-5 rounded-2xl flex items-center gap-2 text-xs font-black tracking-widest transition-all ${
+                showFilters 
+                  ? 'bg-[#7C3AED] text-white shadow-glow-purple' 
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }`}
             >
-              <LayoutGrid size={16} />
-              Filter 
-              {activeFilterCount > 0 && (
-                <span className="bg-white text-[#7C3AED] w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black ml-1 shadow-sm animate-in zoom-in">
-                  {activeFilterCount}
-                </span>
-              )}
+              <Filter size={16} />
+              <span>{showFilters ? 'HIDE FILTERS' : 'FILTER'}</span>
             </button>
 
-            {/* Sort button + dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setSortOpen(p => !p)}
-                className="flex items-center gap-2 h-11 px-5 bg-white border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-wider text-gray-500 hover:bg-gray-50 hover:text-[#7C3AED] transition-all duration-300 active:scale-95"
+            <div className="h-11 px-4 bg-gray-50 rounded-2xl flex items-center gap-3">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sort:</span>
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                    const [by, ord] = e.target.value.split('-');
+                    setSortBy(by as any);
+                    setSortOrder(ord as any);
+                }}
+                className="bg-transparent border-none text-[11px] font-bold text-gray-700 outline-none cursor-pointer uppercase tracking-wider"
               >
-                <ChevronDown size={16} className={`transition-transform duration-300 ${sortOpen ? 'rotate-180' : ''}`} />
-                Sort: <span className="text-gray-900 lowercase font-medium ml-0.5">{currentSortLabel}</span>
-              </button>
-              {sortOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
-                  <div className="absolute top-[calc(100%+8px)] right-0 bg-white border border-[#E2E0EC] rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] z-50 w-52 overflow-hidden py-1">
-                    {SORT_OPTIONS.map(opt => {
-                      const active = opt.value === `${sortBy}-${sortOrder}`;
-                      return (
-                        <div
-                          key={opt.value}
-                          onClick={() => {
-                            const [by, ord] = opt.value.split('-');
-                            setSortBy(by as any);
-                            setSortOrder(ord as any);
-                            setSortOpen(false);
-                          }}
-                          className={`px-4 py-2.5 text-[13px] cursor-pointer flex items-center gap-3 transition-colors ${
-                            active ? 'bg-[#FAF8FF] text-[#7C3AED] font-bold' : 'text-[#5A5680] font-medium hover:bg-[#F5F4F8] hover:text-[#1A1730]'
-                          }`}
-                        >
-                          <span className="w-3 shrink-0">{active ? '✓' : ''}</span>
-                          {opt.label}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+                <option value="capacity-desc">Capacity High-Low</option>
+              </select>
             </div>
 
-            <div className="w-px h-6 bg-[#E2E0EC] mx-1" />
+            <div className="flex items-center gap-2 mr-2">
+              <span className="text-[11px] font-black text-[#7C3AED] whitespace-nowrap">
+                {sortedDisplayed.length} RESOURCES
+              </span>
+            </div>
 
-            {/* Resource count */}
-            <span className="text-[13px] font-medium text-[#9B97B8] min-w-[70px]">
-              {loading ? '…' : `${sortedDisplayed.length} resources`}
-            </span>
-
-            {/* View toggle */}
-            <div className="flex bg-[#F5F4F8] border border-[#E2E0EC] rounded-[10px] p-[3px] gap-1 ml-1">
-              {(['Grid','List','Map'] as const).map(v => (
-                <button 
-                  key={v} 
-                  onClick={() => setView(v)} 
-                  className={`px-3.5 py-1 text-[12px] font-bold rounded-[7px] transition-all ${
-                    v === view 
-                      ? 'bg-white text-[#7C3AED] shadow-[0_1px_4px_rgba(0,0,0,0.06)]' 
-                      : 'text-[#9B97B8] hover:text-[#5A5680]'
-                  }`}
+            <div className="flex bg-gray-100 p-1 rounded-xl">
+              {(['Grid', 'List', 'Map'] as const).map(v => (
+                <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`p-2 rounded-lg transition-all ${view === v ? 'bg-white text-[#7C3AED] shadow-sm' : 'text-gray-400'}`}
+                    title={v}
                 >
-                  {v}
+                    {v === 'Grid' ? <LayoutGrid size={14} /> : v === 'List' ? <Layers size={14} /> : <MapPin size={14} />}
                 </button>
               ))}
             </div>
@@ -295,115 +247,110 @@ export default function ResourcesPage() {
             {isAdminUser && (
               <button 
                 onClick={() => navigate('/admin/resources')} 
-                className="ml-2 flex items-center gap-2 h-9 px-4 bg-[#7C3AED] text-white rounded-[10px] text-[13px] font-bold shadow-[0_4px_14px_rgba(124,58,237,0.25)] hover:bg-[#6D28D9] hover:-translate-y-[1px] transition-all"
+                className="h-11 w-11 flex items-center justify-center bg-[#7C3AED] text-white rounded-2xl shadow-glow-purple hover:scale-105 transition-all"
+                title="Add Resource"
               >
-                + Add
+                <LayoutGrid size={18} />
               </button>
             )}
           </div>
         </div>
 
-        {/* Content area (flex row: filter sidebar + main) */}
-        <div style={{ flex:1, position:'relative', display:'flex', minWidth:0 }}>
+        {/* Content area */}
+        <div style={{ flex:1, position:'relative', display:'flex', minWidth:0, overflow:'hidden' }}>
 
-          {/* Filter backdrop */}
-          {filterOpen && (
-            <div
-              style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.2)',zIndex:40 }}
-              onClick={() => setFilterOpen(false)}
-            />
-          )}
-
-          {/* Slide-in filter sidebar */}
+          {/* Filter Sidebar */}
           <div style={{
-            position:'fixed', top:56, bottom:0, left:0,
-            width:280, background:'white', borderRight:'1px solid #E2E0EC',
-            zIndex:50, overflowY:'auto', padding:'20px 16px',
-            transform: filterOpen ? 'translateX(0)' : 'translateX(-100%)',
-            transition:'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
-            boxShadow: filterOpen ? '4px 0 24px rgba(0,0,0,0.08)' : 'none',
-          }}>
-            {/* Sidebar header */}
-            <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20 }}>
-              <p style={{ fontSize:15,fontWeight:600,color:'#1A1730',margin:0 }}>Filters</p>
-              <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-                {activeFilterCount > 0 && (
-                  <button
-                    onClick={() => { setTypeFilter(''); setStatusFilter(''); setDayFilter(''); setMinCapacity(''); }}
-                    style={{ fontSize:11,color:'#7C3AED',background:'none',border:'none',cursor:'pointer',fontWeight:500 }}
-                  >
-                    Clear all
-                  </button>
-                )}
-                <button onClick={() => setFilterOpen(false)} style={{ background:'none',border:'none',cursor:'pointer',color:'#9B97B8',display:'flex',alignItems:'center',padding:4 }}>
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
-
-            {/* Type */}
-            <p style={{ fontSize:10,color:'#9B97B8',margin:'0 0 8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Type</p>
-            <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:18 }}>
-              <Chip active={typeFilter===''} onClick={()=>setTypeFilter('')}>All</Chip>
-              {ALL_TYPES.map(t => <Chip key={t} active={typeFilter===t} onClick={()=>setTypeFilter(typeFilter===t?'':t)}>{T[t].label}</Chip>)}
-            </div>
-            <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
-
-            {/* Status */}
-            <p style={{ fontSize:10,color:'#9B97B8',margin:'0 0 8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Status</p>
-            <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:18 }}>
-              <Chip active={statusFilter===''} onClick={()=>setStatusFilter('')}>All</Chip>
-              {ALL_ST.map(s => <Chip key={s} active={statusFilter===s} onClick={()=>setStatusFilter(statusFilter===s?'':s)}>{S[s].label}</Chip>)}
-            </div>
-            <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
-
-            {/* Day Available */}
-            <p style={{ fontSize:10,color:'#9B97B8',margin:'0 0 8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Day Available</p>
-            <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:18 }}>
-              <Chip active={dayFilter===''} onClick={()=>setDayFilter('')}>Any</Chip>
-              {ALL_DAYS.map(d => <Chip key={d} active={dayFilter===d} onClick={()=>setDayFilter(dayFilter===d?'':d)}>{DAY_S[d]}</Chip>)}
-            </div>
-            <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
-
-            {/* Min Capacity */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-              <p style={{ fontSize:10,color:'#9B97B8',margin:0,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Min Capacity</p>
-              <span style={{ fontSize:12, fontWeight:700, color:'#7C3AED' }}>{minCapacity === '' ? 0 : minCapacity}+</span>
-            </div>
-            <div style={{ marginBottom:18 }}>
-              <input 
-                type="range"
-                min="0"
-                max={maxCap}
-                step="1"
-                value={minCapacity === '' ? 0 : minCapacity}
-                onChange={(e) => setMinCapacity(e.target.value === '0' ? '' : parseInt(e.target.value))}
-                style={{ 
-                  width:'100%', accentColor:'#7C3AED', cursor:'pointer'
-                }}
-              />
-              <p style={{ fontSize:10, color:'#9B97B8', marginTop:6 }}>Only show resources that can accommodate at least this many people.</p>
-            </div>
-            <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
-
-            {/* Quick stats */}
-            <div style={{ background:'#F5F4F8',borderRadius:12,padding:14 }}>
-              <p style={{ fontSize:10,fontWeight:600,color:'#5A5680',margin:'0 0 10px',textTransform:'uppercase',letterSpacing:'0.08em' }}>Quick Stats</p>
-              {[
-                { label:'Available now',  count:counts.active, color:'#15803d' },
-                { label:'Booked today',   count:0,             color:'#b45309' },
-                { label:'Out of service', count:counts.oos,    color:'#dc2626' },
-              ].map(q => (
-                <div key={q.label} style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6 }}>
-                  <span style={{ fontSize:12,color:'#5A5680' }}>{q.label}</span>
-                  <span style={{ fontSize:13,fontWeight:800,color:q.color,fontFamily:'monospace' }}>{q.count}</span>
+              width: showFilters ? '280px' : '0',
+              opacity: showFilters ? 1 : 0,
+              visibility: showFilters ? 'visible' : 'hidden',
+              background: '#fff',
+              borderRight: '1px solid #eee',
+              overflowY: 'auto',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              flexShrink: 0
+            }}>
+            <div style={{ padding:'20px 16px' }}>
+                {/* Sidebar header */}
+                <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20 }}>
+                    <p style={{ fontSize:15,fontWeight:600,color:'#1A1730',margin:0 }}>Filters</p>
+                    <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+                        {activeFilterCount > 0 && (
+                            <button
+                                onClick={() => { setTypeFilter(''); setStatusFilter(''); setDayFilter(''); setMinCapacity(''); }}
+                                style={{ fontSize:11,color:'#7C3AED',background:'none',border:'none',cursor:'pointer',fontWeight:500 }}
+                            >
+                                Clear all
+                            </button>
+                        )}
+                        <button onClick={() => setShowFilters(false)} style={{ background:'none',border:'none',cursor:'pointer',color:'#9B97B8',display:'flex',alignItems:'center',padding:4 }}>
+                            <X size={16} />
+                        </button>
+                    </div>
                 </div>
-              ))}
+
+                <p style={{ fontSize:10,color:'#9B97B8',margin:'0 0 8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Type</p>
+                <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:18 }}>
+                    <Chip active={typeFilter===''} onClick={()=>setTypeFilter('')}>All</Chip>
+                    {ALL_TYPES.map(t => <Chip key={t} active={typeFilter===t} onClick={()=>setTypeFilter(typeFilter===t?'':t)}>{T[t].label}</Chip>)}
+                </div>
+                
+                <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
+
+                <p style={{ fontSize:10,color:'#9B97B8',margin:'0 0 8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Status</p>
+                <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:18 }}>
+                    <Chip active={statusFilter===''} onClick={()=>setStatusFilter('')}>All</Chip>
+                    {ALL_ST.map(s => <Chip key={s} active={statusFilter===s} onClick={()=>setStatusFilter(statusFilter===s?'':s)}>{S[s].label}</Chip>)}
+                </div>
+
+                <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
+
+                <p style={{ fontSize:10,color:'#9B97B8',margin:'0 0 8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Day Available</p>
+                <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:18 }}>
+                    <Chip active={dayFilter===''} onClick={()=>setDayFilter('')}>Any</Chip>
+                    {ALL_DAYS.map(d => <Chip key={d} active={dayFilter===d} onClick={()=>setDayFilter(dayFilter===d?'':d)}>{DAY_S[d]}</Chip>)}
+                </div>
+
+                <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
+
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                    <p style={{ fontSize:10,color:'#9B97B8',margin:0,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em' }}>Min Capacity</p>
+                    <span style={{ fontSize:12, fontWeight:700, color:'#7C3AED' }}>{minCapacity === '' ? 0 : minCapacity}+</span>
+                </div>
+                <div style={{ marginBottom:18 }}>
+                    <input 
+                        type="range"
+                        min="0"
+                        max={maxCap}
+                        step="1"
+                        value={minCapacity === '' ? 0 : minCapacity}
+                        onChange={(e) => setMinCapacity(e.target.value === '0' ? '' : parseInt(e.target.value))}
+                        style={{ width:'100%', accentColor:'#7C3AED', cursor:'pointer' }}
+                    />
+                    <p style={{ fontSize:10, color:'#9B97B8', marginTop:6 }}>Only show resources that can accommodate at least this many people.</p>
+                </div>
+
+                <div style={{ height:1,background:'#E2E0EC',margin:'0 0 18px' }} />
+
+                {/* Quick stats */}
+                <div style={{ background:'#F5F4F8',borderRadius:12,padding:14 }}>
+                    <p style={{ fontSize:10,fontWeight:600,color:'#5A5680',margin:'0 0 10px',textTransform:'uppercase',letterSpacing:'0.08em' }}>Quick Stats</p>
+                    {[
+                        { label:'Available now',  count:counts.active, color:'#15803d' },
+                        { label:'Booked today',   count:0,             color:'#b45309' },
+                        { label:'Out of service', count:counts.oos,    color:'#dc2626' },
+                    ].map(q => (
+                        <div key={q.label} style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6 }}>
+                            <span style={{ fontSize:12,color:'#5A5680' }}>{q.label}</span>
+                            <span style={{ fontSize:13,fontWeight:800,color:q.color,fontFamily:'monospace' }}>{q.count}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
           </div>
 
           {/* Main content */}
-          <div style={{ flex:1, padding:'16px 18px', minWidth:0, overflowY:'auto' }}>
+          <div style={{ flex:1, padding:'16px 18px', overflowY:'auto' }}>
             {/* Top Tabs */}
             <div className="flex items-center gap-8 border-b border-[#E2E0EC] mb-8 overflow-x-auto pt-2">
               {[
@@ -481,7 +428,7 @@ export default function ResourcesPage() {
 
       {/* Detail drawer */}
       {selected && <DetailDrawer resource={selected} onClose={() => setSelected(null)} />}
-    </div>
+    </UserLayout>
   );
 }
 
@@ -502,7 +449,6 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
       onClick={onClick}
       style={{ animationDelay:`${Math.min(index,10)*0.04}s` }}
     >
-      {/* Gradient photo area */}
       <div style={{ height:144, background: showImg ? 'transparent' : tc.grad, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
         <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
           {showImg ? (
@@ -513,13 +459,11 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
             </div>
           )}
         </div>
-        {/* type badge */}
         <span style={{ position:'absolute',top:8,left:8,background:'rgba(0,0,0,0.35)',backdropFilter:'blur(4px)',color:'white',fontSize:9,padding:'3px 8px',borderRadius:999,fontWeight:500,zIndex:10 }}>
           {tc.label}
         </span>
       </div>
 
-      {/* Body */}
       <div style={{ padding:'10px 12px 12px' }}>
         <p style={{ fontSize:13,fontWeight:600,color:'#1A1730',margin:'0 0 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{resource.name}</p>
         {resource.location && (
@@ -528,7 +472,6 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
           </div>
         )}
 
-        {/* Footer row */}
         <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8 }}>
           <span style={{ fontSize:10,padding:'2px 8px',borderRadius:999,border:`1px solid ${sc.dot}33`,background:sc.bg,color:sc.text,fontWeight:500 }}>
             {sc.label}
@@ -540,7 +483,6 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
           )}
         </div>
 
-        {/* Availability bar */}
         <div>
           <div style={{ display:'flex',justifyContent:'space-between',marginBottom:3 }}>
             <span style={{ fontSize:10,color:'#9B97B8' }}>Availability today</span>
@@ -570,16 +512,13 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
 
   return (
     <div style={{ position:'fixed',inset:0,zIndex:50 }} onClick={onClose}>
-      {/* backdrop */}
       <div className="ch-fade-in" style={{ position:'absolute',inset:0,background:'rgba(26,23,48,0.45)',backdropFilter:'blur(4px)' }} />
 
-      {/* panel */}
       <div
         className="ch-slide-in"
         style={{ position:'absolute',right:0,top:0,bottom:0,width:320,background:'white',display:'flex',flexDirection:'column',overflowY:'auto',boxShadow:'-10px 0 50px rgba(0,0,0,0.15)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header gradient */}
         <div style={{ height:160,background:showImg ? 'transparent' : tc.grad,position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'0 16px' }}>
           {showImg ? (
             <div style={{ position:'absolute', inset:0 }}>
@@ -608,15 +547,12 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
           )}
         </div>
 
-        {/* Body */}
         <div style={{ flex:1,padding:'14px 16px',overflowY:'auto' }}>
-          {/* Status */}
           <div style={{ display:'inline-flex',alignItems:'center',gap:5,background:sc.bg,color:sc.text,borderRadius:999,padding:'4px 10px',fontSize:11,fontWeight:600,marginBottom:14 }}>
             <div style={{ width:6,height:6,borderRadius:'50%',background:sc.dot }} />
             {sc.label}
           </div>
 
-          {/* Details 2×2 */}
           <p style={{ fontSize:10,textTransform:'uppercase',letterSpacing:'0.08em',color:'#9B97B8',fontWeight:600,margin:'0 0 8px' }}>DETAILS</p>
           <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:14 }}>
             {[
@@ -632,7 +568,6 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
             ))}
           </div>
 
-          {/* Schedule */}
           {sorted.length > 0 && (
             <>
               <p style={{ fontSize:10,textTransform:'uppercase',letterSpacing:'0.08em',color:'#9B97B8',fontWeight:600,margin:'0 0 8px' }}>WEEKLY SCHEDULE</p>

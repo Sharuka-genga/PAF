@@ -39,6 +39,13 @@ public class UserService {
                 .toList();
     }
 
+    public User updateUser(String userId, User userDetails) {
+        User user = getUserById(userId);
+        user.setName(userDetails.getName());
+        user.setEmail(userDetails.getEmail());
+        return userRepository.save(user);
+    }
+
     public void deleteUserById(String userId) {
         User user = getUserById(userId);
         userRepository.delete(Objects.requireNonNull(user, "user must not be null"));

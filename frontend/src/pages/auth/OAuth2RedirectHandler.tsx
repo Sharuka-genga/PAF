@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
-const OAuth2RedirectHandler = () => {
+const OAuth2RedirectHandler: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setAuthToken } = useAuth();
@@ -19,10 +19,15 @@ const OAuth2RedirectHandler = () => {
           navigate('/login', { replace: true });
           return;
         }
-        if (userData.roles?.includes('ADMIN') || userData.roles?.some(r => r === 'ADMIN' || r === 'ROLE_ADMIN')) {
+        
+        // Handle different role structures (Array or Object)
+        const roles = userData.roles || [];
+        const isAdmin = roles.includes('ADMIN') || roles.some((r: any) => r === 'ADMIN' || r === 'ROLE_ADMIN');
+        
+        if (isAdmin) {
           navigate('/admin', { replace: true });
         } else {
-          navigate('/dashboard', { replace: true });
+          navigate('/', { replace: true });
         }
         toast.success('Login successful!');
       }).catch(() => {
@@ -32,7 +37,7 @@ const OAuth2RedirectHandler = () => {
     } else {
       const errorStr = params.get('error');
       console.error("OAuth2Redirect error:", errorStr || "No parameter found", location.search);
-      toast.error('Google Authentication failed. Please check your backend configuration and credentials.');
+      toast.error('Google login failed. Please try again.');
       navigate('/login', { replace: true });
     }
   }, [navigate, setAuthToken, location.search]);

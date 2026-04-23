@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notificationAPI } from '../../services/api';
-import { FiBell, FiCheck, FiCheckCircle, FiAlertCircle, FiMessageCircle, FiCalendar } from 'react-icons/fi';
+import { FiBell, FiCheckCircle, FiAlertCircle, FiMessageCircle, FiCalendar } from 'react-icons/fi';
 import { Button } from './button';
 import { toast } from 'react-toastify';
+import type { Notification } from '../../types';
 
-const NotificationDropdown = () => {
+const NotificationDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Load unread count initially, and refresh notifications when opened
@@ -42,8 +43,8 @@ const NotificationDropdown = () => {
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -62,7 +63,7 @@ const NotificationDropdown = () => {
     }
   };
 
-  const handleNotificationClick = async (notif) => {
+  const handleNotificationClick = async (notif: Notification) => {
     try {
       if (!notif.read) {
         await notificationAPI.markAsRead(notif.id);
@@ -72,8 +73,15 @@ const NotificationDropdown = () => {
 
       if (notif.type?.startsWith('BOOKING_')) {
         navigate('/bookings');
-      } else if (notif.referenceId && notif.type?.startsWith('TICKET_')) {
-        navigate(`/tickets/${notif.referenceId}`);
+      } else if (notif.type?.startsWith('TICKET_')) {
+        // Since Notification interface doesn't have referenceId explicitly, 
+        // we use any type here or cast if we know it exists in the data
+        const referenceId = (notif as any).referenceId;
+        if (referenceId) {
+          navigate(`/tickets/${referenceId}`);
+        } else {
+          navigate('/notifications');
+        }
       } else {
         navigate('/notifications');
       }
@@ -82,7 +90,7 @@ const NotificationDropdown = () => {
     }
   };
 
-  const getIcon = (type) => {
+  const getIcon = (type: string) => {
     switch (type) {
       case 'BOOKING_APPROVED': return <FiCheckCircle className="w-5 h-5 text-green-500" />;
       case 'BOOKING_REJECTED': return <FiCalendar className="w-5 h-5 text-red-500" />;
@@ -98,8 +106,9 @@ const NotificationDropdown = () => {
         variant="ghost"
         size="icon"
         onClick={() => {
-          setIsOpen(!isOpen);
-          if (!isOpen) fetchNotifications();
+          const nextState = !isOpen;
+          setIsOpen(nextState);
+          if (nextState) fetchNotifications();
         }}
         className="relative rounded-full text-gray-600 hover:text-blue-600 hover:bg-blue-50 w-10 h-10"
       >

@@ -1,26 +1,32 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2 } from 'react-icons/fi';
+import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2, FiCamera, FiUpload } from 'react-icons/fi';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
+import UserLayout from '../components/layouts/UserLayout';
+import type { UserPreferences } from '../types';
 
 const SETTINGS_STORAGE_KEY = 'smartCampusSettings';
 
-const Settings = () => {
+const Settings: React.FC = () => {
   const { user, loadUser, isAdmin, isTechnician, deleteAccount } = useAuth();
   const [profileName, setProfileName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<Omit<UserPreferences, 'userId'>>({
     emailAlerts: true,
     ticketAlerts: true,
     bookingAlerts: true,
@@ -68,7 +74,68 @@ const Settings = () => {
 
   const roleLabel = useMemo(() => (user?.roles || []).join(', ') || 'USER', [user]);
 
-  const handleSaveProfile = async (e) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (!profileImage) return;
+    
+    try {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append('profileImage', profileImage);
+      
+      await authAPI.uploadProfileImage(formData);
+      await loadUser();
+      toast.success('Profile image updated successfully');
+      setProfileImage(null);
+      setImagePreview('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to upload profile image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    try {
+      setUploadingImage(true);
+      await authAPI.removeProfileImage();
+      await loadUser();
+      toast.success('Profile image removed successfully');
+      setImagePreview('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to remove profile image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileName.trim()) {
       toast.error('Name cannot be empty');
@@ -80,14 +147,14 @@ const Settings = () => {
       await authAPI.updateMe({ name: profileName.trim() });
       await loadUser();
       toast.success('Account profile updated');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setSavingProfile(false);
     }
   };
 
-  const handleChangePassword = async (e) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('All password fields are required');
@@ -109,14 +176,14 @@ const Settings = () => {
       setNewPassword('');
       setConfirmPassword('');
       toast.success('Password changed successfully');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to change password');
     } finally {
       setSavingPassword(false);
     }
   };
 
-  const togglePreference = (key) => {
+  const togglePreference = (key: keyof typeof preferences) => {
     setPreferences((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -125,7 +192,7 @@ const Settings = () => {
       setSavingPreferences(true);
       await authAPI.updatePreferences(preferences);
       toast.success('Preferences saved successfully');
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to save preferences');
     } finally {
       setSavingPreferences(false);
@@ -141,14 +208,15 @@ const Settings = () => {
       await deleteAccount();
       toast.success('Your account has been deleted permanently from the system');
       window.location.href = '/login';
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to delete account');
       setConfirmDeleteAccount(false);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
+    <UserLayout>
+      <div className="max-w-6xl mx-auto px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <FiSettings className="text-blue-600" />
@@ -168,6 +236,84 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSaveProfile} className="space-y-4">
+                {/* Profile Image Section */}
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                      {imagePreview || user?.profilePicture ? (
+                        <img 
+                          src={imagePreview || (user?.profilePicture?.startsWith('http') ? user.profilePicture : `${window.location.origin}${user?.profilePicture}`)} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold">
+                          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+                    >
+                      <FiCamera className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-gray-900">Profile Picture</h3>
+                    <p className="text-xs text-gray-500">JPG, PNG or GIF. Max size 5MB</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <div className="flex space-x-2 mt-2">
+                      {profileImage && (
+                        <>
+                          <Button
+                            type="button"
+                            onClick={handleImageUpload}
+                            disabled={uploadingImage}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white gap-1"
+                          >
+                            <FiUpload className="w-3 h-3" />
+                            {uploadingImage ? 'Uploading...' : 'Upload'}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setProfileImage(null);
+                              setImagePreview('');
+                              if (fileInputRef.current) fileInputRef.current.value = '';
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-300"
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      )}
+                      {user?.profilePicture && !profileImage && (
+                        <Button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          disabled={uploadingImage}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <Label htmlFor="profileName">Full Name</Label>
                   <Input
@@ -188,7 +334,7 @@ const Settings = () => {
                 </div>
                 <Button
                   type="submit"
-                  disabled={savingProfile}
+                  disabled={savingProfile || uploadingImage}
                   className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
                 >
                   <FiSave />
@@ -264,8 +410,8 @@ const Settings = () => {
                     <span className="text-sm text-foreground">{item.label}</span>
                     <input
                       type="checkbox"
-                      checked={preferences[item.key]}
-                      onChange={() => togglePreference(item.key)}
+                      checked={preferences[item.key as keyof typeof preferences]}
+                      onChange={() => togglePreference(item.key as keyof typeof preferences)}
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </Label>
@@ -377,7 +523,8 @@ const Settings = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </UserLayout>
   );
 };
 

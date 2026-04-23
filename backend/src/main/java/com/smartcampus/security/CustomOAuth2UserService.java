@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,18 +35,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String providerId = (String) attributes.get("sub");
 
         Optional<User> userOptional = userRepository.findByEmail(email);
-
         User user;
         if (userOptional.isPresent()) {
             user = userOptional.get();
             user.setName(name);
             user.setProfilePicture(picture);
-                user = Objects.requireNonNull(userRepository.save(Objects.requireNonNull(user, "user must not be null")),
-                    "saved user must not be null");
+            user = userRepository.save(user);
         } else {
             Set<Role> roles = new HashSet<>();
             roles.add(Role.USER);
-
             user = User.builder()
                     .name(name)
                     .email(email)
@@ -56,8 +52,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .providerId(providerId)
                     .roles(roles)
                     .build();
-                user = Objects.requireNonNull(userRepository.save(Objects.requireNonNull(user, "user must not be null")),
-                    "saved user must not be null");
+            user = userRepository.save(user);
         }
 
         return UserPrincipal.create(user, attributes);
