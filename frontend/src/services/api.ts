@@ -59,7 +59,7 @@ export const resourceAPI = {
   delete: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}`),
   uploadImage: (id: string, formData: FormData): Promise<AxiosResponse> =>
     api.post(`/resources/${id}/image`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     }),
   deleteImage: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}/image`),
   patchStatus: (id: string, status: string): Promise<AxiosResponse> => api.patch(`/resources/${id}/status`, { status }),

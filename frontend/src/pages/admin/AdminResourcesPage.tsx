@@ -800,7 +800,7 @@ export default function AdminResourcesPage() {
                   >
                     {imagePreview ? (
                       <>
-                        <img src={imagePreview} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
+                        <img src={imagePreview} onError={() => { setImagePreview(null); setRemoveImage(true); }} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
                         <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <span className="bg-white text-ch-purple px-4 py-2 rounded-xl text-xs font-bold shadow-xl">Change Photo</span>
                         </div>
