@@ -139,4 +139,15 @@ export const chatAPI = {
   createTicket: (data: any) => api.post<ApiResponse<any>>('/chat/ticket', data),
 };
 
+export const userAPI = {
+  getAllUsers: async () => {
+    return api.get('/users');
+  },
+
+  // Optional: get only technicians (if backend supports)
+  getTechnicians: async () => {
+    return api.get('/users/technicians');
+  }
+};
+
 export default api;
