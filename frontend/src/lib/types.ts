@@ -1,12 +1,2 @@
-export interface Booking {
-  id: number;
-  userId: number;
-  resourceName: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  purpose: string;
-  attendees: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  rejectionReason?: string;
-}
+// Re-export types from the main types file to maintain consistency
+export type { Booking, User, Ticket } from '../types';

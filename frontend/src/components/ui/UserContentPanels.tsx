@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiAlertCircle, FiExternalLink, FiMoreHorizontal } from 'react-icons/fi';
+import { FiCalendar, FiAlertCircle, FiExternalLink } from 'react-icons/fi';
 import { bookingAPI, ticketAPI } from '../../services/api';
 import type { Booking, Ticket } from '../../types';
 

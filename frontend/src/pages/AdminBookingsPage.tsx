@@ -98,36 +98,38 @@ export default function AdminBookingsPage() {
   return (
     <div className="min-h-screen w-full bg-[#F5F4F8] font-['DM_Sans'] pb-12">
     <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-[#1A1730]">Admin Management</h1>
-          <p className="text-[#9B97B8]">Review and moderate facility booking requests across campus.</p>
-        </div>
-        
-        <div className="flex items-center gap-3 bg-white p-2 rounded-[12px] border border-[#E2E0EC] shadow-none">
-          <div className="flex items-center gap-2 px-3 text-[#9B97B8] text-xs uppercase tracking-wider font-medium border-r border-[#E2E0EC] pr-4">
-            <Filter className="size-4" /> Filter
+      <div className="rounded-[28px] bg-gradient-to-r from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] p-8 shadow-[0_20px_80px_-40px_rgba(124,58,237,0.45)]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Booking Management</h1>
+            <p className="max-w-xl text-sm text-white/80">Review and moderate facility booking requests across campus.</p>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px] border-none shadow-none focus:ring-0 text-[#1A1730]">
-              <SelectValue placeholder="All Bookings" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Bookings</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="APPROVED">Approved</SelectItem>
-              <SelectItem value="REJECTED">Rejected</SelectItem>
-              <SelectItem value="CANCELLED">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="flex items-center gap-3 bg-white/10 p-2 rounded-[12px] border border-white/20 shadow-none backdrop-blur-sm">
+            <div className="flex items-center gap-2 px-3 text-white/80 text-xs uppercase tracking-wider font-medium border-r border-white/20 pr-4">
+              <Filter className="size-4" /> Filter
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[160px] border-none shadow-none focus:ring-0 text-white">
+                <SelectValue placeholder="All Bookings" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Bookings</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="APPROVED">Approved</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none overflow-hidden">
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-[#F5F4F8]/50 border-b border-[#E2E0EC]">
-              <TableRow className="border-[#E2E0EC]">
+            <TableHeader className="bg-purple-50 border-b border-purple-200">
+              <TableRow className="border-purple-200">
                 <TableHead className="font-semibold text-[#5A5680] py-4">ID</TableHead>
                 <TableHead className="font-semibold text-[#5A5680] py-4">Resource</TableHead>
                 <TableHead className="font-semibold text-[#5A5680] py-4">Schedule</TableHead>

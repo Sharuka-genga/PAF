@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiAlertCircle, FiMoreHorizontal, FiExternalLink, FiUsers } from 'react-icons/fi';
-import { adminAPI, bookingAPI, ticketAPI } from '../../services/api';
-import type { Booking, Ticket, User } from '../../types';
+import { FiAlertCircle, FiMoreHorizontal, FiExternalLink, FiUsers } from 'react-icons/fi';
+import { adminAPI, ticketAPI } from '../../services/api';
+import type { Ticket, User } from '../../types';
 
 const PremiumContentPanels: React.FC = () => {
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [openTickets, setOpenTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,61 +39,6 @@ const PremiumContentPanels: React.FC = () => {
 
     fetchData();
   }, []);
-
-  const getStatusBadge = (status: string, type: 'user' | 'ticket') => {
-    if (type === 'user') {
-      switch (status) {
-        case 'active':
-          return <span className="status-badge-premium-green">Active</span>;
-        case 'inactive':
-          return <span className="status-badge-premium-gray">Inactive</span>;
-        default:
-          return <span className="status-badge-premium-gray">Unknown</span>;
-      }
-    } else {
-      switch (status) {
-        case 'open':
-          return <span className="status-badge-premium-red">Open</span>;
-        case 'in-progress':
-          return <span className="status-badge-premium-orange">In Progress</span>;
-        case 'resolved':
-          return <span className="status-badge-premium-green">Resolved</span>;
-        default:
-          return <span className="status-badge-premium-gray">Unknown</span>;
-      }
-    }
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'critical':
-        return <span className="status-badge-premium-red">Critical</span>;
-      case 'high':
-        return <span className="status-badge-premium-orange">High</span>;
-      case 'medium':
-        return <span className="status-badge-premium-green">Medium</span>;
-      case 'low':
-        return <span className="status-badge-premium-gray">Low</span>;
-      default:
-        return <span className="status-badge-premium-gray">Unknown</span>;
-    }
-  };
-
-  const getAvatarInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
-  const getAvatarColor = (name: string) => {
-    const colors = [
-      'from-[#7C3AED] to-[#8B5CF6]',
-      'from-[#10B981] to-[#059669]',
-      'from-[#F97316] to-[#EA580C]',
-      'from-[#22D3EE] to-[#06B6D4]',
-      'from-[#EC4899] to-[#BE185D]'
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
 
   if (loading) {
     return (
