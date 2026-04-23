@@ -63,12 +63,12 @@ export const authAPI = {
 
 // Resource APIs
 export const resourceAPI = {
-  getAll: () => api.get<ApiResponse<Resource[]>>('/resources'),
-  getById: (id: string) => api.get<ApiResponse<Resource>>(`/resources/${id}`),
-  search: (params: any) => api.get<ApiResponse<Resource[]>>('/resources/search', { params }),
-  create: (data: any) => api.post<ApiResponse<Resource>>('/resources', data),
-  update: (id: string, data: any) => api.put<ApiResponse<Resource>>(`/resources/${id}`, data),
-  delete: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}`),
+  getAll: (): Promise<AxiosResponse> => api.get('/resources'),
+  getById: (id: string): Promise<AxiosResponse> => api.get(`/resources/${id}`),
+  search: (params: Record<string, string | number>): Promise<AxiosResponse> => api.get('/resources/search', { params }),
+  create: (data: object): Promise<AxiosResponse> => api.post('/resources', data),
+  update: (id: string, data: object): Promise<AxiosResponse> => api.put(`/resources/${id}`, data),
+  delete: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}`),
 };
 
 // Booking APIs
@@ -84,16 +84,16 @@ export const bookingAPI = {
 
 // Ticket APIs
 export const ticketAPI = {
-  create: (formData: FormData) => api.post<ApiResponse<Ticket>>('/tickets', formData, {
+  create: (formData: FormData): Promise<AxiosResponse> => api.post('/tickets', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
-  getMyTickets: () => api.get<ApiResponse<Ticket[]>>('/tickets/my'),
-  getById: (id: string) => api.get<ApiResponse<Ticket>>(`/tickets/${id}`),
-  getAll: (params: any) => api.get<ApiResponse<Ticket[]>>('/tickets', { params }),
-  updateStatus: (id: string, data: any) => api.put<ApiResponse<Ticket>>(`/tickets/${id}/status`, data),
-  assignTechnician: (id: string, techId: string) => api.patch<ApiResponse<Ticket>>(`/tickets/${id}/assign/${techId}`),
-  getAssigned: () => api.get<ApiResponse<Ticket[]>>('/tickets/assigned'),
-  delete: (id: string) => api.delete<ApiResponse<void>>(`/tickets/${id}`),
+  getMyTickets: (): Promise<AxiosResponse> => api.get('/tickets/my'),
+  getById: (id: string): Promise<AxiosResponse> => api.get(`/tickets/${id}`),
+  getAll: (params?: object): Promise<AxiosResponse> => api.get('/tickets', { params }),
+  updateStatus: (id: string, data: object): Promise<AxiosResponse> => api.put(`/tickets/${id}/status`, data),
+  assignTechnician: (id: string, techId: string): Promise<AxiosResponse> => api.patch(`/tickets/${id}/assign/${techId}`),
+  getAssigned: (): Promise<AxiosResponse> => api.get('/tickets/assigned'),
+  delete: (id: string): Promise<AxiosResponse> => api.delete(`/tickets/${id}`),
 };
 
 // Comment APIs

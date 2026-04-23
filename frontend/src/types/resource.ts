@@ -31,6 +31,7 @@ export interface Resource {
   location: string;
   status: ResourceStatus;
   description: string | null;
+  imageUrl?: string | null;
   availabilityWindows: AvailabilityWindow[];
   createdAt: string;
   updatedAt: string;
@@ -43,6 +44,7 @@ export interface ResourceRequest {
   capacity: number | null;
   location: string;
   description: string;
+  imageUrl?: string | null;
   availabilityWindows: AvailabilityWindow[];
 }
 

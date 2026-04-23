@@ -1,14 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
-
-// Context
-// @ts-ignore
-import { AuthProvider, useAuth } from './context/AuthContext';
-
-// Pages
-// @ts-ignore
-import Dashboard from './pages/Dashboard';
-// @ts-ignore
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
 // @ts-ignore
 import Register from './pages/auth/Register';
@@ -29,6 +20,11 @@ import AdminBookingsPage from './pages/AdminBookingsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 // @ts-ignore
 import AdminUsers from './pages/admin/AdminUsers';
+import ResourcesPage from './pages/ResourcesPage';
+import AdminResourcesPage from './pages/admin/AdminResourcesPage';
+import { useAuth } from './context/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -66,7 +62,7 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return isAdmin() ? children : <Navigate to="/dashboard" replace />;
 };
 
