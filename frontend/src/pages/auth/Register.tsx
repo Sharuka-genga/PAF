@@ -56,7 +56,7 @@ const Register: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
       <Card className="max-w-md w-full shadow-xl">
         <CardHeader className="text-center space-y-2">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+          <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
             <span className="text-white font-bold text-2xl">SC</span>
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
@@ -138,7 +138,7 @@ const Register: React.FC = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-6"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white mt-6"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </Button>
