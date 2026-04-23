@@ -22,7 +22,7 @@ const Login: React.FC = () => {
     console.log('Login component mounted');
     const params = new URLSearchParams(location.search);
     if (params.get('error') === 'oauth2') {
-      toast.error('Google Authentication failed or was cancelled.', { toastId: 'oauth2-err' });
+      toast.error('Google Authentication failed or was cancelled.');
     }
   }, [location]);
 

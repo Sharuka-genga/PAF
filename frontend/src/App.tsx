@@ -1,29 +1,26 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
-// @ts-ignore
 import Register from './pages/auth/Register';
-// @ts-ignore
 import AdminRegister from './pages/auth/AdminRegister';
-// @ts-ignore
 import OAuth2RedirectHandler from './pages/auth/OAuth2RedirectHandler';
-// @ts-ignore
 import Settings from './pages/Settings';
-// @ts-ignore
 import Notifications from './pages/Notifications';
+import Dashboard from './pages/Dashboard';
 
 // Booking & Admin Pages
 import BookingPage from './pages/BookingPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import AdminBookingsPage from './pages/AdminBookingsPage';
-// @ts-ignore
 import AdminDashboard from './pages/admin/AdminDashboard';
-// @ts-ignore
 import AdminUsers from './pages/admin/AdminUsers';
+
+// Resource Pages
 import ResourcesPage from './pages/ResourcesPage';
 import AdminResourcesPage from './pages/admin/AdminResourcesPage';
+
 import { useAuth } from './context/AuthContext';
-import { ToastContainer } from 'react-toastify';
+import { Toaster } from 'sonner';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface PrivateRouteProps {
@@ -88,10 +85,14 @@ function App() {
           <Route path="/bookings/create" element={<PrivateRoute><BookingPage /></PrivateRoute>} />
           <Route path="/my-bookings" element={<PrivateRoute><MyBookingsPage /></PrivateRoute>} />
 
+          {/* Resources Routes */}
+          <Route path="/resources" element={<PrivateRoute><ResourcesPage /></PrivateRoute>} />
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/bookings" element={<AdminRoute><AdminBookingsPage /></AdminRoute>} />
           <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/resources" element={<AdminRoute><AdminResourcesPage /></AdminRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />

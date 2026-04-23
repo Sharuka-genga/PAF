@@ -8,7 +8,8 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import ProfileDropdown from '../components/ui/ProfileDropdown';
 import NotificationDropdown from '../components/ui/NotificationDropdown';
-import type { Booking, Ticket } from '../types';
+import type { Booking } from '../lib/types';
+import type { Ticket } from '../types';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -164,7 +165,7 @@ const Dashboard: React.FC = () => {
                   <div key={b.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-accent transition-colors">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{b.resourceName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{b.bookingDate} · {b.startTime} - {b.endTime}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{b.date} · {b.startTime} - {b.endTime}</p>
                     </div>
                     <Badge {...getBadgeProps(b.status)}>{b.status}</Badge>
                   </div>

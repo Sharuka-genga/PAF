@@ -1,16 +1,14 @@
 import axios from 'axios';
-import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import type { 
   ApiResponse, 
   AuthResponse, 
   User, 
-  Resource, 
-  Booking, 
-  Ticket, 
   Notification, 
   UserPreferences,
   Role
 } from '../types';
+import type { Booking } from '../lib/types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
@@ -69,6 +67,11 @@ export const resourceAPI = {
   create: (data: object): Promise<AxiosResponse> => api.post('/resources', data),
   update: (id: string, data: object): Promise<AxiosResponse> => api.put(`/resources/${id}`, data),
   delete: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}`),
+  patchStatus: (id: string, status: string): Promise<AxiosResponse> => api.patch(`/resources/${id}/status`, { status }),
+  uploadImage: (id: string, formData: FormData): Promise<AxiosResponse> => api.post(`/resources/${id}/image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  deleteImage: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}/image`),
 };
 
 // Booking APIs

@@ -110,8 +110,15 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     resourceAPI.getAll()
-      .then(r => setResources(r.data.data || []))
-      .catch(() => setResources([]))
+      .then(r => {
+        console.log('Resources API response:', r);
+        setResources(r.data.data || r.data || []);
+      })
+      .catch(err => {
+        console.error('Failed to fetch resources:', err);
+        toast.error('Failed to load resources');
+        setResources([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
