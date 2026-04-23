@@ -1,9 +1,6 @@
 spring:
   application:
     name: smart-campus
-  web:
-    resources:
-      static-locations: file:uploads/,classpath:/static/
   servlet:
     multipart:
       max-file-size: 10MB
@@ -44,8 +41,10 @@ app:
     expiration-ms: 86400000
   cors:
     allowed-origins: http://localhost:5173
-file:
-  upload-dir: uploads
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
 
 server:
   port: 8080

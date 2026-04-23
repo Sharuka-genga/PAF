@@ -1,5 +1,6 @@
 package com.smartcampus.service;
 
+import com.cloudinary.Cloudinary;
 import com.smartcampus.dto.request.AvailabilityWindowRequest;
 import com.smartcampus.dto.request.ResourceRequest;
 import com.smartcampus.dto.response.AvailabilityWindowResponse;
@@ -11,58 +12,72 @@ import com.smartcampus.model.ResourceStatus;
 import com.smartcampus.model.ResourceType;
 import com.smartcampus.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.DayOfWeek;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
+    private final Cloudinary cloudinary;
 
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
-
-    private String saveImage(MultipartFile image) {
+    private String uploadToCloudinary(MultipartFile image) {
         if (image == null || image.isEmpty()) return null;
+        log.info("Uploading image to Cloudinary: name={}, size={}, type={}",
+                image.getOriginalFilename(), image.getSize(), image.getContentType());
         try {
-            Path directory = Paths.get(uploadDir).toAbsolutePath().normalize();
-            if (!Files.exists(directory)) {
-                Files.createDirectories(directory);
-            }
-            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-            Path targetLocation = directory.resolve(fileName);
-            Files.copy(image.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            return "/api/files/" + fileName; // Assuming a file server endpoint
-        } catch (IOException ex) {
-            throw new RuntimeException("Could not store file. Please try again!", ex);
+            Map<String, Object> options = new HashMap<>();
+            options.put("folder", "smartcampus/resources");
+            Map<?, ?> result = cloudinary.uploader().upload(image.getBytes(), options);
+            String url = (String) result.get("secure_url");
+            log.info("Cloudinary upload success: {}", url);
+            return url;
+        } catch (Exception ex) {
+            log.error("Cloudinary upload failed", ex);
+            throw new RuntimeException("Image upload failed: " + ex.getMessage(), ex);
         }
     }
 
-    public String uploadImage(String id, MultipartFile file) throws IOException {
-        String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
-        String filename = UUID.randomUUID() + "_" + originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
-        Path uploadPath = Paths.get("uploads/resources/").toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
-        Files.copy(file.getInputStream(),
-          uploadPath.resolve(filename),
-          StandardCopyOption.REPLACE_EXISTING);
+    public void deleteImage(String id) {
         Resource resource = resourceRepository.findById(id)
-          .orElseThrow(() -> new RuntimeException("Resource not found"));
-        resource.setImageUrl("/uploads/resources/" + filename);
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
+        String imageUrl = resource.getImageUrl();
+        if (imageUrl != null) {
+            try {
+                // Extract public_id from Cloudinary URL: .../upload/v123/folder/name.ext → folder/name
+                String afterUpload = imageUrl.substring(imageUrl.indexOf("/upload/") + 8);
+                if (afterUpload.startsWith("v") && afterUpload.contains("/")) {
+                    afterUpload = afterUpload.substring(afterUpload.indexOf("/") + 1);
+                }
+                String publicId = afterUpload.contains(".")
+                        ? afterUpload.substring(0, afterUpload.lastIndexOf("."))
+                        : afterUpload;
+                cloudinary.uploader().destroy(publicId, new HashMap<>());
+            } catch (Exception ignored) {
+                // Best-effort Cloudinary deletion — DB record is cleared regardless
+            }
+        }
+        resource.setImageUrl(null);
         resourceRepository.save(resource);
-        return resource.getImageUrl();
+    }
+
+    public String uploadImage(String id, MultipartFile file) {
+        String imageUrl = uploadToCloudinary(file);
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", "id", id));
+        resource.setImageUrl(imageUrl);
+        resourceRepository.save(resource);
+        return imageUrl;
     }
 
     public List<ResourceResponse> getAll() {
@@ -89,7 +104,6 @@ public class ResourceService {
 
     @Transactional
     public ResourceResponse create(ResourceRequest request, MultipartFile image) {
-        String imageUrl = saveImage(image);
         Resource resource = Resource.builder()
                 .name(request.getName())
                 .type(request.getType())
@@ -97,7 +111,7 @@ public class ResourceService {
                 .location(request.getLocation())
                 .status(request.getStatus())
                 .description(request.getDescription())
-                .imageUrl(imageUrl)
+                .imageUrl(uploadToCloudinary(image))
                 .availabilityWindows(
                         request.getAvailabilityWindows() != null
                                 ? request.getAvailabilityWindows().stream()
@@ -120,7 +134,7 @@ public class ResourceService {
         resource.setDescription(request.getDescription());
 
         if (image != null && !image.isEmpty()) {
-            resource.setImageUrl(saveImage(image));
+            resource.setImageUrl(uploadToCloudinary(image));
         }
 
         resource.getAvailabilityWindows().clear();

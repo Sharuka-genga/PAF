@@ -57,7 +57,11 @@ export const resourceAPI = {
   create: (data: object | FormData): Promise<AxiosResponse> => api.post('/resources', data),
   update: (id: string, data: object | FormData): Promise<AxiosResponse> => api.put(`/resources/${id}`, data),
   delete: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}`),
-  uploadImage: (id: string, formData: FormData): Promise<AxiosResponse> => api.post(`/resources/${id}/image`, formData),
+  uploadImage: (id: string, formData: FormData): Promise<AxiosResponse> =>
+    api.post(`/resources/${id}/image`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  deleteImage: (id: string): Promise<AxiosResponse> => api.delete(`/resources/${id}/image`),
   patchStatus: (id: string, status: string): Promise<AxiosResponse> => api.patch(`/resources/${id}/status`, { status }),
 };
 

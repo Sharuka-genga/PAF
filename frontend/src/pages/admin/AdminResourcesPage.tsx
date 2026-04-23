@@ -193,6 +193,7 @@ export default function AdminResourcesPage() {
   const [deleting, setDeleting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'capacity' | 'availability' | 'status'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -311,7 +312,9 @@ export default function AdminResourcesPage() {
       availabilityWindows: [...(r.availabilityWindows || [])],
     });
     setNewWin(EMPTY_WIN);
+    setImageFile(null);
     setImagePreview(r.imageUrl || null);
+    setRemoveImage(false);
     setShowModal(true);
   };
 
@@ -322,6 +325,7 @@ export default function AdminResourcesPage() {
     setNewWin(EMPTY_WIN);
     setImageFile(null);
     setImagePreview(null);
+    setRemoveImage(false);
   };
 
   const addWindow = () => {
@@ -363,13 +367,16 @@ export default function AdminResourcesPage() {
         const formData = new FormData();
         formData.append('image', imageFile);
         await resourceAPI.uploadImage(newResourceId, formData);
+      } else if (removeImage && editingId) {
+        await resourceAPI.deleteImage(editingId);
       }
       
       toast.success(editingId ? 'Resource updated' : 'Resource created');
       closeModal();
       load();
-    } catch {
-      toast.error(editingId ? 'Failed to update' : 'Failed to create');
+    } catch (err: any) {
+      console.error('Resource save error:', err?.response?.data || err?.message || err);
+      toast.error(err?.response?.data?.message || (editingId ? 'Failed to update' : 'Failed to create'));
     } finally {
       setSaving(false);
     }
@@ -797,9 +804,9 @@ export default function AdminResourcesPage() {
                         <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <span className="bg-white text-ch-purple px-4 py-2 rounded-xl text-xs font-bold shadow-xl">Change Photo</span>
                         </div>
-                        <button 
+                        <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); setImageFile(null); setImagePreview(null); }}
+                          onClick={(e) => { e.stopPropagation(); setImageFile(null); setImagePreview(null); setRemoveImage(true); }}
                           className="absolute top-4 right-4 bg-white/90 text-red-500 rounded-xl w-8 h-8 flex items-center justify-center shadow-lg hover:bg-red-500 hover:text-white transition-all active:scale-90"
                         >
                           <X size={16} />

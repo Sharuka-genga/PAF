@@ -25,17 +25,18 @@ public class ResourceController {
                 ApiResponse.success("Resources retrieved", resourceService.getAll()));
     }
 
-    @PostMapping("/{id}/image")
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<ApiResponse<Void>> deleteImage(@PathVariable String id) {
+        resourceService.deleteImage(id);
+        return ResponseEntity.ok(ApiResponse.success("Image removed", null));
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = "multipart/form-data")
     public ResponseEntity<?> uploadImage(
             @PathVariable String id,
-            @RequestParam("image") org.springframework.web.multipart.MultipartFile file) {
-        try {
-            String imageUrl = resourceService.uploadImage(id, file);
-            return ResponseEntity.ok(java.util.Map.of("imageUrl", imageUrl));
-        } catch (java.io.IOException e) {
-            return ResponseEntity.status(500)
-              .body(java.util.Map.of("error", "Failed to upload image"));
-        }
+            @RequestPart("image") org.springframework.web.multipart.MultipartFile file) {
+        String imageUrl = resourceService.uploadImage(id, file);
+        return ResponseEntity.ok(java.util.Map.of("imageUrl", imageUrl));
     }
 
     @GetMapping("/{id}")
