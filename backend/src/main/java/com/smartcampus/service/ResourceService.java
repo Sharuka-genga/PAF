@@ -11,8 +11,8 @@ import com.smartcampus.model.Resource;
 import com.smartcampus.model.ResourceStatus;
 import com.smartcampus.model.ResourceType;
 import com.smartcampus.repository.ResourceRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,14 +25,20 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
-    private final Cloudinary cloudinary;
+    
+    // Make Cloudinary optional to avoid startup failures when credentials are missing
+    @Autowired(required = false)
+    private Cloudinary cloudinary;
 
     private String uploadToCloudinary(MultipartFile image) {
         if (image == null || image.isEmpty()) return null;
+        if (cloudinary == null) {
+            log.warn("Cloudinary not configured, skipping image upload");
+            return null;
+        }
         log.info("Uploading image to Cloudinary: name={}, size={}, type={}",
                 image.getOriginalFilename(), image.getSize(), image.getContentType());
         try {

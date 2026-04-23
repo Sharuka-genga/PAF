@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { bookingService } from "../lib/api";
+import type { Resource } from "../types/resource";
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -18,19 +19,14 @@ import { toast } from "sonner";
 import { Calendar, Clock, Users, FileText, MessageSquare, ArrowLeft } from "lucide-react";
 import type { Booking } from "../lib/types";
 
-const RESOURCES = [
-  { id: "101", name: "Lecture Hall", status: "AVAILABLE" },
-  { id: "102", name: "Laboratory", status: "OUT_OF_SERVICE" },
-  { id: "103", name: "Meeting Room", status: "UNAVAILABLE" },
-  { id: "104", name: "Projector", status: "AVAILABLE" },
-  { id: "105", name: "Camera", status: "AVAILABLE" },
-];
 
 export default function BookingPage() {
   const location = useLocation();
   const isCreateView = location.pathname === '/bookings/create';
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingResources, setLoadingResources] = useState(true);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [minTime, setMinTime] = useState("");
   const [minEndTime, setMinEndTime] = useState("");
@@ -46,10 +42,30 @@ export default function BookingPage() {
 
   useEffect(() => {
     fetchBookings();
+    fetchResources();
     // Update current time every minute
     const interval = setInterval(() => setCurrentDateTime(new Date()), 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchResources = async () => {
+    setLoadingResources(true);
+    try {
+      const res = await bookingService.getAllResources();
+      // Handle potential ApiResponse wrapper or direct array
+      const data = res.data.data || res.data;
+      if (Array.isArray(data)) {
+        setResources(data);
+      } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
+        setResources(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch resources", error);
+      toast.error("Failed to load campus resources");
+    } finally {
+      setLoadingResources(false);
+    }
+  };
 
   const getCurrentDate = () => currentDateTime.toISOString().split('T')[0];
   const getCurrentTime = () => currentDateTime.toTimeString().slice(0, 5);
@@ -80,8 +96,8 @@ export default function BookingPage() {
       newErrors.resourceName = "Please select a resource";
       isValid = false;
     } else {
-      const selectedResource = RESOURCES.find(r => r.name === formData.resourceName);
-      if (selectedResource && (selectedResource.status === 'OUT_OF_SERVICE' || selectedResource.status === 'UNAVAILABLE')) {
+      const selectedResource = resources.find(r => r.name === formData.resourceName);
+      if (selectedResource && (selectedResource.status === 'OUT_OF_SERVICE' || selectedResource.status === 'MAINTENANCE')) {
         newErrors.resourceName = "Resource currently unavailable";
         isValid = false;
       }
@@ -253,28 +269,41 @@ export default function BookingPage() {
                         <SelectValue placeholder="Choose a resource..." />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-[#E2E0EC] rounded-[12px] shadow-lg p-1 min-w-[400px]">
-                        {RESOURCES.map(r => (
-                          <SelectItem 
-                            key={r.id} 
-                            value={r.name}
-                            disabled={r.status === 'OUT_OF_SERVICE' || r.status === 'UNAVAILABLE'}
-                            className={`rounded-[8px] py-2.5 px-3 my-0.5 cursor-pointer text-sm font-medium
-                              ${r.status === 'OUT_OF_SERVICE' || r.status === 'UNAVAILABLE'
-                                ? 'text-[#9B97B8] opacity-50 cursor-not-allowed'
-                                : 'text-[#1A1730] hover:bg-[#F5F4F8] focus:bg-[#F5F4F8]'
-                              }`}
-                          >
-                            <span className="flex items-center justify-between w-full gap-3">
-                              <span>{r.name}</span>
-                              {r.status === 'OUT_OF_SERVICE' && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#DC2626] bg-[#DC2626]/10 px-2 py-0.5 rounded-full shrink-0">Out of Service</span>
-                              )}
-                              {r.status === 'UNAVAILABLE' && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97706] bg-[#D97706]/10 px-2 py-0.5 rounded-full shrink-0">Unavailable</span>
-                              )}
-                            </span>
-                          </SelectItem>
-                        ))}
+                        {loadingResources ? (
+                          <div className="flex items-center justify-center py-4">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#7C3AED]"></div>
+                          </div>
+                        ) : resources.length === 0 ? (
+                          <div className="py-4 text-center text-[#9B97B8] text-sm italic">
+                            No resources available
+                          </div>
+                        ) : (
+                          resources.map(r => (
+                            <SelectItem 
+                              key={r.id} 
+                              value={r.name}
+                              disabled={r.status === 'OUT_OF_SERVICE' || r.status === 'MAINTENANCE'}
+                              className={`rounded-[8px] py-2.5 px-3 my-0.5 cursor-pointer text-sm font-medium
+                                ${r.status === 'OUT_OF_SERVICE' || r.status === 'MAINTENANCE'
+                                  ? 'text-[#9B97B8] opacity-50 cursor-not-allowed'
+                                  : 'text-[#1A1730] hover:bg-[#F5F4F8] focus:bg-[#F5F4F8]'
+                                }`}
+                            >
+                              <span className="flex items-center justify-between w-full gap-3">
+                                <span className="flex flex-col">
+                                  <span>{r.name}</span>
+                                  <span className="text-[10px] text-[#9B97B8] font-normal">{r.location || 'No location set'}</span>
+                                </span>
+                                {r.status === 'OUT_OF_SERVICE' && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#DC2626] bg-[#DC2626]/10 px-2 py-0.5 rounded-full shrink-0">Out of Service</span>
+                                )}
+                                {r.status === 'MAINTENANCE' && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97706] bg-[#D97706]/10 px-2 py-0.5 rounded-full shrink-0">Maintenance</span>
+                                )}
+                              </span>
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     {errors.resourceName && <p className="text-[#DC2626] text-xs font-medium flex items-center gap-1 mt-1">{errors.resourceName}</p>}
