@@ -244,8 +244,8 @@ export default function TicketDetail({ ticket, onBack }: Props) {
           </div>
         </div>
 
-        {/* Admin Controls */}
-        <div className="bg-white rounded-2xl border-[1.5px] border-gray-200 p-6 shadow-sm">
+        {/* admin component */}
+        {/* <div className="bg-white rounded-2xl border-[1.5px] border-gray-200 p-6 shadow-sm">
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">🔧 Admin Controls</h2>
           <div className="space-y-3">
             <div className="flex gap-3 items-end">
@@ -285,9 +285,9 @@ export default function TicketDetail({ ticket, onBack }: Props) {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* Comments */}
+        {/* Comment section */}
         <div className="bg-white rounded-2xl border-[1.5px] border-gray-200 p-6 shadow-sm">
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
             💬 Comments <span className="ml-1 px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: '#F0EBFF', color: '#7C3AED' }}>{comments.length}</span>
