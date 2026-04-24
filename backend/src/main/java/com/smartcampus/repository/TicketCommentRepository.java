@@ -14,5 +14,5 @@ public interface TicketCommentRepository extends CrudRepository<TicketComment, L
     List<TicketComment> findByTicketId(Long ticketId);
 
     @Query("SELECT * FROM ticket_comments WHERE user_id = :userId")
-    List<TicketComment> findByUserId(Long userId);
+    List<TicketComment> findByUserId(String userId);
 }

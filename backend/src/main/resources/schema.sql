@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS tickets (
     image1 TEXT,
     image2 TEXT,
     image3 TEXT,
-    created_by_user_id BIGINT NOT NULL,
-    assigned_to_user_id BIGINT,
+    created_by_user_id VARCHAR(255) NOT NULL,
+    assigned_to_user_id VARCHAR(255),
     resolution_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

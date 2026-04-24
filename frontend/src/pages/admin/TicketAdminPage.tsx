@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { ticketService } from '../../services/ticketService';
 import { adminAPI } from '../../services/api';
 import type { Ticket } from '../../types/ticket';
+import type { User } from '../../types';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import PremiumTopbar from '../../components/ui/PremiumTopbar';
 
 const AdminTicketsPage: React.FC = () => {
     const [tickets, setTickets] = useState<Ticket[]>([]);
-    const [technicians, setTechnicians] = useState<any[]>([]);
-    const [assignMap, setAssignMap] = useState<Record<number, number>>({});
+    const [technicians, setTechnicians] = useState<User[]>([]);
+    const [assignMap, setAssignMap] = useState<Record<string, string>>({});
     const [statusMap, setStatusMap] = useState<Record<number, string>>({});
     const [notesMap, setNotesMap] = useState<Record<number, string>>({});
 
@@ -92,8 +93,29 @@ const AdminTicketsPage: React.FC = () => {
         }
     };
 
+    // const assignTech = async (ticketId: number) => {
+    //     const technicianId = assignMap[ticketId];
+
+    //     if (!technicianId) {
+    //         alert('Select technician first');
+    //         return;
+    //     }
+
+    //     try {
+    //         await ticketService.assignTechnician(ticketId, technicianId);
+    //         await loadTickets();
+    //     } catch (err) {
+    //         console.error('Assignment failed', err);
+    //     }
+    // };
+
     const assignTech = async (ticketId: number) => {
-        const technicianId = assignMap[ticketId];
+        const ticket = tickets.find((t) => t.id === ticketId);
+        const key = String(ticketId);
+
+        const technicianId =
+            assignMap[key] ??
+            ticket?.assignedToUserId;
 
         if (!technicianId) {
             alert('Select technician first');
@@ -108,9 +130,31 @@ const AdminTicketsPage: React.FC = () => {
         }
     };
 
+    // const updateStatus = async (ticketId: number) => {
+    //     const status = statusMap[ticketId];
+    //     const notes = notesMap[ticketId];
+
+    //     if (!status) {
+    //         alert('Select status');
+    //         return;
+    //     }
+
+    //     try {
+    //         await ticketService.updateTicketStatus(ticketId, status, notes);
+    //         await loadTickets();
+    //     } catch (err) {
+    //         console.error('Status update failed', err);
+    //     }
+    // };
+
     const updateStatus = async (ticketId: number) => {
-        const status = statusMap[ticketId];
-        const notes = notesMap[ticketId];
+        const ticket = tickets.find(t => t.id === ticketId);
+
+        const status =
+            statusMap[ticketId] ??
+            ticket?.status;
+
+        const notes = notesMap[ticketId] ?? '';
 
         if (!status) {
             alert('Select status');
@@ -210,6 +254,7 @@ const AdminTicketsPage: React.FC = () => {
                 <div className="grid grid-cols-1 gap-5">
                     {tickets.map((t) => {
                         const id = t.id as number;
+                        const ticketKey = String(t.id);
 
                         return (
                             <div
@@ -273,11 +318,11 @@ const AdminTicketsPage: React.FC = () => {
                                 {/* Assign Technician */}
                                 <div className="flex gap-2 mb-3">
                                     <select
-                                        value={assignMap[id] || t.assignedToUserId || ''}
+                                        value={assignMap[ticketKey] ?? t.assignedToUserId ?? ''}
                                         onChange={(e) =>
                                             setAssignMap({
                                                 ...assignMap,
-                                                [id]: Number(e.target.value),
+                                                [ticketKey]: e.target.value,
                                             })
                                         }
                                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
@@ -297,6 +342,9 @@ const AdminTicketsPage: React.FC = () => {
                                         Assign
                                     </button>
                                 </div>
+
+
+
 
                                 {/* Status Update */}
                                 <div className="flex gap-2">

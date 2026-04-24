@@ -19,8 +19,8 @@ public class Ticket {
     private String image1;
     private String image2;
     private String image3;
-    private Long createdByUserId;
-    private Long assignedToUserId;
+    private String createdByUserId;
+    private String assignedToUserId;
     private String resolutionNotes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -60,11 +60,11 @@ public class Ticket {
     public String getImage3() { return image3; }
     public void setImage3(String image3) { this.image3 = image3; }
 
-    public Long getCreatedByUserId() { return createdByUserId; }
-    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
+    public String getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(String createdByUserId) { this.createdByUserId = createdByUserId; }
 
-    public Long getAssignedToUserId() { return assignedToUserId; }
-    public void setAssignedToUserId(Long assignedToUserId) { this.assignedToUserId = assignedToUserId; }
+    public String getAssignedToUserId() { return assignedToUserId; }
+    public void setAssignedToUserId(String assignedToUserId) { this.assignedToUserId = assignedToUserId; }
 
     public String getResolutionNotes() { return resolutionNotes; }
     public void setResolutionNotes(String resolutionNotes) { this.resolutionNotes = resolutionNotes; }
