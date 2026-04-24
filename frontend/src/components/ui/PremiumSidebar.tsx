@@ -12,7 +12,7 @@ interface MenuItem {
 }
 
 const PremiumSidebar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sidebarCounts, setSidebarCounts] = useState({
@@ -27,7 +27,7 @@ const PremiumSidebar: React.FC = () => {
     const fetchSidebarCounts = async () => {
       try {
         const results = await Promise.allSettled([
-          adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
+          isAdmin() ? adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })) : Promise.resolve({ data: { data: [] } }),
           bookingAPI.getAll({}).catch(() => ({ data: { data: [] } })),
           ticketAPI.getAll({}).catch(() => ({ data: { data: [] } })),
           resourceAPI.getAll().catch(() => ({ data: { data: [] } })),

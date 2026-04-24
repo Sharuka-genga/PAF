@@ -25,16 +25,23 @@ const Dashboard: React.FC = () => {
         ]);
 
         const getCount = (result: any) => {
-          if (result.status === 'fulfilled' && result.value?.data?.data !== undefined) {
-            return Array.isArray(result.value.data.data) ? result.value.data.data.length : 0;
-          }
+          if (result.status !== 'fulfilled') return 0;
+          const payload = result.value?.data;
+          if (Array.isArray(payload)) return payload.length;
+          if (Array.isArray(payload?.data)) return payload.data.length;
           return 0;
         };
 
         setStats({
           resources: getCount(results[0]),
           bookings: getCount(results[1]),
-          tickets: results[2].status === 'fulfilled' ? (results[2].value.data?.data || []).filter((t: any) => t.status === 'OPEN').length : 0,
+          tickets: results[2].status === 'fulfilled'
+            ? (() => {
+                const payload = results[2].value.data;
+                const list: any[] = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : []);
+                return list.filter((t: any) => t.status === 'OPEN').length;
+              })()
+            : 0,
           notifications: (results[3] as any).value?.data?.data?.count || 0
         });
       } catch (err) {

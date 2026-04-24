@@ -21,9 +21,8 @@ public class ResourceController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ResourceResponse>>> getAll() {
-        // Temporary test - return empty list to check if endpoint works
         return ResponseEntity.ok(
-                ApiResponse.success("Resources retrieved", java.util.List.of()));
+                ApiResponse.success("Resources retrieved", resourceService.getAll()));
     }
 
     @DeleteMapping("/{id}/image")

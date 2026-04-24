@@ -19,7 +19,9 @@ const UserContentPanels: React.FC = () => {
         ]);
 
         if (bookingsRes.status === 'fulfilled') {
-          setRecentBookings(bookingsRes.value.data?.data?.slice(0, 5) || []);
+          const all: Booking[] = bookingsRes.value.data?.data || bookingsRes.value.data || [];
+          const sorted = [...all].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+          setRecentBookings(sorted.slice(0, 3));
         }
         if (ticketsRes.status === 'fulfilled') {
           setMyIncidents(ticketsRes.value.data?.data?.slice(0, 5) || []);

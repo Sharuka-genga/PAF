@@ -16,7 +16,7 @@ import {
   SelectValue 
 } from "../components/ui/select";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, FileText, MessageSquare, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, Users, FileText, MessageSquare, ArrowLeft, X } from "lucide-react";
 import type { Booking } from "../lib/types";
 
 
@@ -214,6 +214,16 @@ export default function BookingPage() {
     return `${displayH}:${minutes} ${ampm}`;
   };
 
+  const handleCancel = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this booking?")) return;
+    const promise = bookingService.cancel(id as any);
+    toast.promise(promise, {
+      loading: 'Cancelling booking...',
+      success: () => { fetchBookings(); return 'Booking cancelled.'; },
+      error: 'Failed to cancel booking.'
+    });
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "APPROVED": return "bg-[#059669]/10 text-[#059669] border-[#059669]/20 font-['DM_Sans']";
@@ -247,10 +257,10 @@ export default function BookingPage() {
                 <ArrowLeft className="mr-2 size-4" /> Back
               </Link>
             </Button>
-            <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none">
-              <CardHeader className="border-b border-[#E2E0EC]">
-                <CardTitle className="text-sm uppercase tracking-wider text-[#9B97B8] flex items-center gap-2">
-                  <Calendar className="size-4 text-[#7C3AED]" />
+            <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none overflow-hidden pt-0">
+              <CardHeader className="bg-[#7C3AED]">
+                <CardTitle className="text-sm uppercase tracking-wider text-white flex items-center gap-2">
+                  <Calendar className="size-4 text-white/80" />
                   Reservation Details
                 </CardTitle>
               </CardHeader>
@@ -399,9 +409,9 @@ export default function BookingPage() {
           </div>
         ) : (
           /* Bookings List */
-          <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none">
-            <CardHeader className="border-b border-[#E2E0EC] pb-4">
-              <CardTitle className="text-sm uppercase tracking-wider text-[#9B97B8]">My Schedule</CardTitle>
+          <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none overflow-hidden pt-0">
+            <CardHeader className="bg-[#7C3AED]">
+              <CardTitle className="text-sm uppercase tracking-wider text-white">My Schedule</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               {loading ? (
@@ -424,6 +434,7 @@ export default function BookingPage() {
                         <TableHead className="font-semibold text-[#5A5680] py-4">Time Slot</TableHead>
                         <TableHead className="font-semibold text-[#5A5680] py-4 text-center">People</TableHead>
                         <TableHead className="font-semibold text-[#5A5680] py-4 text-center">Status</TableHead>
+                        <TableHead className="font-semibold text-[#5A5680] py-4 text-center">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -471,6 +482,22 @@ export default function BookingPage() {
                                  </div>
                                )}
                             </div>
+                          </TableCell>
+
+                          <TableCell className="text-center">
+                            {(b.status === 'PENDING' || b.status === 'CONFIRMED') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleCancel(b.id)}
+                                className="text-[#DC2626] hover:text-white hover:bg-[#DC2626] border border-[#DC2626]/30 hover:border-[#DC2626] rounded-[8px] h-8 px-3 text-xs font-semibold transition-all gap-1.5"
+                              >
+                                <X className="size-3" /> Cancel
+                              </Button>
+                            )}
+                            {(b.status === 'CANCELLED' || b.status === 'REJECTED') && (
+                              <span className="text-[#9B97B8] text-xs">—</span>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}

@@ -27,8 +27,7 @@ public class TicketRequest {
     private String image2;
     private String image3;
 
-    @NotNull(message = "User ID is required")
-    private Long createdByUserId;
+    private String createdByUserId;
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -57,6 +56,6 @@ public class TicketRequest {
     public String getImage3() { return image3; }
     public void setImage3(String image3) { this.image3 = image3; }
 
-    public Long getCreatedByUserId() { return createdByUserId; }
-    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
+    public String getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(String createdByUserId) { this.createdByUserId = createdByUserId; }
 }
