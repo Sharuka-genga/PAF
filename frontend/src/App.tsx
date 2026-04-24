@@ -15,6 +15,7 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import TicketAdminPage from './pages/admin/TicketAdminPage';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -171,7 +172,7 @@ function App() {
           />
           <Route
             path="/admin/tickets"
-            element={<AdminRoute><ComingSoon title="Admin - Tickets" /></AdminRoute>}
+            element={<AdminRoute><TicketAdminPage /></AdminRoute>}
           />
           <Route
             path="/admin/resources"

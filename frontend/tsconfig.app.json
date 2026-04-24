@@ -20,7 +20,7 @@
     /* Path alias */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]
     },
 
     /* Linting */
