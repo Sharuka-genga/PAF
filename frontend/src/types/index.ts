@@ -1,30 +1,5 @@
 export type Role = 'USER' | 'ADMIN' | 'TECHNICIAN';
 
-export type ResourceType =
-  | 'LECTURE_HALL'
-  | 'LAB'
-  | 'MEETING_ROOM'
-  | 'PROJECTOR'
-  | 'CAMERA'
-  | 'OTHER';
-
-export type ResourceStatus = 'ACTIVE' | 'OUT_OF_SERVICE' | 'MAINTENANCE';
-
-export type DayOfWeek =
-  | 'MONDAY'
-  | 'TUESDAY'
-  | 'WEDNESDAY'
-  | 'THURSDAY'
-  | 'FRIDAY'
-  | 'SATURDAY'
-  | 'SUNDAY';
-
-export interface AvailabilityWindow {
-  dayOfWeek: DayOfWeek;
-  startTime: string; // "HH:mm"
-  endTime: string;   // "HH:mm"
-}
-
 export interface User {
   id: string;
   name: string;
@@ -53,29 +28,42 @@ export interface AuthResponse {
   roles: Role[];
 }
 
+export type ResourceType = 'LECTURE_HALL' | 'LAB' | 'MEETING_ROOM' | 'SPORTS_FACILITY' | 'LIBRARY' | 'OTHER';
+export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+export interface AvailabilityWindow {
+  dayOfWeek: DayOfWeek;
+  openTime: string;
+  closeTime: string;
+}
+
 export interface Resource {
   id: string;
   name: string;
-  type: ResourceType;
-  capacity: number | null;
+  type: ResourceType | string;
   location: string;
-  status: ResourceStatus;
-  description: string | null;
-  imageUrl?: string | null;
-  availabilityWindows: AvailabilityWindow[];
-  createdAt: string;
-  updatedAt: string;
+  description: string;
+  available: boolean;
+  capacity?: number;
+  status?: ResourceStatus | string;
+  imageUrl?: string;
+  availabilityWindows?: AvailabilityWindow[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Booking {
-  id: string;
+  id: number;
   userId: string;
-  resourceId: string;
+  resourceName: string;
+  date: string;
   startTime: string;
   endTime: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
   purpose: string;
-  resourceName?: string;
+  attendees: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'CONFIRMED';
+  rejectionReason?: string;
 }
 
 export interface Ticket {

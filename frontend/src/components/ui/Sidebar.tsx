@@ -15,6 +15,7 @@ import {
   FiMenu,
   FiX
 } from 'react-icons/fi';
+import NotificationDropdown from './NotificationDropdown';
 
 interface SidebarItem {
   title: string;

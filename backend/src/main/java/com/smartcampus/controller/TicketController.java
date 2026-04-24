@@ -4,12 +4,10 @@ import com.smartcampus.dto.CommentRequest;
 import com.smartcampus.dto.TicketRequest;
 import com.smartcampus.model.Ticket;
 import com.smartcampus.model.TicketComment;
-import com.smartcampus.security.UserPrincipal;
 import com.smartcampus.service.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,12 +37,6 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getAllTickets());
     }
 
-    // Get my tickets (authenticated user)
-    @GetMapping("/my")
-    public ResponseEntity<List<Ticket>> getMyTickets(@AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(ticketService.getTicketsByUser(principal.getId()));
-    }
-
     // Get ticket by id
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> getTicketById(@PathVariable Long id) {
@@ -55,7 +47,7 @@ public class TicketController {
 
     // Get tickets by user
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Ticket>> getTicketsByUser(@PathVariable String userId) {
+    public ResponseEntity<List<Ticket>> getTicketsByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(ticketService.getTicketsByUser(userId));
     }
 
@@ -79,8 +71,8 @@ public class TicketController {
     @PatchMapping("/{id}/assign")
     public ResponseEntity<Ticket> assignTechnician(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body) {
-        String technicianId = body.get("technicianId");
+            @RequestBody Map<String, Long> body) {
+        Long technicianId = body.get("technicianId");
         return ResponseEntity.ok(ticketService.assignTechnician(id, technicianId));
     }
 

@@ -1,14 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
-import type { FormEvent } from 'react';
+import React, { useState, useEffect } from 'react';
+import type { CSSProperties, FormEvent } from 'react';
 import type { Resource, ResourceType, ResourceStatus, ResourceRequest, AvailabilityWindow, DayOfWeek } from '../../types/resource';
 import { resourceAPI } from '../../services/api';
 import {
   BookOpen, Cpu, MessageSquare, Monitor, Camera, LayoutGrid,
-  Search, X, Plus, Edit, Trash2,
-  MapPin, Users, Layers, CheckCircle2, Settings, AlertCircle
+  Search, X, Plus, Edit, Trash2, ChevronDown,
+  MapPin, Users, Clock, Layers, CheckCircle2, Settings, AlertCircle
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
+import AdminLayout from '../../components/layouts/AdminLayout';
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 type IconComp = LucideIcon;
@@ -134,10 +136,10 @@ function ScrollColumn<T extends string | number>({ items, selected, onSelect, fo
   onSelect: (val: T) => void;
   format?: (val: T) => string;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isScrolling, setIsScrolling] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (scrollRef.current && !isScrolling) {
       const idx = items.indexOf(selected);
       scrollRef.current.scrollTo({ top: idx * 36, behavior: 'smooth' });
@@ -179,6 +181,7 @@ function ScrollColumn<T extends string | number>({ items, selected, onSelect, fo
 
 /* ─── Page ────────────────────────────────────────────────────────── */
 export default function AdminResourcesPage() {
+  const { user } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -198,6 +201,25 @@ export default function AdminResourcesPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
+
+  const handleBulkStatus = async (status: string) => {
+    setBulkLoading(true);
+    try {
+      const count = selectedIds.length;
+      await Promise.all(
+        selectedIds.map(id => 
+          resourceAPI.patchStatus(id, status)
+        )
+      );
+      setSelectedIds([]);
+      load();
+      toast.success(`${count} resources updated`);
+    } catch (err) {
+      toast.error('Failed to update some resources');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
 
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selectedIds.length} resources?`)) return;

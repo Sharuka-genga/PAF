@@ -72,11 +72,11 @@ public class BookingService {
     public BookingDTO approveBooking(@NonNull Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         if (booking.getStatus() != BookingStatus.PENDING) {
             throw new RuntimeException("Only PENDING bookings can be approved.");
         }
-        
+
         // Final check for conflicts before approving
         if (bookingRepository.existsApprovedOverlappingBooking(
                 booking.getResourceName(), booking.getDate(), booking.getStartTime(), booking.getEndTime())) {
@@ -85,7 +85,7 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.APPROVED);
         Booking saved = bookingRepository.save(booking);
-        
+
         // Create Notification
         notificationService.createNotification(
             booking.getUserId(),
@@ -102,7 +102,7 @@ public class BookingService {
     public BookingDTO rejectBooking(@NonNull Long id, @NonNull String reason) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         if (booking.getStatus() != BookingStatus.PENDING) {
             throw new RuntimeException("Only PENDING bookings can be rejected.");
         }
@@ -126,12 +126,12 @@ public class BookingService {
     public BookingDTO cancelBooking(@NonNull Long id, @NonNull String userId) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         if (booking.getStatus() != BookingStatus.PENDING && booking.getStatus() != BookingStatus.APPROVED) {
             throw new RuntimeException("Only PENDING or APPROVED bookings can be cancelled.");
         }
-        
-        // Authorization check (simplified)
+
+        // Authorization check
         if (!booking.getUserId().equals(userId)) {
             throw new RuntimeException("You are not authorized to cancel this booking");
         }
@@ -139,7 +139,7 @@ public class BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         Booking saved = bookingRepository.save(booking);
 
-        // Create Notification (to self, or maybe just log it. Usually cancel is user action)
+        // Create Notification
         notificationService.createNotification(
             booking.getUserId(),
             "Booking Cancelled",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiAlertCircle, FiExternalLink } from 'react-icons/fi';
+import { FiCalendar, FiAlertCircle, FiExternalLink, FiMoreHorizontal } from 'react-icons/fi';
 import { bookingAPI, ticketAPI } from '../../services/api';
 import type { Booking, Ticket } from '../../types';
 
@@ -19,9 +19,11 @@ const UserContentPanels: React.FC = () => {
         ]);
 
         if (bookingsRes.status === 'fulfilled') {
-          const all: Booking[] = bookingsRes.value.data?.data || bookingsRes.value.data || [];
-          const sorted = [...all].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-          setRecentBookings(sorted.slice(0, 3));
+          const bookingPayload = bookingsRes.value.data as any;
+          const bookingList = Array.isArray(bookingPayload)
+            ? bookingPayload
+            : (bookingPayload?.data || []);
+          setRecentBookings(bookingList.slice(0, 5));
         }
         if (ticketsRes.status === 'fulfilled') {
           setMyIncidents(ticketsRes.value.data?.data?.slice(0, 5) || []);

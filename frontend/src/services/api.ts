@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import type { 
   ApiResponse, 
   AuthResponse, 
@@ -8,11 +8,8 @@ import type {
   Ticket, 
   Notification, 
   UserPreferences,
-  Role,
-  Ticket,
-  Resource
+  Role
 } from '../types';
-import type { Booking } from '../lib/types';
 import type { Resource, ResourceRequest, ResourceStatus } from '../types/resource';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL
@@ -31,9 +28,23 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (userStr && config.headers) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user?.id) {
+          config.headers['X-User-Id'] = user.id;
+        }
+      } catch (error) {
+        console.error('Failed to parse cached user for request headers:', error);
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -77,7 +88,7 @@ export const resourceAPI = {
   update: (id: string, data: any) => api.put<ApiResponse<Resource>>(`/resources/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}`),
   uploadImage: (id: string, formData: FormData) => api.post<ApiResponse<Resource>>(`/resources/${id}/image`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { 'Content-Type': undefined },
   }),
   deleteImage: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}/image`),
   patchStatus: (id: string, status: string) => api.patch<ApiResponse<Resource>>(`/resources/${id}/status`, { status }),
@@ -87,11 +98,12 @@ export const resourceAPI = {
 export const bookingAPI = {
   create: (data: any) => api.post<ApiResponse<Booking>>('/bookings', data),
   getMyBookings: () => api.get<ApiResponse<Booking[]>>('/bookings/my'),
-  getById: (id: string) => api.get<ApiResponse<Booking>>(`/bookings/${id}`),
+  getById: (id: string | number) => api.get<ApiResponse<Booking>>(`/bookings/${id}`),
   getAll: (params: any) => api.get<ApiResponse<Booking[]>>('/bookings', { params }),
-  review: (id: string, data: any) => api.put<ApiResponse<Booking>>(`/bookings/${id}/review`, data),
-  cancel: (id: string) => api.patch<ApiResponse<void>>(`/bookings/${id}/cancel`),
-  getByResource: (resourceId: string) => api.get<ApiResponse<Booking[]>>(`/bookings/resource/${resourceId}`),
+  approve: (id: string | number) => api.put<ApiResponse<Booking>>(`/bookings/${id}/approve`),
+  reject: (id: string | number, reason: string) => api.put<ApiResponse<Booking>>(`/bookings/${id}/reject`, { reason }),
+  cancel: (id: string | number) => api.put<ApiResponse<Booking>>(`/bookings/${id}/cancel`),
+  delete: (id: string | number) => api.delete<ApiResponse<void>>(`/bookings/${id}`),
 };
 
 // Ticket APIs

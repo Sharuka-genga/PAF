@@ -54,7 +54,7 @@ public class TicketService {
     }
 
     // Get tickets by user
-    public List<Ticket> getTicketsByUser(String userId) {
+    public List<Ticket> getTicketsByUser(Long userId) {
         return ticketRepository.findByCreatedByUserId(userId);
     }
 
@@ -76,7 +76,7 @@ public class TicketService {
     }
 
     // Assign technician
-    public Ticket assignTechnician(Long ticketId, String technicianId) {
+    public Ticket assignTechnician(Long ticketId, Long technicianId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
         ticket.setAssignedToUserId(technicianId);

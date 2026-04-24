@@ -8,51 +8,37 @@ interface ActionButton {
   icon: React.ReactNode;
   color: 'purple' | 'green' | 'orange' | 'cyan';
   link: string;
-  count?: number;
 }
 
-interface PremiumActionButtonsProps {
-  stats?: {
-    users?: number;
-    bookings?: number;
-    tickets?: number;
-    resources?: number;
-  };
-}
-
-const PremiumActionButtons: React.FC<PremiumActionButtonsProps> = ({ stats }) => {
+const PremiumActionButtons: React.FC = () => {
   const actionButtons: ActionButton[] = [
     {
       title: 'Manage Users',
       description: 'View and manage user accounts',
       icon: <FiUsers className="w-6 h-6" />,
       color: 'purple',
-      link: '/admin/users',
-      count: stats?.users
+      link: '/admin/users'
     },
     {
       title: 'View Bookings',
       description: 'Check all booking requests',
       icon: <FiCalendar className="w-6 h-6" />,
       color: 'green',
-      link: '/admin/bookings',
-      count: stats?.bookings
+      link: '/admin/bookings'
     },
     {
       title: 'Handle Tickets',
       description: 'Resolve support tickets',
       icon: <FiAlertCircle className="w-6 h-6" />,
       color: 'orange',
-      link: '/admin/tickets',
-      count: stats?.tickets
+      link: '/admin/tickets'
     },
     {
       title: 'Resources',
       description: 'Manage campus resources',
       icon: <FiGrid className="w-6 h-6" />,
       color: 'cyan',
-      link: '/admin/resources',
-      count: stats?.resources
+      link: '/admin/resources'
     }
   ];
 
@@ -111,13 +97,8 @@ const PremiumActionButtons: React.FC<PremiumActionButtonsProps> = ({ stats }) =>
               
               {/* Content */}
               <div className="relative z-10 flex flex-col items-center text-center space-y-3">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 text-white relative">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
                   {button.icon}
-                  {button.count !== undefined && (
-                    <div className="absolute -top-2 -right-2 bg-white text-gray-900 text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg border border-gray-100">
-                      {button.count}
-                    </div>
-                  )}
                 </div>
                 
                 <div>

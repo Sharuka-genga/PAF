@@ -1,0 +1,248 @@
+import React, { useEffect, useState } from 'react';
+import { ticketService } from '../../services/ticketService';
+import { userAPI } from '../../services/api';
+import type { Ticket } from '../../types/ticket';
+import AdminLayout from '../../components/layouts/AdminLayout';
+import PremiumTopbar from '../../components/ui/PremiumTopbar';
+
+const AdminTicketsPage: React.FC = () => {
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [technicians, setTechnicians] = useState<any[]>([]);
+    const [assignMap, setAssignMap] = useState<Record<number, number>>({});
+    const [statusMap, setStatusMap] = useState<Record<number, string>>({});
+    const [notesMap, setNotesMap] = useState<Record<number, string>>({});
+
+    useEffect(() => {
+        loadTickets();
+        loadTechnicians();
+    }, []);
+
+    const loadTickets = async () => {
+        try {
+            const data = await ticketService.getAllTickets();
+            setTickets(data);
+        } catch (err) {
+            console.error('Failed to load tickets', err);
+        }
+    };
+
+    const loadTechnicians = async () => {
+        //console
+        const loadTechnicians = async () => {
+            try {
+                const res = await userAPI.getAllUsers();
+
+                // ADD THIS HERE (IMPORTANT)
+                console.log("RAW USERS RESPONSE:", res.data);
+
+                const techs = res.data.data.filter((u: any) =>
+                    u.roles?.includes('TECHNICIAN')
+                );
+
+                // OPTIONAL DEBUG
+                console.log("FILTERED TECHNICIANS:", techs);
+
+                setTechnicians(techs);
+            } catch (err) {
+                console.error('Failed to load technicians', err);
+            }
+        };
+        try {
+            const res = await userAPI.getAllUsers();
+
+            const techs = res.data.data.filter((u: any) =>
+                u.roles?.includes('TECHNICIAN')
+            );
+
+            setTechnicians(techs);
+        } catch (err) {
+            console.error('Failed to load technicians', err);
+            setTechnicians([]); // prevent crash
+        }
+    };
+
+    const assignTech = async (ticketId: number) => {
+        const technicianId = assignMap[ticketId];
+
+        if (!technicianId) {
+            alert('Select technician first');
+            return;
+        }
+
+        try {
+            await ticketService.assignTechnician(ticketId, technicianId);
+            await loadTickets();
+        } catch (err) {
+            console.error('Assignment failed', err);
+        }
+    };
+
+    const updateStatus = async (ticketId: number) => {
+        const status = statusMap[ticketId];
+        const notes = notesMap[ticketId];
+
+        if (!status) {
+            alert('Select status');
+            return;
+        }
+
+        try {
+            await ticketService.updateTicketStatus(ticketId, status, notes);
+            await loadTickets();
+        } catch (err) {
+            console.error('Status update failed', err);
+        }
+    };
+
+    const statusColor = (status: string) => {
+        switch (status) {
+            case 'OPEN': return 'text-blue-600 bg-blue-50 border-blue-200';
+            case 'IN_PROGRESS': return 'text-purple-600 bg-purple-50 border-purple-200';
+            case 'RESOLVED': return 'text-green-600 bg-green-50 border-green-200';
+            case 'CLOSED': return 'text-gray-600 bg-gray-100 border-gray-200';
+            case 'REJECTED': return 'text-red-600 bg-red-50 border-red-200';
+            default: return 'text-gray-600 bg-gray-50 border-gray-200';
+        }
+    };
+
+    return (
+        <AdminLayout>
+            <PremiumTopbar
+                title="Ticket Management"
+                subtitle="Assign technicians and manage workflow"
+            />
+
+            <main className="max-w-7xl mx-auto p-6 space-y-6">
+
+                {/* Header Card */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <h1 className="text-xl font-bold text-gray-800">
+                        Admin Ticket Workflow Control
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Manage tickets from OPEN → IN_PROGRESS → RESOLVED → CLOSED or REJECTED
+                    </p>
+                </div>
+
+                {/* Tickets Grid */}
+                <div className="grid grid-cols-1 gap-5">
+                    {tickets.map((t) => {
+                        const id = t.id as number;
+
+                        return (
+                            <div
+                                key={id}
+                                className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
+                            >
+
+                                {/* Top Row */}
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h2 className="text-lg font-semibold text-gray-800">
+                                            {t.title}
+                                        </h2>
+                                        <p className="text-sm text-gray-500">{t.description}</p>
+                                    </div>
+
+                                    <span className={`px-3 py-1 rounded-xl text-xs font-semibold border ${statusColor(t.status)}`}>
+                                        {t.status}
+                                    </span>
+                                </div>
+
+                                {/* Info Row */}
+                                <div className="grid grid-cols-3 gap-3 text-sm text-gray-600 mb-4">
+                                    <div>
+                                        <p className="text-gray-400 text-xs">Category</p>
+                                        <p>{t.category}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-gray-400 text-xs">Priority</p>
+                                        <p>{t.priority}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-gray-400 text-xs">Assigned</p>
+                                        <p>{t.assignedToUserId || 'Unassigned'}</p>
+                                    </div>
+                                </div>
+
+                                {/* Assign Technician */}
+                                <div className="flex gap-2 mb-3">
+                                    <select
+                                        value={assignMap[id] || t.assignedToUserId || ''}
+                                        onChange={(e) =>
+                                            setAssignMap({
+                                                ...assignMap,
+                                                [id]: Number(e.target.value),
+                                            })
+                                        }
+                                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                                    >
+                                        <option value="">Select Technician</option>
+                                        {technicians.map((tech) => (
+                                            <option key={tech.id} value={tech.id}>
+                                                {tech.name}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <button
+                                        onClick={() => assignTech(id)}
+                                        className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm hover:bg-blue-700"
+                                    >
+                                        Assign
+                                    </button>
+                                </div>
+
+                                {/* Status Update */}
+                                <div className="flex gap-2">
+                                    <select
+                                        value={statusMap[id] || t.status}
+                                        onChange={(e) =>
+                                            setStatusMap({
+                                                ...statusMap,
+                                                [id]: e.target.value,
+                                            })
+                                        }
+                                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                                    >
+                                        <option value="OPEN">OPEN</option>
+                                        <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                        <option value="RESOLVED">RESOLVED</option>
+                                        <option value="CLOSED">CLOSED</option>
+                                        <option value="REJECTED">REJECTED</option>
+                                    </select>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Resolution notes"
+                                        value={notesMap[id] || ''}
+                                        onChange={(e) =>
+                                            setNotesMap({
+                                                ...notesMap,
+                                                [id]: e.target.value,
+                                            })
+                                        }
+                                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                                    />
+
+                                    <button
+                                        onClick={() => updateStatus(id)}
+                                        className="px-4 py-2 rounded-xl bg-green-600 text-white text-sm hover:bg-green-700"
+                                    >
+                                        Update
+                                    </button>
+                                </div>
+
+                            </div>
+                        );
+                    })}
+                </div>
+
+            </main>
+        </AdminLayout>
+    );
+};
+
+export default AdminTicketsPage;

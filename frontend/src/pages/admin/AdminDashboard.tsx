@@ -24,26 +24,27 @@ const AdminDashboard: React.FC = () => {
           notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
         ]);
 
-        const getValue = (result: any) => {
-          if (result.status === 'fulfilled' && result.value?.data) {
-            const resData = result.value.data;
-            // If it's wrapped in ApiResponse { success, data, ... }
-            if (resData.data && Array.isArray(resData.data)) {
-              return resData.data.length;
-            }
-            // If it's a direct array
-            if (Array.isArray(resData)) {
-              return resData.length;
-            }
+        const extractList = (result: any): any[] => {
+          if (result.status !== 'fulfilled' || result.value?.data === undefined) {
+            return [];
           }
-          return 0;
+          const payload = result.value.data;
+          if (Array.isArray(payload)) {
+            return payload;
+          }
+          return Array.isArray(payload?.data) ? payload.data : [];
         };
 
+        const users = extractList(results[0]);
+        const bookings = extractList(results[1]);
+        const tickets = extractList(results[2]);
+        const resources = extractList(results[3]);
+
         setStats({
-          users: results[0].status === 'fulfilled' ? getValue(results[0]) : 0,
-          bookings: results[1].status === 'fulfilled' ? getValue(results[1]) : 0,
-          tickets: results[2].status === 'fulfilled' ? getValue(results[2]) : 0,
-          resources: results[3].status === 'fulfilled' ? getValue(results[3]) : 0,
+          users: users.length,
+          bookings: bookings.filter((b: any) => b.status === 'PENDING' || b.status === 'APPROVED').length,
+          tickets: tickets.filter((t: any) => t.status === 'OPEN').length,
+          resources: resources.length,
           notifications: (results[4] as any).value?.data?.data?.count || 0
         });
       } catch (err) {
@@ -80,7 +81,7 @@ const AdminDashboard: React.FC = () => {
             <PremiumStatCards stats={stats} />
 
             {/* Action Buttons */}
-            <PremiumActionButtons stats={stats} />
+            <PremiumActionButtons />
 
             {/* Content Panels */}
             <PremiumContentPanels />

@@ -9,7 +9,7 @@ import java.time.LocalTime;
 
 @Data
 public class BookingRequest {
-    
+
     @NotNull(message = "Resource name is required")
     private String resourceName;
 

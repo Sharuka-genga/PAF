@@ -1,14 +1,13 @@
 package com.smartcampus.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "ticket_comments")
+@Table("ticket_comments")
 public class TicketComment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long ticketId;
     private Long userId;

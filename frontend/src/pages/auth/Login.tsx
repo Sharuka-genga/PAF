@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
@@ -22,7 +22,7 @@ const Login: React.FC = () => {
     console.log('Login component mounted');
     const params = new URLSearchParams(location.search);
     if (params.get('error') === 'oauth2') {
-      toast.error('Google Authentication failed or was cancelled.');
+      toast.error('Google Authentication failed or was cancelled.', { toastId: 'oauth2-err' });
     }
   }, [location]);
 

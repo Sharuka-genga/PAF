@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiHome, FiUsers, FiGrid, FiCalendar, FiAlertCircle, FiShield } from 'react-icons/fi';
+import { FiHome, FiUsers, FiGrid, FiCalendar, FiAlertCircle, FiSettings, FiShield } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
 interface AdminLayoutProps {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Resource } from '../types/resource';
 
 interface FloorMapProps {

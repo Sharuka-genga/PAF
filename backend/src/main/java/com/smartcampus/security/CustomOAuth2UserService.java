@@ -24,23 +24,27 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+        return processOAuth2User(userRequest, oAuth2User);
+    }
 
+    private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
+        Map<String, Object> attributes = oAuth2User.getAttributes();
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
         String picture = (String) attributes.get("picture");
-        String providerId = String.valueOf(attributes.getOrDefault("sub", attributes.get("id")));
+        String providerId = (String) attributes.get("sub");
 
         Optional<User> userOptional = userRepository.findByEmail(email);
+        User user;
         if (userOptional.isPresent()) {
-            User user = userOptional.get();
+            user = userOptional.get();
             user.setName(name);
             user.setProfilePicture(picture);
-            userRepository.save(user);
+            user = userRepository.save(user);
         } else {
             Set<Role> roles = new HashSet<>();
             roles.add(Role.USER);
-            User user = User.builder()
+            user = User.builder()
                     .name(name)
                     .email(email)
                     .profilePicture(picture)
@@ -48,9 +52,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .providerId(providerId)
                     .roles(roles)
                     .build();
-            userRepository.save(user);
+            user = userRepository.save(user);
         }
 
-        return oAuth2User;
+        return UserPrincipal.create(user, attributes);
     }
 }
