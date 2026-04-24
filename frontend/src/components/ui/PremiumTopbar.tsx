@@ -240,7 +240,7 @@ const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearch
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
         {/* Left side - Page title and subtitle */}
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">{title}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1 whitespace-nowrap">{title}</h1>
           {subtitle && (
             <p className="text-gray-600 text-sm">{subtitle}</p>
           )}

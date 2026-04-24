@@ -7,6 +7,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class UserPrincipal implements UserDetails, OAuth2User {
+public class UserPrincipal implements UserDetails, OAuth2User, OidcUser {
 
     private String id;
     private String name;
@@ -78,5 +81,20 @@ public class UserPrincipal implements UserDetails, OAuth2User {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public Map<String, Object> getClaims() {
+        return attributes;
+    }
+
+    @Override
+    public OidcIdToken getIdToken() {
+        return null; // Can be populated if needed
+    }
+
+    @Override
+    public OidcUserInfo getUserInfo() {
+        return null; // Can be populated if needed
     }
 }

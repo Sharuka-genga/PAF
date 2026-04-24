@@ -88,11 +88,13 @@ public class ResourceService {
         return imageUrl;
     }
 
+    @Transactional(readOnly = true)
     public List<ResourceResponse> getAll() {
         return resourceRepository.findAll()
                 .stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public ResourceResponse getById(String id) {
         return resourceRepository.findById(id)
                 .map(this::toResponse)

@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import type { User, Role } from '../../types';
-import PremiumSidebar from '../../components/ui/PremiumSidebar';
+import AdminLayout from '../../components/layouts/AdminLayout';
 import PremiumTopbar from '../../components/ui/PremiumTopbar';
 
 const AdminUsers: React.FC = () => {
@@ -114,24 +114,17 @@ const AdminUsers: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
-        <div className="flex">
-          <PremiumSidebar />
-          <div className="flex-1 p-6">
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          </div>
+      <AdminLayout>
+        <div className="flex justify-center items-center h-[calc(100vh-80px)]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7C3AED]"></div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="flex">
-        <PremiumSidebar />
-        <div className="flex-1 p-6">
+    <AdminLayout>
+      <div className="p-6">
           {/* Topbar */}
           <PremiumTopbar 
             title="User Management"
@@ -284,8 +277,6 @@ const AdminUsers: React.FC = () => {
               )}
             </div>
           </main>
-        </div>
-      </div>
 
       {/* Edit Roles Modal */}
       {editingUser && (
@@ -351,7 +342,8 @@ const AdminUsers: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

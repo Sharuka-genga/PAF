@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import TicketForm from '../pages/TicketForm';
 import TicketDetail from '../pages/TicketDetail';
+import UserLayout from '../components/layouts/UserLayout';
 
 const priorityColors: Record<string, string> = {
   LOW: 'bg-green-100 text-green-800',
@@ -201,5 +202,6 @@ export default function TicketsPage() {
         </div>
       )}
     </div>
+    </UserLayout>
   );
 }
