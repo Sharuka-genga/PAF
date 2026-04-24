@@ -12,6 +12,8 @@ const AdminTicketsPage: React.FC = () => {
     const [statusMap, setStatusMap] = useState<Record<number, string>>({});
     const [notesMap, setNotesMap] = useState<Record<number, string>>({});
 
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+
     useEffect(() => {
         loadTickets();
         loadTechnicians();
@@ -178,6 +180,27 @@ const AdminTicketsPage: React.FC = () => {
                                     </span>
                                 </div>
 
+                                {/* Ticket Images Preview */}
+                                {(t.image1 || t.image2 || t.image3) && (
+                                    <div className="flex gap-3 mt-4 flex-wrap">
+                                        {[t.image1, t.image2, t.image3]
+                                            .filter(Boolean)
+                                            .map((img, i) => (
+                                                <img
+                                                    key={i}
+                                                    src={img}
+                                                    alt={`ticket-${i}`}
+                                                    onClick={() => setPreviewImage(img!)}
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src =
+                                                            'https://dummyimage.com/200x200/e5e7eb/6b7280&text=No+Image';
+                                                    }}
+                                                    className="w-24 h-24 object-cover rounded-xl border border-gray-200 cursor-pointer hover:scale-105 transition"
+                                                />
+                                            ))}
+                                    </div>
+                                )}
+
                                 {/* Info Row */}
                                 <div className="grid grid-cols-3 gap-3 text-sm text-gray-600 mb-4">
                                     <div>
@@ -267,6 +290,18 @@ const AdminTicketsPage: React.FC = () => {
                             </div>
                         );
                     })}
+                    {previewImage && (
+                        <div
+                            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                            onClick={() => setPreviewImage(null)}
+                        >
+                            <img
+                                src={previewImage}
+                                className="max-w-4xl max-h-[90vh] rounded-lg shadow-lg"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </div>
+                    )}
                 </div>
 
             </main>
