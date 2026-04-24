@@ -9,18 +9,18 @@ import TicketDetail from '../pages/TicketDetail';
 import UserLayout from '../components/layouts/UserLayout';
 
 const priorityColors: Record<string, string> = {
-  LOW: 'bg-green-100 text-green-800',
-  MEDIUM: 'bg-yellow-100 text-yellow-800',
-  HIGH: 'bg-orange-100 text-orange-800',
-  CRITICAL: 'bg-red-100 text-red-800',
+  LOW: 'bg-green-100 text-green-700',
+  MEDIUM: 'bg-yellow-100 text-yellow-700',
+  HIGH: 'bg-orange-100 text-orange-700',
+  CRITICAL: 'bg-red-100 text-red-700',
 };
 
 const statusColors: Record<string, string> = {
-  OPEN: 'bg-blue-100 text-blue-800',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800',
-  RESOLVED: 'bg-green-100 text-green-800',
-  CLOSED: 'bg-gray-100 text-gray-800',
-  REJECTED: 'bg-red-100 text-red-800',
+  OPEN: 'bg-blue-100 text-blue-700',
+  IN_PROGRESS: 'bg-purple-100 text-purple-700',
+  RESOLVED: 'bg-green-100 text-green-700',
+  CLOSED: 'bg-gray-100 text-gray-700',
+  REJECTED: 'bg-red-100 text-red-700',
 };
 
 export default function TicketsPage() {
@@ -90,113 +90,147 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      {/* Header */}
+    <UserLayout>
+      <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Incident Tickets</h1>
+        <div className="mb-4">
+          <h1 className="text-xl font-semibold text-purple-700">
+            Incident Tickets
+          </h1>
+          <p className="text-sm text-gray-500">
+            Campus Operations Hub
+          </p>
+        </div>
+
         <div className="flex gap-2">
           <button
-            className="px-3 py-1 rounded text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
+            className="px-3 py-1 rounded text-sm bg-gray-100 hover:bg-gray-200"
             onClick={() => setSortDesc(!sortDesc)}
           >
-            {sortDesc ? '↓ Latest First' : '↑ Oldest First'}
+            {sortDesc ? '↓ Latest' : '↑ Oldest'}
           </button>
-          <Button onClick={() => setShowForm(true)}>+ New Ticket</Button>
+
+          <Button onClick={() => setShowForm(true)}>
+            + New Ticket
+          </Button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
-        <Card className="text-center p-3 bg-yellow-50">
-          <p className="text-2xl font-bold text-yellow-700">{stats.total}</p>
-          <p className="text-xs text-yellow-600">Total</p>
+      {/* STATS */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <Card className="text-center p-4 bg-gray-50 rounded-xl">
+          <p className="text-xl font-bold">{stats.total}</p>
+          <p className="text-sm text-gray-500">Total</p>
         </Card>
-        <Card className="text-center p-3 bg-blue-50">
-          <p className="text-2xl font-bold text-blue-700">{stats.open}</p>
-          <p className="text-xs text-blue-500">Open</p>
+
+        <Card className="text-center p-4 bg-blue-50 rounded-xl">
+          <p className="text-xl font-bold text-blue-600">{stats.open}</p>
+          <p className="text-sm text-blue-500">Open</p>
         </Card>
-        <Card className="text-center p-3 bg-purple-50">
-          <p className="text-2xl font-bold text-purple-700">{stats.inProgress}</p>
-          <p className="text-xs text-purple-500">In Progress</p>
+
+        <Card className="text-center p-4 bg-purple-50 rounded-xl">
+          <p className="text-xl font-bold text-purple-600">{stats.inProgress}</p>
+          <p className="text-sm text-purple-500">In Progress</p>
         </Card>
-        <Card className="text-center p-3 bg-green-50">
-          <p className="text-2xl font-bold text-green-700">{stats.resolved}</p>
-          <p className="text-xs text-green-500">Resolved</p>
+
+        <Card className="text-center p-4 bg-green-50 rounded-xl">
+          <p className="text-xl font-bold text-green-600">{stats.resolved}</p>
+          <p className="text-sm text-green-500">Resolved</p>
         </Card>
-        <Card className="text-center p-3 bg-pink-50">
-          <p className="text-2xl font-bold text-pink-700">{stats.closed}</p>
-          <p className="text-xs text-pink-600">Closed</p>
+
+        <Card className="text-center p-4 bg-gray-100 rounded-xl">
+          <p className="text-xl font-bold text-gray-700">{stats.closed}</p>
+          <p className="text-sm text-gray-500">Closed</p>
         </Card>
       </div>
 
-      {/* Search */}
+      {/* SEARCH */}
       <div className="mb-4">
         <Input
-          placeholder="🔍 Search by ID, title, description or location..."
+          placeholder="🔍 Search tickets..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* Filters */}
+      {/* FILTERS */}
       <div className="flex gap-2 mb-6 flex-wrap">
         {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'].map(status => (
           <Button
             key={status}
             variant={filterStatus === status ? 'default' : 'outline'}
             onClick={() => setFilterStatus(status)}
-            className="text-sm"
           >
             {status}
           </Button>
         ))}
       </div>
 
-      {/* Ticket List */}
+      {/* CARDS */}
       {loading ? (
         <p className="text-center text-gray-500">Loading tickets...</p>
       ) : filteredTickets.length === 0 ? (
         <p className="text-center text-gray-500">No tickets found.</p>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredTickets.map(ticket => (
             <Card
               key={ticket.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setSelectedTicket(ticket)}
+              className="p-4 rounded-[14px] border border-[#E2E0EC] bg-white flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition cursor-pointer"
             >
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="flex flex-col gap-1">
-                    <CardTitle className="text-lg">
-                      <span className="text-xs font-mono bg-gray-100 text-gray-500 px-2 py-0.5 rounded mr-2">ID-{ticket.id}</span>
-                      {ticket.title}
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[ticket.priority]}`}>
-                        {ticket.priority}
-                      </span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[ticket.status]}`}>
-                        {ticket.status}
-                      </span>
-                    </div>
+
+              {/* TOP CONTENT */}
+              <div>
+
+                <CardHeader className="p-0 mb-2">
+                  <CardTitle className="text-lg font-semibold text-[#1A1730]">
+
+                    <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded mr-2">
+                      #{String(ticket.id).padStart(3, '0')}
+                    </span>
+
+                    {ticket.title}
+
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                  <p className="text-sm text-[#5A5680] mb-3 line-clamp-2">
+                    {ticket.description}
+                  </p>
+
+                  <div className="flex gap-2 mb-3">
+                    <span className={`px-2 py-1 rounded text-xs ${priorityColors[ticket.priority]}`}>
+                      {ticket.priority}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs ${statusColors[ticket.status]}`}>
+                      {ticket.status}
+                    </span>
                   </div>
-                  <button
-                    className="px-3 py-1 rounded text-xs font-medium bg-red-600 text-white hover:bg-red-700 mt-1"
-                    onClick={(e) => handleDeleteTicket(ticket.id!, e)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm mb-2">{ticket.description}</p>
-                <div className="flex gap-4 text-xs text-gray-500">
-                  <span>📍 {ticket.location}</span>
-                  <span>🏷️ {ticket.category}</span>
-                  <span>📅 {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A'}</span>
-                </div>
-              </CardContent>
+
+                  <div className="flex justify-between text-xs text-[#9B97B8]">
+                    <span>📍 {ticket.location}</span>
+                    <span>
+                      {ticket.createdAt
+                        ? new Date(ticket.createdAt).toLocaleDateString()
+                        : 'N/A'}
+                    </span>
+                  </div>
+                </CardContent>
+
+              </div>
+
+              {/* 🔥 BOTTOM RIGHT DELETE BUTTON */}
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={(e) => handleDeleteTicket(ticket.id!, e)}
+                  className="px-3 py-1 text-xs font-medium rounded-[10px] border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition"
+                >
+                  Delete
+                </button>
+              </div>
+
             </Card>
           ))}
         </div>

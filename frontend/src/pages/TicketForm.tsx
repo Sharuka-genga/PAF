@@ -37,35 +37,35 @@ export default function TicketForm({ onSuccess, onCancel }: Props) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
 
-        // Real-time validation
-        const newErrors = { ...errors };
+    // Real-time validation
+    const newErrors = { ...errors };
 
-        if (name === 'email') {
-            if (!value.trim()) {
-                newErrors.email = 'Email is required';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                newErrors.email = 'Invalid email format (example@email.com)';
-            } else {
-                newErrors.email = '';
-            }
-        }
+    if (name === 'email') {
+      if (!value.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        newErrors.email = 'Invalid email format (example@email.com)';
+      } else {
+        newErrors.email = '';
+      }
+    }
 
-        if (name === 'phone') {
-            if (!value.trim()) {
-                newErrors.phone = 'Phone number is required';
-            } else if (!/^[0-9]{10}$/.test(value.replace(/\s/g, ''))) {
-                newErrors.phone = 'Phone must be exactly 10 digits';
-            } else {
-                newErrors.phone = '';
-            }
-        }
+    if (name === 'phone') {
+      if (!value.trim()) {
+        newErrors.phone = 'Phone number is required';
+      } else if (!/^[0-9]{10}$/.test(value.replace(/\s/g, ''))) {
+        newErrors.phone = 'Phone must be exactly 10 digits';
+      } else {
+        newErrors.phone = '';
+      }
+    }
 
-        setErrors(newErrors);
-    };
+    setErrors(newErrors);
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
@@ -76,17 +76,24 @@ export default function TicketForm({ onSuccess, onCancel }: Props) {
       return;
     }
 
-      const base64 = await fileToBase64(file);
+    const base64 = await fileToBase64(file);
 
-      // remove "data:image/...;base64,"
-      const cleanBase64 = base64.split(',')[1];
+    // remove "data:image/...;base64,"
+    // const cleanBase64 = base64.split(',')[1];
+    const fullBase64 = base64;
+
     const newPreviews = [...previews];
     newPreviews[index] = base64;
     setPreviews(newPreviews);
 
-      if (index === 0) setForm({ ...form, image1: cleanBase64 });
-      if (index === 1) setForm({ ...form, image2: cleanBase64 });
-      if (index === 2) setForm({ ...form, image3: cleanBase64 });
+    setForm(prev => ({
+      ...prev,
+      [`image${index + 1}`]: fullBase64
+    }));
+
+    // if (index === 0) setForm({ ...form, image1: cleanBase64 });
+    // if (index === 1) setForm({ ...form, image2: cleanBase64 });
+    // if (index === 2) setForm({ ...form, image3: cleanBase64 });
   };
 
   const removeImage = (index: number) => {
