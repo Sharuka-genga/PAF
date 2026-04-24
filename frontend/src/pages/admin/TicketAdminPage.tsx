@@ -146,13 +146,64 @@ const AdminTicketsPage: React.FC = () => {
             <main className="max-w-7xl mx-auto p-6 space-y-6">
 
                 {/* Header Card */}
-                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                {/* <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
                     <h1 className="text-xl font-bold text-gray-800">
                         Admin Ticket Workflow Control
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
                         Manage tickets from OPEN → IN_PROGRESS → RESOLVED → CLOSED or REJECTED
                     </p>
+                </div> */}
+
+                {/* stats display */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+
+                    {/* Title */}
+                    <h1 className="text-xl font-bold text-gray-800">
+                        Incident Ticket Dashboard
+                    </h1>
+
+                    <p className="text-sm text-gray-500 mt-1 mb-5">
+                        Monitor and manage incident lifecycle across the system
+                    </p>
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-5 gap-3">
+
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p className="text-xs text-gray-400">TOTAL</p>
+                            <p className="text-xl font-bold text-gray-800">{tickets.length}</p>
+                        </div>
+
+                        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                            <p className="text-xs text-blue-500">OPEN</p>
+                            <p className="text-xl font-bold text-blue-700">
+                                {tickets.filter(t => t.status === 'OPEN').length}
+                            </p>
+                        </div>
+
+                        <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                            <p className="text-xs text-purple-500">IN PROGRESS</p>
+                            <p className="text-xl font-bold text-purple-700">
+                                {tickets.filter(t => t.status === 'IN_PROGRESS').length}
+                            </p>
+                        </div>
+
+                        <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+                            <p className="text-xs text-green-500">RESOLVED</p>
+                            <p className="text-xl font-bold text-green-700">
+                                {tickets.filter(t => t.status === 'RESOLVED').length}
+                            </p>
+                        </div>
+
+                        <div className="bg-gray-100 rounded-xl p-4 border border-gray-200">
+                            <p className="text-xs text-gray-500">CLOSED</p>
+                            <p className="text-xl font-bold text-gray-700">
+                                {tickets.filter(t => t.status === 'CLOSED').length}
+                            </p>
+                        </div>
+
+                    </div>
                 </div>
 
                 {/* Tickets Grid */}
@@ -310,3 +361,4 @@ const AdminTicketsPage: React.FC = () => {
 };
 
 export default AdminTicketsPage;
+

@@ -192,41 +192,43 @@ export const ticketService = {
     return safeJson(response);
   },
 
-  // Update ticket status
+  assignTechnician: async (
+    ticketId: number,
+    technicianId: number
+  ): Promise<Ticket> => {
+    const res = await fetch(`${API_URL}/${ticketId}/assign`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ technicianId }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || 'Assign failed');
+    }
+
+    return res.json();
+  },
+
+  // Update status
   updateTicketStatus: async (
     id: number,
     status: string,
     resolutionNotes?: string
   ): Promise<Ticket> => {
-    const response = await fetch(`${API_URL}/${id}/status`, {
+    const res = await fetch(`${API_URL}/${id}/status`, {
       method: 'PATCH',
-      headers: authHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ status, resolutionNotes }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to update ticket status`);
-    }
+    if (!res.ok) throw new Error('Status update failed');
 
-    return safeJson(response);
-  },
-
-  // Assign technician
-  assignTechnician: async (
-    ticketId: number,
-    technicianId: number
-  ): Promise<Ticket> => {
-    const response = await fetch(`${API_URL}/${ticketId}/assign`, {
-      method: 'PATCH',
-      headers: authHeaders(),
-      body: JSON.stringify({ technicianId }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to assign technician`);
-    }
-
-    return safeJson(response);
+    return res.json();
   },
 
   // Delete ticket
