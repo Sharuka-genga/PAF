@@ -22,7 +22,6 @@ import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { useAuth } from './context/AuthContext';
 import { Toaster } from 'sonner';
 import 'react-toastify/dist/ReactToastify.css';
-import TicketAdminPage from './pages/admin/TicketAdminPage';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -112,54 +111,6 @@ function App() {
           <Route path="/admin/notifications" element={<AdminRoute><Notifications /></AdminRoute>} />
           <Route path="/admin/tickets" element={<AdminRoute><ComingSoon title="Admin - Tickets" /></AdminRoute>} />
           <Route path="/admin/settings" element={<AdminRoute><ComingSoon title="Admin Settings" /></AdminRoute>} />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute>
-                <AdminUsers />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/bookings"
-            element={<AdminRoute><ComingSoon title="Admin - Bookings" /></AdminRoute>}
-          />
-          <Route
-            path="/admin/tickets"
-            element={<AdminRoute><TicketAdminPage /></AdminRoute>}
-          />
-          <Route
-            path="/admin/resources"
-            element={
-              <AdminRoute>
-                <AdminResourcesPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/notifications"
-            element={
-              <AdminRoute>
-                <Notifications />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/settings"
-            element={
-              <AdminRoute>
-                <ComingSoon title="Admin Settings" />
-              </AdminRoute>
-            }
-          />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
