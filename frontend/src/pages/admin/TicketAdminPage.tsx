@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ticketService } from '../../services/ticketService';
-import { userAPI } from '../../services/api';
+import { adminAPI } from '../../services/api';
 import type { Ticket } from '../../types/ticket';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import PremiumTopbar from '../../components/ui/PremiumTopbar';
@@ -26,33 +26,62 @@ const AdminTicketsPage: React.FC = () => {
         }
     };
 
+    //     //console
+    //     const loadTechnicians = async () => {
+    //         try {
+    //             const res = await userAPI.getAllUsers();
+
+    //             // ADD THIS HERE (IMPORTANT)
+    //             console.log("RAW USERS RESPONSE:", res.data);
+
+    //             const techs = res.data.data.filter((u: any) =>
+    //                 u.roles?.includes('TECHNICIAN')
+    //             );
+
+    //             // OPTIONAL DEBUG
+    //             console.log("FILTERED TECHNICIANS:", techs);
+
+    //             setTechnicians(techs);
+    //         } catch (err) {
+    //             console.error('Failed to load technicians', err);
+    //         }
+    //     };
+    //     try {
+    //         const res = await userAPI.getAllUsers();
+
+    //         const techs = res.data.data.filter((u: any) =>
+    //             u.roles?.includes('TECHNICIAN')
+    //         );
+
+    //         setTechnicians(techs);
+    //     } catch (err) {
+    //         console.error('Failed to load technicians', err);
+    //         setTechnicians([]); // prevent crash
+    //     }
+    // };
     const loadTechnicians = async () => {
-        //console
-        const loadTechnicians = async () => {
-            try {
-                const res = await userAPI.getAllUsers();
-
-                // ADD THIS HERE (IMPORTANT)
-                console.log("RAW USERS RESPONSE:", res.data);
-
-                const techs = res.data.data.filter((u: any) =>
-                    u.roles?.includes('TECHNICIAN')
-                );
-
-                // OPTIONAL DEBUG
-                console.log("FILTERED TECHNICIANS:", techs);
-
-                setTechnicians(techs);
-            } catch (err) {
-                console.error('Failed to load technicians', err);
-            }
-        };
         try {
-            const res = await userAPI.getAllUsers();
+            const res = await adminAPI.getAllUsers();
 
-            const techs = res.data.data.filter((u: any) =>
-                u.roles?.includes('TECHNICIAN')
-            );
+            console.log("RAW USERS RESPONSE:", res.data);
+
+            const users = res?.data?.data || [];
+
+            const techs = users.filter((u: any) => {
+                const roles = u.roles;
+
+                if (!roles) return false;
+
+                // handle all possible formats
+                if (Array.isArray(roles)) {
+                    return roles.includes('TECHNICIAN') ||
+                        roles.some((r: any) => r.name === 'TECHNICIAN');
+                }
+
+                return roles === 'TECHNICIAN';
+            });
+
+            console.log("FILTERED TECHNICIANS:", techs);
 
             setTechnicians(techs);
         } catch (err) {
