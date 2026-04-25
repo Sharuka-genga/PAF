@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { Ticket } from '../types/ticket';
 import { ticketService } from '../services/ticketService';
 import { Button } from '../components/ui/button';
@@ -24,9 +25,11 @@ const statusColors: Record<string, string> = {
 };
 
 export default function TicketsPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(location.pathname === '/tickets/create');
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +38,14 @@ export default function TicketsPage() {
   useEffect(() => {
     loadTickets();
   }, []);
+
+  useEffect(() => {
+    if (location.pathname === '/tickets/create') {
+      setShowForm(true);
+    } else {
+      setShowForm(false);
+    }
+  }, [location.pathname]);
 
   const loadTickets = async () => {
     try {
@@ -49,6 +60,9 @@ export default function TicketsPage() {
 
   const handleTicketCreated = () => {
     setShowForm(false);
+    if (location.pathname === '/tickets/create') {
+      navigate('/tickets');
+    }
     loadTickets();
   };
 
@@ -82,7 +96,12 @@ export default function TicketsPage() {
   };
 
   if (showForm) {
-    return <TicketForm onSuccess={handleTicketCreated} onCancel={() => setShowForm(false)} />;
+    return <TicketForm onSuccess={handleTicketCreated} onCancel={() => {
+      setShowForm(false);
+      if (location.pathname === '/tickets/create') {
+        navigate('/tickets');
+      }
+    }} />;
   }
 
   if (selectedTicket) {
