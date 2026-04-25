@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiSearch, FiBell, FiLogOut, FiCheck, FiX } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { adminAPI, bookingAPI, ticketAPI, resourceAPI, notificationAPI } from '../../services/api';
@@ -11,6 +11,7 @@ interface PremiumTopbarProps {
 }
 
 const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearchResults }) => {
+  const navigate = useNavigate();
   const { user, logout, isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationCount, setNotificationCount] = useState(5);
@@ -149,56 +150,20 @@ const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearch
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        // Fetch real notifications from API
         const response = await notificationAPI.getUnread();
         const notificationsData = response.data?.data || [];
-        
-        // If no real data, use mock data as fallback
-        if (notificationsData.length === 0) {
-          const mockNotifications = [
-            {
-              id: '1',
-              title: 'Booking confirmed',
-              message: 'Your booking for Study Room A has been approved',
-              type: 'booking',
-              read: false,
-              createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString()
-            },
-            {
-              id: '2',
-              title: 'Ticket update',
-              message: 'Your support ticket has been resolved',
-              type: 'ticket',
-              read: false,
-              createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
-            },
-            {
-              id: '3',
-              title: 'System announcement',
-              message: 'New resources available in the library',
-              type: 'system',
-              read: true,
-              createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString()
-            }
-          ];
-          
-          setNotifications(mockNotifications);
-          const unreadCount = mockNotifications.filter(n => !n.read).length;
-          setNotificationCount(unreadCount);
-        } else {
-          setNotifications(notificationsData);
-          const unreadCount = notificationsData.filter(n => !n.read).length;
-          setNotificationCount(unreadCount);
-        }
+        setNotifications(notificationsData);
+        setNotificationCount(notificationsData.length);
       } catch (error) {
         console.error('Error fetching notifications:', error);
-        // Set empty state on error
         setNotifications([]);
         setNotificationCount(0);
       }
     };
 
     fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Polling for updates
+    return () => clearInterval(interval);
   }, []);
 
   const markAsRead = (notificationId: string) => {
@@ -208,9 +173,14 @@ const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearch
     setNotificationCount(prev => Math.max(0, prev - 1));
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setNotificationCount(0);
+  const markAllAsRead = async () => {
+    try {
+      await notificationAPI.markAllAsRead();
+      setNotifications([]);
+      setNotificationCount(0);
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -279,14 +249,41 @@ const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearch
                 <div className="max-h-64 overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map((n) => (
-                      <div key={n.id} className="p-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                        <p className="text-xs font-bold text-gray-900 mb-0.5">{n.title}</p>
+                      <div 
+                        key={n.id} 
+                        className="p-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                        onClick={async () => {
+                          try {
+                            await notificationAPI.markAsRead(n.id);
+                            setShowNotifications(false);
+                            navigate(isAdmin() ? '/admin/notifications' : '/notifications');
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-bold text-gray-900">{n.title}</p>
+                          <span className="text-[10px] text-gray-400">{formatTimeAgo(n.createdAt)}</span>
+                        </div>
                         <p className="text-xs text-gray-500 line-clamp-2">{n.message}</p>
                       </div>
                     ))
                   ) : (
-                    <div className="p-8 text-center text-gray-400 text-xs">No notifications</div>
+                    <div className="p-8 text-center text-gray-400 text-xs flex flex-col items-center gap-2">
+                      <FiBell className="w-8 h-8 opacity-20" />
+                      <p>No new notifications</p>
+                    </div>
                   )}
+                </div>
+                <div 
+                  className="p-3 bg-gray-50 text-center border-t border-gray-100 hover:bg-gray-100 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setShowNotifications(false);
+                    navigate(isAdmin() ? '/admin/notifications' : '/notifications');
+                  }}
+                >
+                  <span className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider">View All Notifications</span>
                 </div>
               </div>
             )}

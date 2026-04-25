@@ -6,23 +6,21 @@ import com.smartcampus.model.Ticket;
 import com.smartcampus.model.TicketComment;
 import com.smartcampus.repository.TicketCommentRepository;
 import com.smartcampus.repository.TicketRepository;
+import com.smartcampus.model.Notification;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final TicketCommentRepository ticketCommentRepository;
-
-    public TicketService(TicketRepository ticketRepository,
-                         TicketCommentRepository ticketCommentRepository) {
-        this.ticketRepository = ticketRepository;
-        this.ticketCommentRepository = ticketCommentRepository;
-    }
+    private final NotificationService notificationService;
 
     // Create ticket
     public Ticket createTicket(TicketRequest request) {
@@ -72,7 +70,18 @@ public class TicketService {
             ticket.setResolutionNotes(resolutionNotes);
         }
         ticket.setUpdatedAt(LocalDateTime.now());
-        return ticketRepository.save(ticket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        // Create notification for the user
+        notificationService.createNotification(
+                ticket.getCreatedByUserId(),
+                "Ticket Status Updated",
+                "Your ticket '" + ticket.getTitle() + "' is now " + status,
+                Notification.NotificationType.TICKET_STATUS_CHANGED,
+                String.valueOf(id)
+        );
+
+        return savedTicket;
     }
 
     // Assign technician
@@ -82,7 +91,27 @@ public class TicketService {
         ticket.setAssignedToUserId(technicianId);
         ticket.setStatus("IN_PROGRESS");
         ticket.setUpdatedAt(LocalDateTime.now());
-        return ticketRepository.save(ticket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        // Create notification for the user
+        notificationService.createNotification(
+                ticket.getCreatedByUserId(),
+                "Technician Assigned",
+                "A technician has been assigned to your ticket: " + ticket.getTitle(),
+                Notification.NotificationType.TICKET_ASSIGNED,
+                String.valueOf(ticketId)
+        );
+
+        // Create notification for the technician
+        notificationService.createNotification(
+                technicianId,
+                "New Ticket Assigned",
+                "You have been assigned to a new ticket: " + ticket.getTitle(),
+                Notification.NotificationType.TICKET_ASSIGNED,
+                String.valueOf(ticketId)
+        );
+
+        return savedTicket;
     }
 
     // Delete ticket
@@ -98,7 +127,21 @@ public class TicketService {
         comment.setComment(request.getComment());
         comment.setCreatedAt(LocalDateTime.now());
         comment.setUpdatedAt(LocalDateTime.now());
-        return ticketCommentRepository.save(comment);
+        TicketComment savedComment = ticketCommentRepository.save(comment);
+
+        // Notify ticket owner if someone else commented
+        Ticket ticket = ticketRepository.findById(request.getTicketId()).orElse(null);
+        if (ticket != null && !ticket.getCreatedByUserId().equals(request.getUserId())) {
+            notificationService.createNotification(
+                    ticket.getCreatedByUserId(),
+                    "New Comment on Ticket",
+                    "A new comment was added to your ticket: " + ticket.getTitle(),
+                    Notification.NotificationType.TICKET_COMMENT,
+                    String.valueOf(ticket.getId())
+            );
+        }
+
+        return savedComment;
     }
 
     // Get comments by ticket

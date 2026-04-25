@@ -20,13 +20,13 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validations
     if (!form.name || form.name.length < 2) {
       toast.error('Name must be at least 2 characters');
       return;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
       toast.error('Please enter a valid email address');
@@ -37,12 +37,12 @@ const Register: React.FC = () => {
       toast.error('Passwords do not match');
       return;
     }
-    
+
     if (form.password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
-    
+
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
@@ -63,7 +63,7 @@ const Register: React.FC = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-[#7C3AED]/20 blur-[120px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[100px]"></div>
         <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-purple-900/20 blur-[80px]"></div>
-        
+
         {/* Subtle Grid Overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
 
@@ -71,7 +71,7 @@ const Register: React.FC = () => {
           <div className="flex items-center gap-3">
             <Logo variant="white" size="lg" />
           </div>
-          
+
           <div>
             <h2 className="text-white text-5xl font-black tracking-tight leading-[1.1] mb-6">
               Start Your <br />

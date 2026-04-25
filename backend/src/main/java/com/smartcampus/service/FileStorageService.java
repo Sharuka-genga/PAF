@@ -59,7 +59,7 @@ public class FileStorageService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Return the relative path/URL
-            return "/uploads/profiles/" + newFileName;
+            return "/api/files/profiles/" + newFileName;
         } catch (IOException ex) {
             throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
         }
