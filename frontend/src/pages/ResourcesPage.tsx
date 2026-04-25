@@ -497,6 +497,7 @@ function ResourceCard({ resource, index, onClick }: { resource: Resource; index:
 
 /* ── Detail Drawer ── */
 function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () => void }) {
+  const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
   const tc = T[resource.type];
   const sc = S[resource.status];
@@ -733,6 +734,7 @@ function DetailDrawer({ resource, onClose }: { resource: Resource; onClose: () =
         {/* Actions */}
         <div style={{ padding:'12px 16px',borderTop:'1px solid #E2E0EC',display:'flex',flexDirection:'column',gap:7 }}>
           <button 
+            onClick={() => navigate(`/bookings/create?resourceId=${resource.id}`)}
             style={{ width:'100%',padding:'12px 0',background:'#7C3AED',color:'white',border:'none',borderRadius:12,fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.2s ease' }}
             onMouseEnter={e => (e.currentTarget.style.background = '#6D28D9')}
             onMouseLeave={e => (e.currentTarget.style.background = '#7C3AED')}

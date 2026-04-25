@@ -143,7 +143,7 @@ function App() {
           />
           <Route
             path="/tickets/create"
-            element={<PrivateRoute><ComingSoon title="Report Issue" /></PrivateRoute>}
+            element={<PrivateRoute><TicketsPage /></PrivateRoute>}
           />
           <Route
             path="/tickets/:id"
