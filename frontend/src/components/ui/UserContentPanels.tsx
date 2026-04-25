@@ -19,7 +19,11 @@ const UserContentPanels: React.FC = () => {
         ]);
 
         if (bookingsRes.status === 'fulfilled') {
-          setRecentBookings(bookingsRes.value.data?.data?.slice(0, 5) || []);
+          const bookingPayload = bookingsRes.value.data as any;
+          const bookingList = Array.isArray(bookingPayload)
+            ? bookingPayload
+            : (bookingPayload?.data || []);
+          setRecentBookings(bookingList.slice(0, 5));
         }
         if (ticketsRes.status === 'fulfilled') {
           setMyIncidents(ticketsRes.value.data?.data?.slice(0, 5) || []);

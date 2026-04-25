@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { resourceAPI, bookingAPI, ticketAPI, notificationAPI } from '../services/api';
-import { FiGrid, FiCalendar } from 'react-icons/fi';
+import { FiGrid } from 'react-icons/fi';
 import UserLayout from '../components/layouts/UserLayout';
 import PremiumSidebar from '../components/ui/PremiumSidebar';
 import PremiumTopbar from '../components/ui/PremiumTopbar';
@@ -25,8 +25,10 @@ const Dashboard: React.FC = () => {
         ]);
 
         const getCount = (result: any) => {
-          if (result.status === 'fulfilled' && result.value?.data?.data !== undefined) {
-            return Array.isArray(result.value.data.data) ? result.value.data.data.length : 0;
+          if (result.status === 'fulfilled' && result.value?.data !== undefined) {
+            const payload = result.value.data;
+            const list = Array.isArray(payload) ? payload : payload?.data;
+            return Array.isArray(list) ? list.length : 0;
           }
           return 0;
         };

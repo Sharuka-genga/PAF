@@ -16,6 +16,10 @@ import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import TicketAdminPage from './pages/admin/TicketAdminPage';
+import BookingPage from './pages/BookingPage';
+import MyBookingsPage from './pages/MyBookingsPage';
+import AdminBookingsPage from './pages/AdminBookingsPage';
+import { Toaster } from 'sonner';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -83,6 +87,7 @@ function App() {
           draggable
           theme="colored"
         />
+        <Toaster richColors position="top-right" />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
@@ -118,11 +123,15 @@ function App() {
           />
           <Route
             path="/bookings"
-            element={<PrivateRoute><ComingSoon title="My Bookings" /></PrivateRoute>}
+            element={<PrivateRoute><BookingPage /></PrivateRoute>}
           />
           <Route
             path="/bookings/create"
-            element={<PrivateRoute><ComingSoon title="New Booking" /></PrivateRoute>}
+            element={<PrivateRoute><BookingPage /></PrivateRoute>}
+          />
+          <Route
+            path="/my-bookings"
+            element={<PrivateRoute><MyBookingsPage /></PrivateRoute>}
           />
           <Route
             path="/tickets"
@@ -168,7 +177,7 @@ function App() {
           />
           <Route
             path="/admin/bookings"
-            element={<AdminRoute><ComingSoon title="Admin - Bookings" /></AdminRoute>}
+            element={<AdminRoute><AdminBookingsPage /></AdminRoute>}
           />
           <Route
             path="/admin/tickets"

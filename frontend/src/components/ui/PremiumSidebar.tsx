@@ -27,13 +27,23 @@ const PremiumSidebar: React.FC = () => {
   useEffect(() => {
     const fetchSidebarCounts = async () => {
       try {
-        const results = await Promise.allSettled([
-          adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
-          bookingAPI.getAll({}).catch(() => ({ data: { data: [] } })),
-          ticketAPI.getAll({}).catch(() => ({ data: { data: [] } })),
-          resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
-          notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
-        ]);
+        const results = await Promise.allSettled(
+          isAdmin()
+            ? [
+                adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
+                bookingAPI.getAll({}).catch(() => ({ data: { data: [] } })),
+                ticketAPI.getAll({}).catch(() => ({ data: { data: [] } })),
+                resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
+                notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
+              ]
+            : [
+                Promise.resolve({ data: { data: [] } }),
+                bookingAPI.getMyBookings().catch(() => ({ data: { data: [] } })),
+                ticketAPI.getMyTickets().catch(() => ({ data: { data: [] } })),
+                resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
+                notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
+              ]
+        );
 
         const getValue = (result: any) => {
           if (result.status === 'fulfilled' && result.value?.data?.data) {
@@ -58,7 +68,7 @@ const PremiumSidebar: React.FC = () => {
     };
 
     fetchSidebarCounts();
-  }, []);
+  }, [isAdmin]);
 
   const menuItems: MenuItem[] = [
     {
