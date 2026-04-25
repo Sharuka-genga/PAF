@@ -28,9 +28,23 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (userStr && config.headers) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user?.id) {
+          config.headers['X-User-Id'] = user.id;
+        }
+      } catch (error) {
+        console.error('Failed to parse cached user for request headers:', error);
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -80,11 +94,12 @@ export const resourceAPI = {
 export const bookingAPI = {
   create: (data: any) => api.post<ApiResponse<Booking>>('/bookings', data),
   getMyBookings: () => api.get<ApiResponse<Booking[]>>('/bookings/my'),
-  getById: (id: string) => api.get<ApiResponse<Booking>>(`/bookings/${id}`),
+  getById: (id: string | number) => api.get<ApiResponse<Booking>>(`/bookings/${id}`),
   getAll: (params: any) => api.get<ApiResponse<Booking[]>>('/bookings', { params }),
-  review: (id: string, data: any) => api.put<ApiResponse<Booking>>(`/bookings/${id}/review`, data),
-  cancel: (id: string) => api.patch<ApiResponse<void>>(`/bookings/${id}/cancel`),
-  getByResource: (resourceId: string) => api.get<ApiResponse<Booking[]>>(`/bookings/resource/${resourceId}`),
+  approve: (id: string | number) => api.put<ApiResponse<Booking>>(`/bookings/${id}/approve`),
+  reject: (id: string | number, reason: string) => api.put<ApiResponse<Booking>>(`/bookings/${id}/reject`, { reason }),
+  cancel: (id: string | number) => api.put<ApiResponse<Booking>>(`/bookings/${id}/cancel`),
+  delete: (id: string | number) => api.delete<ApiResponse<void>>(`/bookings/${id}`),
 };
 
 // Ticket APIs
@@ -131,6 +146,17 @@ export const chatAPI = {
   sendMessage: (message: string) => api.post<ApiResponse<any>>('/chat', { message }),
   createBooking: (data: any) => api.post<ApiResponse<any>>('/chat/book', data),
   createTicket: (data: any) => api.post<ApiResponse<any>>('/chat/ticket', data),
+};
+
+export const userAPI = {
+  getAllUsers: async () => {
+    return api.get('/users');
+  },
+
+  // Optional: get only technicians (if backend supports)
+  getTechnicians: async () => {
+    return api.get('/users/technicians');
+  }
 };
 
 export default api;

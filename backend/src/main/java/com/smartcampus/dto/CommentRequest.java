@@ -9,7 +9,7 @@ public class CommentRequest {
     private Long ticketId;
 
     @NotNull(message = "User ID is required")
-    private Long userId;
+    private String userId;
 
     @NotBlank(message = "Comment is required")
     private String comment;
@@ -17,8 +17,8 @@ public class CommentRequest {
     public Long getTicketId() { return ticketId; }
     public void setTicketId(Long ticketId) { this.ticketId = ticketId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }

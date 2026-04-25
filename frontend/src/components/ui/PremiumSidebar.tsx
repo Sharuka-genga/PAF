@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiUsers, FiGrid, FiCalendar, FiAlertCircle, FiSettings, FiLogOut, FiX, FiMenu, FiShield, FiTrendingUp, FiDatabase } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import Logo from './Logo';
 import { adminAPI, bookingAPI, ticketAPI, resourceAPI, notificationAPI } from '../../services/api';
 
 interface MenuItem {
@@ -26,13 +27,23 @@ const PremiumSidebar: React.FC = () => {
   useEffect(() => {
     const fetchSidebarCounts = async () => {
       try {
-        const results = await Promise.allSettled([
-          adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
-          bookingAPI.getAll({}).catch(() => ({ data: { data: [] } })),
-          ticketAPI.getAll({}).catch(() => ({ data: { data: [] } })),
-          resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
-          notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
-        ]);
+        const results = await Promise.allSettled(
+          isAdmin()
+            ? [
+                adminAPI.getAllUsers().catch(() => ({ data: { data: [] } })),
+                bookingAPI.getAll({}).catch(() => ({ data: { data: [] } })),
+                ticketAPI.getAll({}).catch(() => ({ data: { data: [] } })),
+                resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
+                notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
+              ]
+            : [
+                Promise.resolve({ data: { data: [] } }),
+                bookingAPI.getMyBookings().catch(() => ({ data: { data: [] } })),
+                ticketAPI.getMyTickets().catch(() => ({ data: { data: [] } })),
+                resourceAPI.getAll().catch(() => ({ data: { data: [] } })),
+                notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
+              ]
+        );
 
         const getValue = (result: any) => {
           if (result.status === 'fulfilled' && result.value?.data?.data) {
@@ -57,7 +68,7 @@ const PremiumSidebar: React.FC = () => {
     };
 
     fetchSidebarCounts();
-  }, []);
+  }, [isAdmin]);
 
   const menuItems: MenuItem[] = [
     {
@@ -111,20 +122,12 @@ const PremiumSidebar: React.FC = () => {
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center justify-between p-4 border-b border-[rgba(255,255,255,0.08)] h-16">
             {!isCollapsed ? (
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] rounded-xl flex items-center justify-center mr-3 shadow-glow-purple">
-                  <FiShield className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-white font-bold text-lg">Smart Campus Hub</h2>
-                  <p className="text-[#9CA3AF] text-xs">Student Portal</p>
-                </div>
-              </div>
+              <Logo variant="white" size="md" />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] rounded-xl flex items-center justify-center mx-auto shadow-glow-purple">
-                <FiShield className="w-6 h-6 text-white" />
+              <div className="mx-auto">
+                <Logo size="sm" variant="white" className="!gap-0 [&>div:last-child]:hidden" />
               </div>
             )}
             
@@ -132,63 +135,42 @@ const PremiumSidebar: React.FC = () => {
               {/* Mobile Close Button */}
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="text-[#9CA3AF] hover:text-white p-2 rounded-xl hover:bg-[rgba(124,58,237,0.1)] transition-colors lg:hidden"
+                className="text-[#9CA3AF] hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors lg:hidden"
               >
-                <FiX className="w-5 h-5" />
+                <FiX className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             <div className="mb-4">
               {!isCollapsed && (
-                <p className="text-[#6B7280] text-xs font-semibold uppercase tracking-wider mb-3 font-inter">Manage</p>
+                <p className="text-gray-600 text-[10px] font-bold uppercase tracking-[2px] mb-4 px-4">Management</p>
               )}
               {menuItems.slice(0, 5).map((item) => (
                 <Link
                   key={item.title}
                   to={item.path}
                   className={`
-                    sidebar-item-premium group
-                    ${isActive(item.path) ? 'active' : ''}
+                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                    ${isActive(item.path) 
+                      ? 'bg-[#7C3AED]/10 text-white border border-[#7C3AED]/20 shadow-sm' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'}
                   `}
                 >
-                  <span className={`${isActive(item.path) ? 'text-white' : 'text-[#9CA3AF]'} group-hover:text-white transition-colors`}>
+                  <span className={`${isActive(item.path) ? 'text-[#A78BFA]' : 'text-gray-500'} group-hover:text-white transition-colors`}>
                     {item.icon}
                   </span>
                   {!isCollapsed && (
                     <>
-                      <span className="text-white font-medium">{item.title}</span>
+                      <span className="font-semibold text-sm">{item.title}</span>
                       {item.badge && (
-                        <span className="ml-auto bg-[rgba(124,58,237,0.2)] text-[#A78BFA] text-xs px-2 py-1 rounded-full">
+                        <span className="ml-auto bg-[#7C3AED] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                           {item.badge}
                         </span>
                       )}
                     </>
-                  )}
-                </Link>
-              ))}
-            </div>
-
-            <div className="mb-4">
-              {!isCollapsed && (
-                <p className="text-[#6B7280] text-xs font-semibold uppercase tracking-wider mb-3 font-inter">Admin</p>
-              )}
-              {menuItems.slice(5).map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.path}
-                  className={`
-                    sidebar-item-premium group
-                    ${isActive(item.path) ? 'active' : ''}
-                  `}
-                >
-                  <span className={`${isActive(item.path) ? 'text-white' : 'text-[#9CA3AF]'} group-hover:text-white transition-colors`}>
-                    {item.icon}
-                  </span>
-                  {!isCollapsed && (
-                    <span className="text-white font-medium">{item.title}</span>
                   )}
                 </Link>
               ))}
@@ -199,41 +181,41 @@ const PremiumSidebar: React.FC = () => {
           <div className="p-4 border-t border-[rgba(255,255,255,0.08)]">
             {!isCollapsed ? (
               <div className="space-y-3">
-                <div className="flex items-center p-3 rounded-xl bg-[rgba(17,24,43,0.6)] border border-[rgba(255,255,255,0.08)]">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#22D3EE] via-[#10B981] to-[#F97316] rounded-full flex items-center justify-center mr-3">
+                <div className="flex items-center p-3 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="w-10 h-10 bg-gray-800 border border-gray-700 rounded-full flex items-center justify-center mr-3 shadow-sm">
                     <span className="text-white font-bold text-sm">
                       {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm truncate">
+                    <p className="text-white font-semibold text-sm truncate">
                       {user?.name || 'Admin User'}
                     </p>
-                    <p className="text-[#9CA3AF] text-xs truncate">
+                    <p className="text-gray-500 text-[10px] font-medium truncate tracking-tight">
                       {user?.email || 'admin@campus.edu'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={logout}
-                  className="w-full sidebar-item-premium group hover:bg-[rgba(239,68,68,0.1)]"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
                 >
-                  <FiLogOut className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#EF4444]" />
-                  <span className="text-white font-medium">Logout</span>
+                  <FiLogOut className="w-5 h-5" />
+                  <span className="font-semibold text-sm">Sign Out</span>
                 </button>
               </div>
             ) : (
               <div className="flex flex-col items-center space-y-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#22D3EE] via-[#10B981] to-[#F97316] rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-gray-800 border border-gray-700 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                   </span>
                 </div>
                 <button
                   onClick={logout}
-                  className="p-3 rounded-xl hover:bg-[rgba(239,68,68,0.1)] transition-colors"
+                  className="p-3 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 >
-                  <FiLogOut className="w-5 h-5 text-[#9CA3AF] hover:text-[#EF4444]" />
+                  <FiLogOut className="w-5 h-5" />
                 </button>
               </div>
             )}

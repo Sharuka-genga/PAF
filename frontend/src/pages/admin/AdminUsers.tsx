@@ -124,13 +124,10 @@ const AdminUsers: React.FC = () => {
 
   return (
     <AdminLayout>
+      <PremiumTopbar 
+        title="User Management"
+      />
       <div className="p-6">
-          {/* Topbar */}
-          <PremiumTopbar 
-            title="User Management"
-            subtitle="Manage user roles and permissions"
-          />
-
           {/* Main Content */}
           <main className="max-w-7xl mx-auto">
             {/* Search */}

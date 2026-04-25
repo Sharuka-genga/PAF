@@ -11,13 +11,13 @@ import java.util.List;
 public interface TicketRepository extends CrudRepository<Ticket, Long> {
 
     @Query("SELECT * FROM tickets WHERE created_by_user_id = :userId")
-    List<Ticket> findByCreatedByUserId(Long userId);
+    List<Ticket> findByCreatedByUserId(String userId);
 
     @Query("SELECT * FROM tickets WHERE status = :status")
     List<Ticket> findByStatus(String status);
 
     @Query("SELECT * FROM tickets WHERE assigned_to_user_id = :userId")
-    List<Ticket> findByAssignedToUserId(Long userId);
+    List<Ticket> findByAssignedToUserId(String userId);
 
     @Query("SELECT * FROM tickets WHERE priority = :priority")
     List<Ticket> findByPriority(String priority);

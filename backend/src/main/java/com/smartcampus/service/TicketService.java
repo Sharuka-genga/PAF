@@ -54,7 +54,7 @@ public class TicketService {
     }
 
     // Get tickets by user
-    public List<Ticket> getTicketsByUser(Long userId) {
+    public List<Ticket> getTicketsByUser(String userId) {
         return ticketRepository.findByCreatedByUserId(userId);
     }
 
@@ -76,7 +76,7 @@ public class TicketService {
     }
 
     // Assign technician
-    public Ticket assignTechnician(Long ticketId, Long technicianId) {
+    public Ticket assignTechnician(Long ticketId, String technicianId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
         ticket.setAssignedToUserId(technicianId);
@@ -107,7 +107,7 @@ public class TicketService {
     }
 
     // Update comment
-    public TicketComment updateComment(Long commentId, Long userId, String newComment) {
+    public TicketComment updateComment(Long commentId, String userId, String newComment) {
         TicketComment comment = ticketCommentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
         if (!comment.getUserId().equals(userId)) {
@@ -119,7 +119,7 @@ public class TicketService {
     }
 
     // Delete comment
-    public void deleteComment(Long commentId, Long userId) {
+    public void deleteComment(Long commentId, String userId) {
         TicketComment comment = ticketCommentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
         if (!comment.getUserId().equals(userId)) {

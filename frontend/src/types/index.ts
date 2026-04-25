@@ -28,24 +28,42 @@ export interface AuthResponse {
   roles: Role[];
 }
 
+export type ResourceType = 'LECTURE_HALL' | 'LAB' | 'MEETING_ROOM' | 'SPORTS_FACILITY' | 'LIBRARY' | 'OTHER';
+export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+export interface AvailabilityWindow {
+  dayOfWeek: DayOfWeek;
+  openTime: string;
+  closeTime: string;
+}
+
 export interface Resource {
   id: string;
   name: string;
-  type: string;
+  type: ResourceType | string;
   location: string;
   description: string;
   available: boolean;
+  capacity?: number;
+  status?: ResourceStatus | string;
+  imageUrl?: string;
+  availabilityWindows?: AvailabilityWindow[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Booking {
-  id: string;
+  id: number;
   userId: string;
-  resourceId: string;
+  resourceName: string;
+  date: string;
   startTime: string;
   endTime: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
   purpose: string;
-  resourceName?: string;
+  attendees: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'CONFIRMED';
+  rejectionReason?: string;
 }
 
 export interface Ticket {

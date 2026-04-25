@@ -236,14 +236,11 @@ const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearch
   };
 
   return (
-    <header className="glass-card-white-strong h-20 mb-6 border-b border-[rgba(0,0,0,0.08)] sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-        {/* Left side - Page title and subtitle */}
+    <header className="bg-white h-16 border-b border-gray-100 sticky top-0 z-50">
+      <div className="w-full px-8 h-full flex items-center justify-between">
+        {/* Left side - Page title */}
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1 whitespace-nowrap">{title}</h1>
-          {subtitle && (
-            <p className="text-gray-600 text-sm">{subtitle}</p>
-          )}
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">{title}</h1>
         </div>
 
         {/* Right side - Search and notifications */}
@@ -252,187 +249,68 @@ const PremiumTopbar: React.FC<PremiumTopbarProps> = ({ title, subtitle, onSearch
           <div className="relative">
             <input
               type="text"
-              placeholder={isAdmin() ? "Search users, tickets, resources..." : "Search bookings, tickets, resources..."}
+              placeholder={isAdmin() ? "Search everything..." : "Quick search..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-white w-64 pl-10"
+              className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] block w-64 pl-10 p-2 transition-all"
             />
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] w-4 h-4" />
-            
-            {/* Search Results Dropdown */}
-            {(searchQuery && searchResults.length > 0) && (
-              <div className="absolute top-full mt-2 w-64 glass-card-white-strong border border-[rgba(0,0,0,0.08)] rounded-xl shadow-lg z-[1000] max-h-80 overflow-y-auto">
-                <div className="p-2">
-                  <p className="text-xs text-gray-500 font-medium mb-2 px-2">Search Results</p>
-                  {searchResults.map((result, index) => (
-                    <a
-                      key={`${result.type}-${result.id}-${index}`}
-                      href={result.link}
-                      className="block p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          result.type === 'user' ? 'bg-blue-100 text-blue-600' :
-                          result.type === 'ticket' ? 'bg-orange-100 text-orange-600' :
-                          'bg-green-100 text-green-600'
-                        }`}>
-                          {result.type === 'user' ? 'U' : result.type === 'ticket' ? 'T' : 'R'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{result.title}</p>
-                          <p className="text-xs text-gray-500 truncate">{result.subtitle}</p>
-                        </div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* No Results */}
-            {searchQuery && searchResults.length === 0 && !isSearching && (
-              <div className="absolute top-full mt-2 w-64 glass-card-white-strong border border-[rgba(0,0,0,0.08)] rounded-xl shadow-lg z-[1000]">
-                <div className="p-4 text-center">
-                  <p className="text-sm text-gray-500">No results found</p>
-                  <p className="text-xs text-gray-400 mt-1">Try searching for users, tickets, or resources</p>
-                </div>
-              </div>
-            )}
-            
-            {/* Loading State */}
-            {isSearching && (
-              <div className="absolute top-full mt-2 w-64 glass-card-white-strong border border-[rgba(0,0,0,0.08)] rounded-xl shadow-lg z-[1000]">
-                <div className="p-4 text-center">
-                  <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-                  <p className="text-sm text-gray-500 mt-2">Searching...</p>
-                </div>
-              </div>
-            )}
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           </div>
 
           {/* Notification Bell */}
           <div className="relative">
             <button 
-              className="glass-card-white p-3 hover:bg-[rgba(124,58,237,0.05)] transition-all duration-250 group relative"
+              className="p-2.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all relative"
               onClick={() => setShowNotifications(!showNotifications)}
             >
-              <FiBell className="w-5 h-5 text-gray-600 group-hover:text-gray-900 transition-colors" />
+              <FiBell className="w-5 h-5" />
               {notificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#F97316] to-[#EF4444] text-white text-xs rounded-full flex items-center justify-center font-semibold shadow-glow-orange">
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </span>
+                <span className="absolute top-2 right-2 w-2 h-2 bg-[#7C3AED] rounded-full border-2 border-white"></span>
               )}
             </button>
             
-            {/* Notification Dropdown */}
+            {/* Notification Dropdown (simplified) */}
             {showNotifications && (
-              <div className="absolute top-full mt-2 w-80 glass-card-white-strong border border-[rgba(0,0,0,0.08)] rounded-xl shadow-lg z-[1000] max-h-96 overflow-hidden">
-                {/* Header */}
-                <div className="p-4 border-b border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
-                    {notificationCount > 0 && (
-                      <button
-                        onClick={markAllAsRead}
-                        className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        Mark all as read
-                      </button>
-                    )}
-                  </div>
+              <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl z-[1000] overflow-hidden">
+                <div className="p-4 border-b border-gray-50 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
+                  <button onClick={markAllAsRead} className="text-[10px] font-bold text-[#7C3AED] uppercase tracking-wider">Mark all read</button>
                 </div>
-                
-                {/* Notifications List */}
                 <div className="max-h-64 overflow-y-auto">
                   {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                          !notification.read ? 'bg-blue-50/30' : ''
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${getNotificationIcon(notification.type)}`}>
-                            {notification.type === 'user' ? 'U' :
-                             notification.type === 'ticket' ? 'T' :
-                             notification.type === 'system' ? 'S' :
-                             notification.type === 'booking' ? 'B' : 'A'}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <p className={`text-sm font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
-                                  {notification.title}
-                                </p>
-                                <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                                <p className="text-xs text-gray-500 mt-2">{formatTimeAgo(notification.createdAt)}</p>
-                              </div>
-                              {!notification.read && (
-                                <button
-                                  onClick={() => markAsRead(notification.id)}
-                                  className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
-                                  title="Mark as read"
-                                >
-                                  <FiCheck className="w-3 h-3 text-gray-500" />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                    notifications.map((n) => (
+                      <div key={n.id} className="p-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <p className="text-xs font-bold text-gray-900 mb-0.5">{n.title}</p>
+                        <p className="text-xs text-gray-500 line-clamp-2">{n.message}</p>
                       </div>
                     ))
                   ) : (
-                    <div className="p-8 text-center">
-                      <FiBell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-sm text-gray-500">No notifications</p>
-                      <p className="text-xs text-gray-400 mt-1">You're all caught up!</p>
-                    </div>
+                    <div className="p-8 text-center text-gray-400 text-xs">No notifications</div>
                   )}
-                </div>
-                
-                {/* Footer */}
-                <div className="p-3 border-t border-gray-200">
-                  <Link 
-                    to={isAdmin() ? "/admin/notifications" : "/notifications"} 
-                    className="block w-full text-center text-xs text-blue-600 hover:text-blue-700 font-medium"
-                    onClick={() => setShowNotifications(false)}
-                  >
-                    View all notifications
-                  </Link>
                 </div>
               </div>
             )}
           </div>
 
-          {/* User Avatar */}
-          <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-            <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#22D3EE] via-[#10B981] to-[#F97316]">
-              {user?.profilePicture ? (
-                <img 
-                  src={user.profilePicture.startsWith('http') ? user.profilePicture : `${window.location.origin}${user.profilePicture}`} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-white font-bold text-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
-              )}
+          {/* User Profile */}
+          <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
+            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+              <span className="text-gray-700 font-bold text-xs">
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
             </div>
-            <div className="hidden md:block">
-              <p className="text-gray-900 font-medium text-sm">{user?.name || 'User'}</p>
-              <p className="text-gray-600 text-xs">
-                {user?.roles?.includes('ADMIN') ? 'Administrator' : 
-                 user?.roles?.includes('TECHNICIAN') ? 'Technician' : 'Student'}
+            <div className="hidden lg:block">
+              <p className="text-gray-900 font-bold text-xs">{user?.name || 'User'}</p>
+              <p className="text-gray-400 text-[10px] font-medium">
+                {user?.roles?.includes('ADMIN') ? 'Administrator' : 'Student'}
               </p>
             </div>
             <button
               onClick={logout}
-              className="p-2 rounded-xl hover:bg-[rgba(239,68,68,0.1)] transition-all duration-250 group"
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               title="Logout"
             >
-              <FiLogOut className="w-4 h-4 text-gray-600 group-hover:text-red-600 transition-colors" />
+              <FiLogOut className="w-4 h-4" />
             </button>
           </div>
         </div>

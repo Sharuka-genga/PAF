@@ -10,7 +10,7 @@ public class TicketComment {
     @Id
     private Long id;
     private Long ticketId;
-    private Long userId;
+    private String userId;
     private String comment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -23,8 +23,8 @@ public class TicketComment {
     public Long getTicketId() { return ticketId; }
     public void setTicketId(Long ticketId) { this.ticketId = ticketId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }

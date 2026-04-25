@@ -24,18 +24,27 @@ const AdminDashboard: React.FC = () => {
           notificationAPI.getUnreadCount().catch(() => ({ data: { data: { count: 0 } } }))
         ]);
 
-        const getValue = (result: any) => {
-          if (result.status === 'fulfilled' && result.value?.data?.data) {
-            return result.value.data.data.length || 0;
+        const extractList = (result: any): any[] => {
+          if (result.status !== 'fulfilled' || result.value?.data === undefined) {
+            return [];
           }
-          return 0;
+          const payload = result.value.data;
+          if (Array.isArray(payload)) {
+            return payload;
+          }
+          return Array.isArray(payload?.data) ? payload.data : [];
         };
 
+        const users = extractList(results[0]);
+        const bookings = extractList(results[1]);
+        const tickets = extractList(results[2]);
+        const resources = extractList(results[3]);
+
         setStats({
-          users: results[0].status === 'fulfilled' ? (results[0].value.data?.data || []).length : 0,
-          bookings: results[1].status === 'fulfilled' ? (results[1].value.data?.data || []).filter((b: any) => b.status !== 'CANCELLED').length : 0,
-          tickets: results[2].status === 'fulfilled' ? (results[2].value.data?.data || []).filter((t: any) => t.status === 'OPEN').length : 0,
-          resources: results[3].status === 'fulfilled' ? (results[3].value.data?.data || []).length : 0,
+          users: users.length,
+          bookings: bookings.filter((b: any) => b.status === 'PENDING' || b.status === 'APPROVED').length,
+          tickets: tickets.filter((t: any) => t.status === 'OPEN').length,
+          resources: resources.length,
           notifications: (results[4] as any).value?.data?.data?.count || 0
         });
       } catch (err) {
@@ -60,11 +69,10 @@ const AdminDashboard: React.FC = () => {
       {/* Topbar */}
       <PremiumTopbar 
         title="Admin Dashboard"
-        subtitle={`Welcome back, ${user?.name || 'Admin'}`}
       />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-6">
+      <main className="max-w-none px-8 py-6">
             {/* Hero Banner */}
             <PremiumHeroBanner />
 

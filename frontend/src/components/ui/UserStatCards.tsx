@@ -17,7 +17,6 @@ const UserStatCards: React.FC<StatCardProps> = ({ stats }) => {
       label: 'Available Resources',
       value: stats.resources,
       icon: <FiGrid className="w-6 h-6" />,
-      color: 'cyan',
       link: '/resources',
       delta: '+12%',
       trend: 'up'
@@ -26,7 +25,6 @@ const UserStatCards: React.FC<StatCardProps> = ({ stats }) => {
       label: 'My Bookings',
       value: stats.bookings,
       icon: <FiCalendar className="w-6 h-6" />,
-      color: 'green',
       link: '/bookings',
       delta: '+5%',
       trend: 'up'
@@ -35,7 +33,6 @@ const UserStatCards: React.FC<StatCardProps> = ({ stats }) => {
       label: 'Open Tickets',
       value: stats.tickets,
       icon: <FiAlertCircle className="w-6 h-6" />,
-      color: 'orange',
       link: '/tickets',
       delta: '-3%',
       trend: 'down'
@@ -44,51 +41,33 @@ const UserStatCards: React.FC<StatCardProps> = ({ stats }) => {
       label: 'Notifications',
       value: stats.notifications,
       icon: <FiBell className="w-6 h-6" />,
-      color: 'purple',
       link: '/notifications',
       delta: '+8%',
       trend: 'up'
     }
   ];
 
-  const getStyles = (color: string) => {
-    switch (color) {
-      case 'cyan': return 'from-[#22D3EE] via-[#06B6D4] to-[#0891B2] shadow-glow-cyan text-cyan-600';
-      case 'green': return 'from-[#10B981] via-[#059669] to-[#047857] shadow-glow-green text-green-600';
-      case 'orange': return 'from-[#F97316] via-[#EA580C] to-[#DC2626] shadow-glow-orange text-orange-600';
-      case 'purple': return 'from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] shadow-glow-purple text-purple-600';
-      default: return 'from-gray-400 to-gray-600';
-    }
-  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {statCards.map((card) => (
         <Link key={card.label} to={card.link} className="block group">
-          <div className="glass-card-white-strong p-6 relative overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg border border-[rgba(0,0,0,0.05)]">
-            <div className="flex items-start justify-between relative z-10">
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md group-hover:border-[#7C3AED]/20">
+            <div className="flex items-start justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium mb-1">{card.label}</p>
-                <h3 className="text-3xl font-bold text-gray-900">{card.value}</h3>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">{card.label}</p>
+                <h3 className="text-xl font-bold text-gray-900">{card.value}</h3>
               </div>
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getStyles(card.color).split(' shadow')[0]} flex items-center justify-center text-white shadow-lg`}>
-                {card.icon}
+              <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center border border-[#7C3AED]/10 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors duration-300">
+                {React.cloneElement(card.icon as React.ReactElement, { className: 'w-5 h-5' })}
               </div>
             </div>
             
-            <div className="mt-4 flex items-center gap-2 relative z-10">
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${card.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <div className="mt-4 flex items-center gap-2">
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${card.trend === 'up' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                 {card.delta}
               </span>
-              <span className="text-gray-400 text-xs">vs last month</span>
-            </div>
-
-            {/* Bottom progress bar for visual flair */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100 overflow-hidden">
-              <div 
-                className={`h-full bg-gradient-to-r ${getStyles(card.color).split(' shadow')[0]}`}
-                style={{ width: '65%' }}
-              ></div>
+              <span className="text-gray-400 text-[10px] font-medium">vs last month</span>
             </div>
           </div>
         </Link>
