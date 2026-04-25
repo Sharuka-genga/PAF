@@ -49,8 +49,8 @@ public class AdminController {
     @PutMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<User>> updateUserDetails(
             @PathVariable String userId,
-            @RequestBody User userDetails) {
-        User user = userService.updateUser(userId, userDetails);
+            @jakarta.validation.Valid @RequestBody com.smartcampus.dto.request.UpdateUserAdminRequest request) {
+        User user = userService.updateUser(userId, request.getName(), request.getEmail());
         user.setPassword(null);
         return ResponseEntity.ok(ApiResponse.success("User details updated successfully", user));
     }

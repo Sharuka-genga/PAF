@@ -59,9 +59,7 @@ export const authAPI = {
   deleteMe: () => api.delete<ApiResponse<void>>('/auth/me'),
   getPreferences: () => api.get<ApiResponse<UserPreferences>>('/auth/me/preferences'),
   updatePreferences: (data: any) => api.patch<ApiResponse<UserPreferences>>('/auth/me/preferences', data),
-  uploadProfileImage: (formData: FormData) => api.post<ApiResponse<User>>('/auth/me/profile-image', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  uploadProfileImage: (formData: FormData) => api.post<ApiResponse<User>>('/auth/me/profile-image', formData),
   removeProfileImage: () => api.delete<ApiResponse<User>>('/auth/me/profile-image'),
 };
 
@@ -73,9 +71,7 @@ export const resourceAPI = {
   create: (data: any) => api.post<ApiResponse<Resource>>('/resources', data),
   update: (id: string, data: any) => api.put<ApiResponse<Resource>>(`/resources/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}`),
-  uploadImage: (id: string, formData: FormData) => api.post<ApiResponse<Resource>>(`/resources/${id}/image`, formData, {
-    headers: { 'Content-Type': undefined },
-  }),
+  uploadImage: (id: string, formData: FormData) => api.post<ApiResponse<Resource>>(`/resources/${id}/image`, formData),
   deleteImage: (id: string) => api.delete<ApiResponse<void>>(`/resources/${id}/image`),
   patchStatus: (id: string, status: string) => api.patch<ApiResponse<Resource>>(`/resources/${id}/status`, { status }),
 };
@@ -93,9 +89,7 @@ export const bookingAPI = {
 
 // Ticket APIs
 export const ticketAPI = {
-  create: (formData: FormData) => api.post<ApiResponse<Ticket>>('/tickets', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  create: (formData: FormData) => api.post<ApiResponse<Ticket>>('/tickets', formData),
   getMyTickets: () => api.get<ApiResponse<Ticket[]>>('/tickets/my'),
   getById: (id: string) => api.get<ApiResponse<Ticket>>(`/tickets/${id}`),
   getAll: (params?: any) => api.get<ApiResponse<Ticket[]>>('/tickets', { params }),

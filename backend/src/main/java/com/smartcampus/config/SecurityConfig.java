@@ -70,6 +70,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/oauth2/**").permitAll()
                 .requestMatchers("/login/oauth2/code/*").permitAll()
+                .requestMatchers("/api/files/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/resources", "/api/resources/**").permitAll()
 
                 // Admin endpoints

@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -20,6 +21,12 @@ import java.util.Set;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+
+    @Value("${app.auth.admin-email-regex:^(?i)admin[0-9]*@smartcampus\\\\.edu$}")
+    private String adminEmailRegex;
+
+    @Value("${app.auth.technician-email-regex:^(?i)(tech|technician)[0-9]*@smartcampus\\\\.edu$}")
+    private String technicianEmailRegex;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -42,8 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setProfilePicture(picture);
             user = userRepository.save(user);
         } else {
-            Set<Role> roles = new HashSet<>();
-            roles.add(Role.USER);
+            Set<Role> roles = resolveRolesForEmail(email);
             user = User.builder()
                     .name(name)
                     .email(email)
@@ -56,5 +62,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         return UserPrincipal.create(user, attributes);
+    }
+
+    private Set<Role> resolveRolesForEmail(String email) {
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.USER);
+
+        if (email != null && email.matches(adminEmailRegex)) {
+            roles.add(Role.ADMIN);
+        }
+
+        if (email != null && email.matches(technicianEmailRegex)) {
+            roles.add(Role.TECHNICIAN);
+        }
+
+        return roles;
     }
 }

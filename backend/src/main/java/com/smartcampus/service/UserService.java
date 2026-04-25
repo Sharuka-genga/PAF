@@ -39,10 +39,10 @@ public class UserService {
                 .toList();
     }
 
-    public User updateUser(String userId, User userDetails) {
+    public User updateUser(String userId, String name, String email) {
         User user = getUserById(userId);
-        user.setName(userDetails.getName());
-        user.setEmail(userDetails.getEmail());
+        user.setName(name);
+        user.setEmail(email);
         return userRepository.save(user);
     }
 
