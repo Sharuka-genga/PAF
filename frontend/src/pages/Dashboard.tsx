@@ -68,35 +68,34 @@ const Dashboard: React.FC = () => {
     <UserLayout>
       <PremiumTopbar 
         title="Student Dashboard"
-        subtitle={`Welcome back, ${user?.name || 'Student'}!`}
       />
 
       <main className="max-w-7xl mx-auto p-6 space-y-8">
             {/* Hero Banner */}
-            <div className="glass-card-white-strong relative overflow-hidden p-10 border border-[rgba(124,58,237,0.15)] shadow-glow-purple group">
-              <div className="absolute inset-0 bg-gradient-to-br from-[rgba(124,58,237,0.1)] via-transparent to-[rgba(34,211,238,0.1)]"></div>
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-[#7C3AED]/[0.02] rounded-full -mr-24 -mt-24 transition-transform duration-700 group-hover:scale-110"></div>
               
-              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="flex items-center gap-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] rounded-3xl flex items-center justify-center shadow-lg transform group-hover:rotate-6 transition-transform duration-500">
-                    <FiGrid className="w-10 h-10 text-white" />
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 bg-[#F5F3FF] text-[#7C3AED] rounded-xl flex items-center justify-center border border-[#7C3AED]/10 shadow-sm shrink-0">
+                    <FiGrid className="w-6 h-6" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+                    <h1 className="text-xl font-bold text-gray-900 tracking-tight mb-1">
                       Welcome back, {user?.name || 'Student'}!
                     </h1>
-                    <p className="text-gray-600 text-xl font-medium max-w-xl leading-relaxed">
-                      All your campus resources and activities in one place. What would you like to do today?
+                    <p className="text-gray-500 text-sm font-normal max-w-lg">
+                      Manage your campus resources, bookings, and support tickets from one central dashboard.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 glass-card-white p-6 border border-white/50 shadow-xl">
+                <div className="flex items-center gap-6 bg-gray-50/50 p-4 rounded-2xl border border-gray-100 shadow-sm">
                   <div className="text-right">
-                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">System Status</p>
+                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">System Status</p>
                     <div className="flex items-center justify-end gap-2">
-                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)]"></div>
-                      <span className="text-gray-900 font-bold">All Systems Online</span>
+                      <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.4)]"></div>
+                      <span className="text-gray-700 text-sm font-semibold">All Systems Online</span>
                     </div>
                   </div>
                 </div>

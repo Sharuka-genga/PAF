@@ -10,8 +10,8 @@ export interface Ticket {
   image1?: string;
   image2?: string;
   image3?: string;
-  createdByUserId: number;
-  assignedToUserId?: number;
+  createdByUserId: string;
+  assignedToUserId?: string;
   resolutionNotes?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -20,7 +20,7 @@ export interface Ticket {
 export interface TicketComment {
   id?: number;
   ticketId: number;
-  userId: number;
+  userId: string;
   comment: string;
   createdAt?: string;
   updatedAt?: string;
@@ -36,7 +36,7 @@ export interface TicketRequest {
   image1?: string;
   image2?: string;
   image3?: string;
-  createdByUserId: number;
+  createdByUserId: string;
 }
 
 export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED' | 'REJECTED';

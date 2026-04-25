@@ -161,53 +161,56 @@ const PremiumContentPanels: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Recent Users Panel */}
-      <div className="glass-card-white-strong p-6 border border-[rgba(0,0,0,0.08)]">
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Recent Users</h2>
-            <p className="text-gray-600 text-sm">Latest registered users</p>
+            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Recent Users</h2>
+            <p className="text-gray-400 text-xs font-medium">Latest registered users</p>
           </div>
           <Link 
             to="/admin/users" 
-            className="text-[#7C3AED] hover:text-gray-900 transition-colors flex items-center gap-1 text-sm"
+            className="text-[#7C3AED] hover:text-[#6D28D9] transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest"
           >
             View All
             <FiExternalLink className="w-3 h-3" />
           </Link>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-1">
           {recentUsers.length === 0 ? (
             <div className="text-center py-8">
-              <FiUsers className="w-12 h-12 text-[#6B7280] mx-auto mb-3" />
-              <p className="text-gray-600">No users yet</p>
+              <FiUsers className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-400 text-xs">No users yet</p>
             </div>
           ) : (
             recentUsers.map((user: User) => (
               <Link 
                 key={user.id} 
                 to={`/admin/users/${user.id}`}
-                className="flex items-start gap-4 p-3 rounded-xl hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group"
               >
                 {/* User Icon */}
-                <div className="w-10 h-10 bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8] rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-blue">
-                  <FiUsers className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 bg-[#F5F3FF] text-[#7C3AED] rounded-lg flex items-center justify-center flex-shrink-0 border border-[#7C3AED]/10 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors">
+                  <FiUsers className="w-4 h-4" />
                 </div>
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-gray-900 font-medium truncate">{user.name || 'Unknown User'}</span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-gray-900 font-bold text-sm truncate">{user.name || 'Unknown User'}</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-green-50 text-green-600 border border-green-100">
                       Active
                     </span>
                   </div>
-                  <p className="text-gray-600 text-sm mb-1">
-                    {user.email || 'No email'}
-                  </p>
-                  <p className="text-gray-500 text-xs truncate">
-                    {user.roles?.join(', ') || 'USER'}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-500 text-xs truncate font-medium">
+                      {user.email || 'No email'}
+                    </p>
+                    <span className="text-gray-300">·</span>
+                    <p className="text-gray-400 text-[10px] truncate uppercase font-bold tracking-tight">
+                      {user.roles?.join(', ') || 'USER'}
+                    </p>
+                  </div>
                 </div>
               </Link>
             ))
@@ -216,60 +219,59 @@ const PremiumContentPanels: React.FC = () => {
       </div>
 
       {/* Open Tickets Panel */}
-      <div className="glass-card-weak p-6 border border-[rgba(255,255,255,0.08)]">
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Open Tickets</h2>
-            <p className="text-gray-600 text-sm">Active support requests</p>
+            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Open Tickets</h2>
+            <p className="text-gray-400 text-xs font-medium">Active support requests</p>
           </div>
           <Link 
             to="/admin/tickets" 
-            className="text-[#7C3AED] hover:text-gray-900 transition-colors flex items-center gap-1 text-sm"
+            className="text-[#7C3AED] hover:text-[#6D28D9] transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest"
           >
             View All
             <FiExternalLink className="w-3 h-3" />
           </Link>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-1">
           {openTickets.length === 0 ? (
             <div className="text-center py-8">
-              <FiAlertCircle className="w-12 h-12 text-[#6B7280] mx-auto mb-3" />
-              <p className="text-gray-600">No open tickets</p>
+              <FiAlertCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-400 text-xs">No open tickets</p>
             </div>
           ) : (
             openTickets.map((ticket: Ticket) => (
               <Link 
                 key={ticket.id} 
                 to={`/admin/tickets/${ticket.id}`}
-                className="flex items-start gap-4 p-3 rounded-xl hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group"
               >
                 {/* Ticket Icon */}
-                <div className="w-10 h-10 bg-gradient-to-br from-[#F97316] to-[#EA580C] rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-orange">
-                  <FiAlertCircle className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 bg-red-50 text-red-500 rounded-lg flex items-center justify-center flex-shrink-0 border border-red-100 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                  <FiAlertCircle className="w-4 h-4" />
                 </div>
 
                 {/* Ticket Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-gray-900 font-medium truncate">{ticket.title || ticket.description || 'Support Ticket'}</span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      ticket.priority === 'HIGH' ? 'bg-red-100 text-red-700' :
-                      ticket.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-green-100 text-green-700'
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-gray-900 font-bold text-sm truncate">{ticket.title || ticket.description || 'Support Ticket'}</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+                      ticket.priority === 'HIGH' ? 'bg-red-50 text-red-600 border-red-100' :
+                      ticket.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-600 border-yellow-100' :
+                      'bg-green-50 text-green-600 border-green-100'
                     }`}>
                       {ticket.priority || 'MEDIUM'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-xs">{ticket.category || 'General'}</span>
-                    <span className="text-gray-500 text-xs">·</span>
-                    <span className="text-gray-500 text-xs">{ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</span>
+                    <span className="text-gray-500 text-xs font-medium">{ticket.category || 'General'}</span>
+                    <span className="text-gray-300">·</span>
+                    <span className="text-gray-400 text-[10px] font-bold uppercase tracking-tight">{ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</span>
                   </div>
                 </div>
 
-                {/* Action Button */}
-                <FiMoreHorizontal className="w-4 h-4 text-[#9CA3AF]" />
+                <FiExternalLink className="w-3 h-3 text-gray-300 group-hover:text-[#7C3AED] transition-colors" />
               </Link>
             ))
           )}

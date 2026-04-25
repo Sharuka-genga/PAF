@@ -60,13 +60,17 @@
     /* ── Font families ── */
     --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'DM Mono', ui-monospace, monospace;
+
+    /* ── Beige Theme Colors ── */
+    --color-gray-50: #FDFBF7;
+    --color-gray-100: #F7F2E9;
 }
 
 :root {
     --radius: 0.875rem; /* 14px for cards, 10-12px for buttons */
     
     /* CampusHub Theme Colors */
-    --background: #F5F4F8;
+    --background: #FDFBF7;
     --foreground: #1A1730;
     --card: #FFFFFF;
     --card-foreground: #1A1730;
@@ -222,7 +226,7 @@
     @apply border-transparent;
   }
   body {
-    background: #FFFFFF;
+    background: #FDFBF7;
     color: #1A1A1A;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;

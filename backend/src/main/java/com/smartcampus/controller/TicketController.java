@@ -47,7 +47,7 @@ public class TicketController {
 
     // Get tickets by user
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Ticket>> getTicketsByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<Ticket>> getTicketsByUser(@PathVariable String userId) {
         return ResponseEntity.ok(ticketService.getTicketsByUser(userId));
     }
 
@@ -71,8 +71,8 @@ public class TicketController {
     @PatchMapping("/{id}/assign")
     public ResponseEntity<Ticket> assignTechnician(
             @PathVariable Long id,
-            @RequestBody Map<String, Long> body) {
-        Long technicianId = body.get("technicianId");
+            @RequestBody Map<String, String> body) {
+        String technicianId = body.get("technicianId");
         return ResponseEntity.ok(ticketService.assignTechnician(id, technicianId));
     }
 
@@ -100,7 +100,7 @@ public class TicketController {
     public ResponseEntity<TicketComment> updateComment(
             @PathVariable Long commentId,
             @RequestBody Map<String, Object> body) {
-        Long userId = Long.valueOf(body.get("userId").toString());
+        String userId = body.get("userId").toString();
         String comment = body.get("comment").toString();
         return ResponseEntity.ok(ticketService.updateComment(commentId, userId, comment));
     }
@@ -109,7 +109,7 @@ public class TicketController {
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long commentId,
-            @RequestParam Long userId) {
+            @RequestParam String userId) {
         ticketService.deleteComment(commentId, userId);
         return ResponseEntity.noContent().build();
     }

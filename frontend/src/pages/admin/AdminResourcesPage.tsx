@@ -11,6 +11,7 @@ import type { LucideIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from '../../components/layouts/AdminLayout';
+import PremiumTopbar from '../../components/ui/PremiumTopbar';
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 type IconComp = LucideIcon;
@@ -423,22 +424,23 @@ export default function AdminResourcesPage() {
   return (
     <AdminLayout>
       <main className="flex-1 flex flex-col min-w-0">
-        {/* TOPBAR */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-20 sticky top-0 z-20 px-8 flex items-center justify-between shadow-sm">
-          <div>
-            <h1 className="text-2xl font-bold text-ch-purple">Resource Management</h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={openCreate}
-              className="bg-ch-purple text-white rounded-2xl px-6 py-2.5 text-sm font-semibold hover:bg-purple-700 transition-all duration-300 shadow-lg shadow-purple-200 flex items-center gap-2 active:scale-95"
-            >
-              <Plus size={18} strokeWidth={2.5} /> Add New Resource
-            </button>
-          </div>
-        </header>
+        <PremiumTopbar 
+          title="Resource Management"
+        />
 
         <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">System Overview</h2>
+            </div>
+            <button
+              onClick={openCreate}
+              className="bg-[#7C3AED] text-white rounded-xl px-6 py-2.5 text-xs font-bold hover:bg-[#6D28D9] transition-all duration-300 shadow-lg shadow-purple-100 flex items-center gap-2 active:scale-95"
+            >
+              <Plus size={16} strokeWidth={3} /> Add New Resource
+            </button>
+          </div>
+
           {/* Stats Strip */}
           <div className="grid grid-cols-4 gap-6">
             <StatCard label="Total Resources" value={counts.total} color="#7C3AED" icon={Layers} bg="bg-purple-50" border="border-purple-100" />

@@ -152,7 +152,7 @@ export const ticketService = {
   },
 
   // Get tickets by user
-  getTicketsByUser: async (userId: number): Promise<Ticket[]> => {
+  getTicketsByUser: async (userId: string): Promise<Ticket[]> => {
     const response = await fetch(`${API_URL}/user/${userId}`, {
       headers: authHeaders(),
     });
@@ -192,41 +192,44 @@ export const ticketService = {
     return safeJson(response);
   },
 
-  // Update ticket status
+  assignTechnician: async (
+    ticketId: number,
+    technicianId: number | string
+  ): Promise<Ticket> => {
+    const res = await fetch(`${API_URL}/${ticketId}/assign`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        technicianId,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || 'Assign failed');
+    }
+
+    return safeJson(res); // ✅ FIX
+  },
+
+  // Update status
   updateTicketStatus: async (
     id: number,
     status: string,
     resolutionNotes?: string
   ): Promise<Ticket> => {
-    const response = await fetch(`${API_URL}/${id}/status`, {
+    const res = await fetch(`${API_URL}/${id}/status`, {
       method: 'PATCH',
-      headers: authHeaders(),
+      headers: authHeaders(), // ✅ FIX
       body: JSON.stringify({ status, resolutionNotes }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to update ticket status`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || 'Status update failed');
     }
 
-    return safeJson(response);
-  },
-
-  // Assign technician
-  assignTechnician: async (
-    ticketId: number,
-    technicianId: number
-  ): Promise<Ticket> => {
-    const response = await fetch(`${API_URL}/${ticketId}/assign`, {
-      method: 'PATCH',
-      headers: authHeaders(),
-      body: JSON.stringify({ technicianId }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to assign technician`);
-    }
-
-    return safeJson(response);
+    return safeJson(res); // ✅ FIX
   },
 
   // Delete ticket
@@ -244,7 +247,7 @@ export const ticketService = {
   // Add comment
   addComment: async (comment: {
     ticketId: number;
-    userId: number;
+    userId: string;
     comment: string;
   }): Promise<TicketComment> => {
     const response = await fetch(`${API_URL}/comments`, {
@@ -276,7 +279,7 @@ export const ticketService = {
   // Update comment
   updateComment: async (
     commentId: number,
-    userId: number,
+    userId: string,
     comment: string
   ): Promise<TicketComment> => {
     const response = await fetch(`${API_URL}/comments/${commentId}`, {
@@ -293,7 +296,7 @@ export const ticketService = {
   },
 
   // Delete comment
-  deleteComment: async (commentId: number, userId: number): Promise<void> => {
+  deleteComment: async (commentId: number, userId: string): Promise<void> => {
     const response = await fetch(
       `${API_URL}/comments/${commentId}?userId=${userId}`,
       {

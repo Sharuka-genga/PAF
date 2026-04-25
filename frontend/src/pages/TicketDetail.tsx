@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Ticket, TicketComment } from '../types/ticket';
 import { ticketService } from '../services/ticketService';
 import { Input } from '../components/ui/input';
+import { useAuth } from '../context/AuthContext';
 
 interface Props {
   ticket: Ticket;
@@ -38,14 +39,15 @@ const priorityConfig: Record<string, string> = {
 
 export default function TicketDetail({ ticket, onBack }: Props) {
   console.log("IMAGES:", ticket.image1, ticket.image2, ticket.image3);
+  const { user } = useAuth();
   const [comments, setComments] = useState<TicketComment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState('');
-  const [currentUserId] = useState(1);
+  const [currentUserId] = useState(user?.id || '1');
   const [status, setStatus] = useState(ticket.status);
   const [resolutionNotes, setResolutionNotes] = useState(ticket.resolutionNotes || '');
-  const [technicianId, setTechnicianId] = useState('');
+  const [technicianId, setTechnicianId] = useState<string>('');
   const [currentTime, setCurrentTime] = useState(new Date().toISOString());
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -106,7 +108,7 @@ export default function TicketDetail({ ticket, onBack }: Props) {
   const handleAssignTechnician = async () => {
     if (!technicianId) return;
     try {
-      await ticketService.assignTechnician(ticket.id!, Number(technicianId));
+      await ticketService.assignTechnician(ticket.id!, technicianId);
       alert('Technician assigned successfully!');
     } catch (error) {
       console.error('Error assigning technician:', error);

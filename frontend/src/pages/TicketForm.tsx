@@ -31,7 +31,7 @@ export default function TicketForm({ onSuccess, onCancel }: Props) {
     image1: '',
     image2: '',
     image3: '',
-    createdByUserId: 1,
+    createdByUserId: '1',
   });
   const [previews, setPreviews] = useState<string[]>(['', '', '']);
   const [loading, setLoading] = useState(false);

@@ -69,11 +69,10 @@ const AdminDashboard: React.FC = () => {
       {/* Topbar */}
       <PremiumTopbar 
         title="Admin Dashboard"
-        subtitle={`Welcome back, ${user?.name || 'Admin'}`}
       />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-6">
+      <main className="max-w-none px-8 py-6">
             {/* Hero Banner */}
             <PremiumHeroBanner />
 
