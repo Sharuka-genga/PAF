@@ -23,6 +23,8 @@ import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Filter, MessageSquare, Info, Clock, Users } from "lucide-react";
 import type { Booking } from "../lib/types";
+import AdminLayout from "../components/layouts/AdminLayout";
+import PremiumTopbar from "../components/ui/PremiumTopbar";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -96,172 +98,173 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#F5F4F8] font-['DM_Sans'] pb-12">
-    <div className="mx-auto max-w-[1200px] px-4 py-8 space-y-6 animate-in fade-in duration-500">
-      <div className="rounded-[28px] bg-gradient-to-r from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] p-8 shadow-[0_20px_80px_-40px_rgba(124,58,237,0.45)]">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Booking Management</h1>
-            <p className="max-w-xl text-sm text-white/80">Review and moderate facility booking requests across campus.</p>
-          </div>
-
-          <div className="flex items-center gap-3 bg-white/10 p-2 rounded-[12px] border border-white/20 shadow-none backdrop-blur-sm">
-            <div className="flex items-center gap-2 px-3 text-white/80 text-xs uppercase tracking-wider font-medium border-r border-white/20 pr-4">
-              <Filter className="size-4" /> Filter
+    <AdminLayout>
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F5F4F8] min-h-screen">
+        <PremiumTopbar title="Booking Management" />
+        
+        <div className="p-6 space-y-6 animate-in fade-in duration-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">System Overview</h2>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[160px] border-none shadow-none focus:ring-0 text-white">
-                <SelectValue placeholder="All Bookings" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Bookings</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            
+            <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-[#E2E0EC] shadow-sm">
+              <div className="flex items-center gap-2 px-3 text-gray-400 text-[10px] font-black uppercase tracking-[0.15em] border-r border-[#E2E0EC] pr-4">
+                <Filter className="size-3.5 text-ch-purple" /> Filter
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[160px] border-none shadow-none focus:ring-0 text-[#1A1730] text-xs font-bold h-8">
+                  <SelectValue placeholder="All Bookings" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-[#E2E0EC] shadow-xl">
+                  <SelectItem value="ALL" className="text-xs font-medium">All Bookings</SelectItem>
+                  <SelectItem value="PENDING" className="text-xs font-medium text-amber-600">Pending Requests</SelectItem>
+                  <SelectItem value="APPROVED" className="text-xs font-medium text-emerald-600">Approved</SelectItem>
+                  <SelectItem value="REJECTED" className="text-xs font-medium text-red-600">Rejected</SelectItem>
+                  <SelectItem value="CANCELLED" className="text-xs font-medium text-gray-500">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none overflow-hidden">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-purple-50 border-b border-purple-200">
-              <TableRow className="border-purple-200">
-                <TableHead className="font-semibold text-[#5A5680] py-4">ID</TableHead>
-                <TableHead className="font-semibold text-[#5A5680] py-4">Resource</TableHead>
-                <TableHead className="font-semibold text-[#5A5680] py-4">Schedule</TableHead>
-                <TableHead className="font-semibold text-[#5A5680] py-4">Purpose</TableHead>
-                <TableHead className="font-semibold text-[#5A5680] py-4 text-center">People</TableHead>
-                <TableHead className="font-semibold text-[#5A5680] py-4 text-center">Status</TableHead>
-                <TableHead className="text-right font-semibold text-[#5A5680] py-4 px-6">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7C3AED]"></div>
-                      <p className="text-[#9B97B8] text-sm font-medium">Loading requests...</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : bookings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center gap-3 text-[#9B97B8]">
-                      <Info className="size-10 opacity-20" />
-                      <div>
-                        <p className="font-medium text-[#5A5680]">No bookings found for the selected filter.</p>
-                        <p className="text-sm text-[#9B97B8]">Try changing the status filter above.</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                bookings.map((b) => (
-                  <TableRow key={b.id} className="hover:bg-[#F5F4F8]/80 transition-colors border-[#E2E0EC]">
-                    <TableCell className="font-['DM_Mono'] text-xs text-[#9B97B8]">#{b.id}</TableCell>
-                    <TableCell className="font-semibold text-[#1A1730]">{b.resourceName}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium text-[#5A5680] font-['DM_Mono']">{b.date}</span>
-                        <span className="text-xs text-[#9B97B8] flex items-center gap-1 font-['DM_Mono']">
-                          <Clock className="size-3 text-[#A78BFA]" />
-                          {formatTime(b.startTime)} - {formatTime(b.endTime)}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-[200px] truncate text-[#5A5680] text-sm italic" title={b.purpose}>
-                      "{b.purpose}"
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 text-[#5A5680]">
-                        <Users className="size-3.5" />
-                        <span className="text-sm font-medium font-['DM_Mono']">{b.attendees}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex flex-col gap-1.5 items-center justify-center">
-                        <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-0.5 rounded-[10px] text-[11px] font-bold tracking-wider uppercase`} variant="outline">
-                          {b.status}
-                        </Badge>
-                        {b.rejectionReason && (
-                          <div className="flex items-center justify-center gap-1 text-[11px] text-[#DC2626] bg-[#DC2626]/10 px-1.5 py-0.5 rounded-[8px] italic">
-                            <MessageSquare className="size-3" /> {b.rejectionReason}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right py-4 px-6">
-                      {b.status === "PENDING" ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleApprove(b.id)}
-                            className="bg-[#059669]/10 text-[#059669] border-[#059669]/20 hover:bg-[#059669]/20 h-8 rounded-[10px]"
-                          >
-                            <CheckCircle2 className="size-4 mr-1.5" /> Approve
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => setRejectingId(b.id)}
-                            className="bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/20 hover:bg-[#DC2626]/20 h-8 rounded-[10px]"
-                          >
-                            <XCircle className="size-4 mr-1.5" /> Reject
-                          </Button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-[#9B97B8] font-medium italic">No actions available</span>
-                      )}
-                    </TableCell>
+          <Card className="bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] shadow-none overflow-hidden">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader className="bg-purple-50 border-b border-purple-200">
+                  <TableRow className="border-purple-200">
+                    <TableHead className="font-semibold text-[#5A5680] py-4">ID</TableHead>
+                    <TableHead className="font-semibold text-[#5A5680] py-4">Resource</TableHead>
+                    <TableHead className="font-semibold text-[#5A5680] py-4">Schedule</TableHead>
+                    <TableHead className="font-semibold text-[#5A5680] py-4">Purpose</TableHead>
+                    <TableHead className="font-semibold text-[#5A5680] py-4 text-center">People</TableHead>
+                    <TableHead className="font-semibold text-[#5A5680] py-4 text-center">Status</TableHead>
+                    <TableHead className="text-right font-semibold text-[#5A5680] py-4 px-6">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-64 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7C3AED]"></div>
+                          <p className="text-[#9B97B8] text-sm font-medium">Loading requests...</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : bookings.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-64 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3 text-[#9B97B8]">
+                          <Info className="size-10 opacity-20" />
+                          <div>
+                            <p className="font-medium text-[#5A5680]">No bookings found for the selected filter.</p>
+                            <p className="text-sm text-[#9B97B8]">Try changing the status filter above.</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    bookings.map((b) => (
+                      <TableRow key={b.id} className="hover:bg-[#F5F4F8]/80 transition-colors border-[#E2E0EC]">
+                        <TableCell className="font-['DM_Mono'] text-xs text-[#9B97B8]">#{b.id}</TableCell>
+                        <TableCell className="font-semibold text-[#1A1730]">{b.resourceName}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-sm font-medium text-[#5A5680] font-['DM_Mono']">{b.date}</span>
+                            <span className="text-xs text-[#9B97B8] flex items-center gap-1 font-['DM_Mono']">
+                              <Clock className="size-3 text-[#A78BFA]" />
+                              {formatTime(b.startTime)} - {formatTime(b.endTime)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate text-[#5A5680] text-sm italic" title={b.purpose}>
+                          "{b.purpose}"
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1.5 text-[#5A5680]">
+                            <Users className="size-3.5" />
+                            <span className="text-sm font-medium font-['DM_Mono']">{b.attendees}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col gap-1.5 items-center justify-center">
+                            <Badge className={`${getStatusVariant(b.status)} border px-2.5 py-0.5 rounded-[10px] text-[11px] font-bold tracking-wider uppercase`} variant="outline">
+                              {b.status}
+                            </Badge>
+                            {b.rejectionReason && (
+                              <div className="flex items-center justify-center gap-1 text-[11px] text-[#DC2626] bg-[#DC2626]/10 px-1.5 py-0.5 rounded-[8px] italic">
+                                <MessageSquare className="size-3" /> {b.rejectionReason}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right py-4 px-6">
+                          {b.status === "PENDING" ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleApprove(b.id)}
+                                className="bg-[#059669]/10 text-[#059669] border-[#059669]/20 hover:bg-[#059669]/20 h-8 rounded-[10px]"
+                              >
+                                <CheckCircle2 className="size-4 mr-1.5" /> Approve
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setRejectingId(b.id)}
+                                className="bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/20 hover:bg-[#DC2626]/20 h-8 rounded-[10px]"
+                              >
+                                <XCircle className="size-4 mr-1.5" /> Reject
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[#9B97B8] font-medium italic">No actions available</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
 
-      {/* Rejection Reason Dialog */}
-      <Dialog open={!!rejectingId} onOpenChange={(open) => !open && setRejectingId(null)}>
-        <DialogContent className="sm:max-w-md bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] font-['DM_Sans']">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[#DC2626]">
-              <XCircle className="size-5" /> Reject Booking Request
-            </DialogTitle>
-            <DialogDescription className="text-[#9B97B8]">
-              Please provide a reason for rejecting this booking. This will be visible to the user.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Textarea 
-              placeholder="e.g., The room is reserved for emergency repairs."
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="resize-none min-h-[100px] rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730]"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setRejectingId(null)} className="h-10 rounded-[10px] text-[#5A5680] hover:bg-[#F5F4F8]">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleReject}
-              className="bg-[#DC2626] hover:bg-[#DC2626]/90 text-white h-10 px-8 rounded-[10px]"
-              disabled={!rejectionReason.trim()}
-            >
-              Confirm Rejection
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-    </div>
+          {/* Rejection Reason Dialog */}
+          <Dialog open={!!rejectingId} onOpenChange={(open) => !open && setRejectingId(null)}>
+            <DialogContent className="sm:max-w-md bg-white border-[1.5px] border-[#E2E0EC] rounded-[14px] font-['DM_Sans']">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-[#DC2626]">
+                  <XCircle className="size-5" /> Reject Booking Request
+                </DialogTitle>
+                <DialogDescription className="text-[#9B97B8]">
+                  Please provide a reason for rejecting this booking. This will be visible to the user.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4">
+                <Textarea 
+                  placeholder="e.g., The room is reserved for emergency repairs."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="resize-none min-h-[100px] rounded-[10px] border-[#E2E0EC] focus-visible:border-[#7C3AED] focus-visible:ring-[#7C3AED] text-[#1A1730]"
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setRejectingId(null)} className="h-10 rounded-[10px] text-[#5A5680] hover:bg-[#F5F4F8]">
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleReject}
+                  className="bg-[#DC2626] hover:bg-[#DC2626]/90 text-white h-10 px-8 rounded-[10px]"
+                  disabled={!rejectionReason.trim()}
+                >
+                  Confirm Rejection
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </main>
+    </AdminLayout>
   );
 }
