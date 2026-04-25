@@ -1,21 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  FiHome, 
-  FiGrid, 
-  FiCalendar, 
-  FiAlertCircle, 
-  FiBell, 
-  FiSettings, 
-  FiUsers, 
-  FiChevronDown,
-  FiChevronRight,
-  FiLogOut,
-  FiMenu,
-  FiX
-} from 'react-icons/fi';
+import { FiHome, FiGrid, FiCalendar, FiAlertCircle, FiBell, FiSettings, FiUsers, FiChevronDown, FiChevronRight, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import NotificationDropdown from './NotificationDropdown';
+import Logo from './Logo';
 
 interface SidebarItem {
   title: string;
@@ -225,17 +213,12 @@ const Sidebar: React.FC = () => {
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+          <div className="flex items-center justify-between p-4 border-b border-sidebar-border h-16">
             {!isCollapsed ? (
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mr-3">
-                  <span className="text-primary-foreground font-bold text-sm">CH</span>
-                </div>
-                <span className="text-sidebar-foreground font-semibold text-lg">Smart Campus Hub</span>
-              </div>
+              <Logo size="md" />
             ) : (
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto">
-                <span className="text-primary-foreground font-bold text-sm">CH</span>
+              <div className="mx-auto">
+                <Logo size="sm" className="!gap-0 [&>div:last-child]:hidden" />
               </div>
             )}
             

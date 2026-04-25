@@ -172,14 +172,12 @@ export default function ResourcesPage() {
   return (
     <UserLayout>
       <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0, height: '100vh', overflow: 'hidden' }}>
-        {/* Main Toolbar */}
-        <div className="bg-white border-b border-gray-100 px-8 h-20 flex items-center justify-between sticky top-0 z-30 shadow-sm transition-all">
-          {/* Left: Title & Subtitle */}
-          <div className="flex-shrink-0 mr-8">
-            <h1 className="text-2xl font-black text-[#7C3AED] tracking-tight leading-none">Facilities & Assets</h1>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Campus Operations Hub</p>
-          </div>
+        <PremiumTopbar 
+          title="Facilities & Assets"
+        />
 
+        {/* Main Toolbar */}
+        <div className="bg-white border-b border-gray-100 px-8 h-16 flex items-center justify-between sticky top-[64px] z-30 shadow-sm transition-all">
           {/* Middle: Local Search */}
           <div className="flex-1 max-w-md mr-6">
             <div className="relative group">

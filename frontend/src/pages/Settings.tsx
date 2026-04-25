@@ -1,13 +1,10 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2, FiCamera, FiUpload } from 'react-icons/fi';
+import { FiBell, FiLock, FiMonitor, FiSave, FiSettings, FiShield, FiUser, FiAlertCircle, FiTrash2, FiCamera, FiUpload, FiCheckCircle, FiActivity } from 'react-icons/fi';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Button } from '../components/ui/button';
 import UserLayout from '../components/layouts/UserLayout';
+import PremiumTopbar from '../components/ui/PremiumTopbar';
 import type { UserPreferences } from '../types';
 
 const SETTINGS_STORAGE_KEY = 'smartCampusSettings';
@@ -77,18 +74,14 @@ const Settings: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         toast.error('Please select an image file');
         return;
       }
-      
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Image size should be less than 5MB');
         return;
       }
-      
       setProfileImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -100,20 +93,16 @@ const Settings: React.FC = () => {
 
   const handleImageUpload = async () => {
     if (!profileImage) return;
-    
     try {
       setUploadingImage(true);
       const formData = new FormData();
       formData.append('profileImage', profileImage);
-      
       await authAPI.uploadProfileImage(formData);
       await loadUser();
       toast.success('Profile image updated successfully');
       setProfileImage(null);
       setImagePreview('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to upload profile image');
     } finally {
@@ -141,7 +130,6 @@ const Settings: React.FC = () => {
       toast.error('Name cannot be empty');
       return;
     }
-
     try {
       setSavingProfile(true);
       await authAPI.updateMe({ name: profileName.trim() });
@@ -168,7 +156,6 @@ const Settings: React.FC = () => {
       toast.error('New passwords do not match');
       return;
     }
-
     try {
       setSavingPassword(true);
       await authAPI.changePassword({ currentPassword, newPassword });
@@ -206,7 +193,7 @@ const Settings: React.FC = () => {
   const handleDeleteAccount = async () => {
     try {
       await deleteAccount();
-      toast.success('Your account has been deleted permanently from the system');
+      toast.success('Your account has been deleted permanently');
       window.location.href = '/login';
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to delete account');
@@ -216,314 +203,347 @@ const Settings: React.FC = () => {
 
   return (
     <UserLayout>
-      <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <FiSettings className="text-blue-600" />
-          Account Settings
-        </h1>
-        <p className="text-muted-foreground mt-1">Manage your profile, security, and personal preferences.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FiUser className="text-blue-600" />
-                Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSaveProfile} className="space-y-4">
-                {/* Profile Image Section */}
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                      {imagePreview || user?.profilePicture ? (
-                        <img 
-                          src={imagePreview || (user?.profilePicture?.startsWith('http') ? user.profilePicture : `${window.location.origin}${user?.profilePicture}`)} 
-                          alt="Profile" 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold">
-                          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                        </div>
-                      )}
+      <PremiumTopbar title="Account Settings" />
+      
+      <div className="max-w-none px-8 py-8 bg-[#FDFBF7] min-h-[calc(100vh-64px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Settings Column */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* Profile Section */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center gap-2">
+                <FiUser className="text-[#7C3AED]" />
+                <h2 className="font-bold text-gray-900">Profile Information</h2>
+              </div>
+              <div className="p-6">
+                <form onSubmit={handleSaveProfile} className="space-y-6">
+                  {/* Profile Image Section */}
+                  <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-50">
+                    <div className="relative group">
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center ring-4 ring-white shadow-md">
+                        {imagePreview || user?.profilePicture ? (
+                          <img 
+                            src={imagePreview || (user?.profilePicture?.startsWith('http') ? user.profilePicture : `${window.location.origin}${user?.profilePicture}`)} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-blue-600 flex items-center justify-center text-white text-3xl font-black">
+                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute -bottom-2 -right-2 w-8 h-8 bg-white border border-gray-100 text-[#7C3AED] rounded-lg flex items-center justify-center shadow-lg hover:bg-gray-50 transition-all active:scale-90"
+                      >
+                        <FiCamera className="w-4 h-4" />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
-                    >
-                      <FiCamera className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-gray-900">Profile Picture</h3>
-                    <p className="text-xs text-gray-500">JPG, PNG or GIF. Max size 5MB</p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <div className="flex space-x-2 mt-2">
-                      {profileImage && (
-                        <>
-                          <Button
+                    
+                    <div className="flex-1 text-center sm:text-left">
+                      <h3 className="text-sm font-bold text-gray-900 mb-1">Profile Picture</h3>
+                      <p className="text-xs text-gray-400 font-medium mb-3 tracking-tight">JPG, PNG or GIF. Max size 5MB</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                        {profileImage && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={handleImageUpload}
+                              disabled={uploadingImage}
+                              className="px-4 py-2 bg-[#7C3AED] text-white text-xs font-bold rounded-xl hover:bg-[#6D28D9] transition-all flex items-center gap-2"
+                            >
+                              <FiUpload className="w-3.5 h-3.5" />
+                              {uploadingImage ? 'Uploading...' : 'Save Image'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProfileImage(null);
+                                setImagePreview('');
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                              className="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200 transition-all"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                        {user?.profilePicture && !profileImage && (
+                          <button
                             type="button"
-                            onClick={handleImageUpload}
+                            onClick={handleRemoveImage}
                             disabled={uploadingImage}
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white gap-1"
+                            className="px-4 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-xl hover:bg-red-100 transition-all"
                           >
-                            <FiUpload className="w-3 h-3" />
-                            {uploadingImage ? 'Uploading...' : 'Upload'}
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              setProfileImage(null);
-                              setImagePreview('');
-                              if (fileInputRef.current) fileInputRef.current.value = '';
-                            }}
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-300"
-                          >
-                            Cancel
-                          </Button>
-                        </>
-                      )}
-                      {user?.profilePicture && !profileImage && (
-                        <Button
-                          type="button"
-                          onClick={handleRemoveImage}
-                          disabled={uploadingImage}
-                          size="sm"
-                          variant="outline"
-                          className="border-red-300 text-red-600 hover:bg-red-50"
-                        >
-                          Remove
-                        </Button>
-                      )}
+                            Remove Photo
+                          </button>
+                        )}
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                      <input
+                        id="profileName"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#7C3AED]/10 focus:border-[#7C3AED] outline-none transition-all"
+                        placeholder="Enter your name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                      <input
+                        id="email"
+                        value={user?.email || ''}
+                        readOnly
+                        className="w-full px-4 py-3 bg-gray-100/50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingProfile || uploadingImage}
+                    className="flex items-center gap-2 px-6 py-3 bg-[#7C3AED] text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-purple-100 hover:bg-[#6D28D9] hover:shadow-purple-200 transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <FiSave className="w-4 h-4" />
+                    {savingProfile ? 'Saving...' : 'Update Profile'}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Security Section */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center gap-2">
+                <FiLock className="text-orange-600" />
+                <h2 className="font-bold text-gray-900">Security & Password</h2>
+              </div>
+              <div className="p-6">
+                <form onSubmit={handleChangePassword} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Current Password</label>
+                    <input
+                      id="currentPassword"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#7C3AED]/10 focus:border-[#7C3AED] outline-none transition-all"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">New Password</label>
+                      <input
+                        id="newPassword"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#7C3AED]/10 focus:border-[#7C3AED] outline-none transition-all"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Confirm New Password</label>
+                      <input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#7C3AED]/10 focus:border-[#7C3AED] outline-none transition-all"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={savingPassword}
+                    className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-orange-100 hover:bg-orange-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <FiShield className="w-4 h-4" />
+                    {savingPassword ? 'Updating...' : 'Change Password'}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Notification Preferences */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center gap-2">
+                <FiBell className="text-green-600" />
+                <h2 className="font-bold text-gray-900">Notifications & Display</h2>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { key: 'emailAlerts', label: 'Email Summaries', desc: 'Periodic activity reports via email' },
+                    { key: 'ticketAlerts', label: 'Ticket Updates', desc: 'Instant alerts on support status' },
+                    { key: 'bookingAlerts', label: 'Booking Reminders', desc: 'Reminders for room/equip bookings' },
+                    { key: 'compactMode', label: 'Compact Dashboard', desc: 'Smaller UI elements for visibility' },
+                  ].map((item) => (
+                    <div 
+                      key={item.key} 
+                      onClick={() => togglePreference(item.key as keyof typeof preferences)}
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                        preferences[item.key as keyof typeof preferences] 
+                        ? 'border-[#7C3AED]/30 bg-purple-50/30' 
+                        : 'border-gray-100 bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="pr-4">
+                        <p className="text-sm font-bold text-gray-900">{item.label}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{item.desc}</p>
+                      </div>
+                      <div className={`w-10 h-5 rounded-full relative transition-colors ${preferences[item.key as keyof typeof preferences] ? 'bg-[#7C3AED]' : 'bg-gray-200'}`}>
+                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${preferences[item.key as keyof typeof preferences] ? 'left-6' : 'left-1'}`}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={handleSavePreferences}
+                  disabled={savingPreferences}
+                  className="mt-8 flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-green-100 hover:bg-green-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  <FiSave className="w-4 h-4" />
+                  {savingPreferences ? 'Saving...' : 'Save All Preferences'}
+                </button>
+              </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="bg-red-50/30 rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-red-50 bg-red-50/50 flex items-center gap-2">
+                <FiAlertCircle className="text-red-600" />
+                <h2 className="font-bold text-red-600">Danger Zone</h2>
+              </div>
+              <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">Delete Account Permanently</p>
+                  <p className="text-xs text-gray-500 max-w-sm">Once you delete your account, all data will be purged. This action is not reversible.</p>
+                </div>
+                <button
+                  onClick={triggerDeleteAccount}
+                  className="px-6 py-3 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all active:scale-[0.95]"
+                >
+                  Delete My Account
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Snapshot Column */}
+          <aside className="space-y-6">
+            <div className="bg-[#0A0F1D] rounded-3xl p-6 text-white relative overflow-hidden shadow-2xl">
+              {/* Background Glow */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#7C3AED]/20 rounded-full blur-[60px]"></div>
+              
+              <div className="relative z-10 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] font-black uppercase tracking-widest">
+                    {roleLabel}
+                  </div>
+                  <FiActivity className="text-[#A78BFA] w-5 h-5" />
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#7C3AED] to-blue-600 p-0.5 shadow-lg">
+                    <div className="w-full h-full rounded-[14px] overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center font-black text-xl">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black tracking-tight">{user?.name}</h3>
+                    <p className="text-gray-400 text-sm font-medium">{user?.email}</p>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="profileName">Full Name</Label>
-                  <Input
-                    id="profileName"
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    placeholder="Your full name"
-                  />
+                <div className="pt-6 border-t border-white/5 space-y-4">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500 font-bold uppercase tracking-wider">Account Status</span>
+                    <span className="text-green-400 font-black tracking-widest uppercase">Verified</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500 font-bold uppercase tracking-wider">Member Since</span>
+                    <span className="text-white font-black tracking-widest uppercase">APR 2026</span>
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={user?.email || ''}
-                    readOnly
-                    className="bg-muted text-muted-foreground"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={savingProfile || uploadingImage}
-                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
-                >
-                  <FiSave />
-                  {savingProfile ? 'Saving...' : 'Save Profile'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FiLock className="text-orange-600" />
-                Security
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                  />
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-gray-300 font-bold">
+                    <FiCheckCircle className="text-[#A78BFA]" />
+                    Two-Factor Auth Active
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-300 font-bold">
+                    <FiCheckCircle className="text-[#A78BFA]" />
+                    Cloud Storage Synced
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={savingPassword}
-                  className="bg-orange-600 hover:bg-orange-700 text-white gap-2"
-                >
-                  <FiShield />
-                  {savingPassword ? 'Updating...' : 'Update Password'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </div>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FiBell className="text-green-600" />
-                Notification Preferences
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { key: 'emailAlerts', label: 'Email alert summaries' },
-                  { key: 'ticketAlerts', label: 'Ticket status reminders' },
-                  { key: 'bookingAlerts', label: 'Booking updates' },
-                ].map((item) => (
-                  <Label key={item.key} className="flex items-center justify-between border rounded-lg px-3 py-2 cursor-pointer font-normal hover:bg-accent transition-colors">
-                    <span className="text-sm text-foreground">{item.label}</span>
-                    <input
-                      type="checkbox"
-                      checked={preferences[item.key as keyof typeof preferences]}
-                      onChange={() => togglePreference(item.key as keyof typeof preferences)}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </Label>
-                ))}
+            {(isAdmin() || isTechnician()) && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <FiMonitor className="text-[#7C3AED]" />
+                  <h3 className="font-bold text-gray-900 text-sm">Privileged Access</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="p-3 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 leading-relaxed uppercase tracking-wider">
+                    As an authorized staff member, you have access to system-wide logs and critical infrastructure management.
+                  </div>
+                  <a href="/admin" className="block text-center py-2 text-xs font-black text-[#7C3AED] hover:underline uppercase tracking-widest">
+                    Enter Admin Workspace
+                  </a>
+                </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-border">
-                <h3 className="text-sm font-medium text-foreground mb-3">Display Settings</h3>
-                <Label className="flex items-center justify-between border rounded-lg px-3 py-2 cursor-pointer font-normal hover:bg-accent transition-colors">
-                  <span className="text-sm text-foreground">Compact dashboard mode</span>
-                  <input
-                    type="checkbox"
-                    checked={preferences.compactMode}
-                    onChange={() => togglePreference('compactMode')}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </Label>
-              </div>
-              <Button
-                onClick={handleSavePreferences}
-                disabled={savingPreferences}
-                className="mt-6 bg-green-600 hover:bg-green-700 text-white gap-2"
-              >
-                <FiSave />
-                {savingPreferences ? 'Saving...' : 'Save Preferences'}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-red-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-red-600">
-                <FiAlertCircle className="text-red-600" />
-                Danger Zone
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  Once you delete your account, there is no going back. Please be certain.
-                </p>
-                <Button
-                  onClick={triggerDeleteAccount}
-                  variant="destructive"
-                  className="bg-red-600 hover:bg-red-700 text-white gap-2"
-                >
-                  <FiTrash2 />
-                  Delete My Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            )}
+          </aside>
         </div>
-
-        <aside className="space-y-4">
-          <Card className="bg-gradient-to-br from-blue-600 to-cyan-500 text-white border-0 shadow-md">
-            <CardContent className="p-5">
-              <h3 className="font-semibold text-lg">Account Snapshot</h3>
-              <p className="text-sm mt-3 opacity-90">{user?.name}</p>
-              <p className="text-xs opacity-80">{user?.email}</p>
-              <p className="mt-3 inline-block rounded-full bg-white/20 px-3 py-1 text-xs">{roleLabel}</p>
-            </CardContent>
-          </Card>
-
-          {(isAdmin() || isTechnician()) && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FiMonitor className="text-indigo-600" />
-                  Admin Panel Shortcuts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  {isAdmin() && <p>- Manage users, roles, bookings and tickets.</p>}
-                  {isTechnician() && <p>- Track assigned tickets and update statuses.</p>}
-                  <p>- Security best practice: rotate passwords regularly.</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </aside>
       </div>
 
       {/* Delete Account Confirmation Modal */}
       {confirmDeleteAccount && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <FiAlertCircle className="text-red-600 inline" /> Confirm Account Deletion
-            </h2>
-            <p className="text-gray-600 mb-6 text-sm">
-              Are you absolutely sure you want to delete your account? This action <strong>cannot be undone</strong> and you will lose all data associated with your profile.
+        <div className="fixed inset-0 bg-[#0A0F1D]/60 backdrop-blur-sm flex items-center justify-center z-[2000] p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl scale-in-center">
+            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6">
+              <FiAlertCircle className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Wait, are you sure?</h2>
+            <p className="text-gray-500 mb-8 font-medium leading-relaxed">
+              Deleting your account is permanent and cannot be undone. All your bookings, tickets, and preferences will be permanently erased from the Smart Campus Hub.
             </p>
-            <div className="flex space-x-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setConfirmDeleteAccount(false)}
-                className="hover:bg-gray-50 border-gray-300"
-              >
-                Cancel
-              </Button>
-              <Button
+            <div className="flex flex-col gap-3">
+              <button
                 onClick={handleDeleteAccount}
-                className="bg-red-600 text-white hover:bg-red-700 font-medium"
+                className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-100"
               >
-                Yes, Delete Account
-              </Button>
+                Yes, Delete My Account
+              </button>
+              <button
+                onClick={() => setConfirmDeleteAccount(false)}
+                className="w-full py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all"
+              >
+                I Changed My Mind
+              </button>
             </div>
           </div>
         </div>
       )}
-      </div>
     </UserLayout>
   );
 };

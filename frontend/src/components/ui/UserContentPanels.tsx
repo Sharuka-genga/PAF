@@ -60,14 +60,14 @@ const UserContentPanels: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Recent My Bookings */}
-      <div className="glass-card-white-strong p-6 border border-[rgba(0,0,0,0.08)]">
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Recent My Bookings</h2>
-            <p className="text-gray-600 text-sm">Your upcoming facility reservations</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Recent Bookings</h2>
+            <p className="text-gray-500 text-xs">Your upcoming facility reservations</p>
           </div>
-          <Link to="/bookings" className="text-[#7C3AED] hover:text-[#5B21B6] transition-colors flex items-center gap-1 text-sm font-medium">
-            View All <FiExternalLink className="w-3 h-3" />
+          <Link to="/bookings" className="text-[#7C3AED] hover:text-[#5B21B6] transition-colors flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+            View All <FiExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -103,14 +103,14 @@ const UserContentPanels: React.FC = () => {
       </div>
 
       {/* My Incidents */}
-      <div className="glass-card-white-strong p-6 border border-[rgba(0,0,0,0.08)]">
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">My Incidents</h2>
-            <p className="text-gray-600 text-sm">Status of your reported issues</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">My Incidents</h2>
+            <p className="text-gray-500 text-xs">Status of your reported issues</p>
           </div>
-          <Link to="/tickets" className="text-[#7C3AED] hover:text-[#5B21B6] transition-colors flex items-center gap-1 text-sm font-medium">
-            View All <FiExternalLink className="w-3 h-3" />
+          <Link to="/tickets" className="text-[#7C3AED] hover:text-[#5B21B6] transition-colors flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+            View All <FiExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
 

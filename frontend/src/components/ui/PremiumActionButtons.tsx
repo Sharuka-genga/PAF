@@ -79,45 +79,26 @@ const PremiumActionButtons: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {actionButtons.map((button) => {
-        const styles = getButtonStyles(button.color);
-        
-        return (
-          <Link key={button.title} to={button.link} className="block group">
-            <div 
-              className={`
-                relative p-6 rounded-2xl transition-all duration-300 transform
-                group-hover:-translate-y-2 cursor-pointer
-                ${styles.shadow} ${styles.hoverShadow}
-              `}
-              style={{ background: styles.background }}
-            >
-              {/* Glass overlay for depth */}
-              <div className="absolute inset-0 bg-white/10 rounded-2xl backdrop-blur-sm"></div>
-              
-              {/* Content */}
-              <div className="relative z-10 flex flex-col items-center text-center space-y-3">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
-                  {button.icon}
-                </div>
-                
-                <div>
-                  <h3 className="text-white font-bold text-lg mb-1">{button.title}</h3>
-                  {button.description && (
-                    <p className="text-white/80 text-sm">{button.description}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Hover effect overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              
-              {/* Animated border glow */}
-              <div className="absolute inset-0 rounded-2xl border-2 border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      {actionButtons.map((button) => (
+        <Link key={button.title} to={button.link} className="block group">
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md group-hover:border-[#7C3AED]/20 flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-[#F5F3FF] text-[#7C3AED] rounded-xl flex items-center justify-center border border-[#7C3AED]/10 mb-4 transition-colors group-hover:bg-[#7C3AED] group-hover:text-white">
+              {React.cloneElement(button.icon as React.ReactElement, { className: 'w-6 h-6' })}
             </div>
-          </Link>
-        );
-      })}
+            
+            <div>
+              <h3 className="text-gray-900 font-bold text-sm mb-1">{button.title}</h3>
+              {button.description && (
+                <p className="text-gray-400 text-[10px] leading-relaxed font-medium">{button.description}</p>
+              )}
+            </div>
+
+            <div className="mt-4 text-[#7C3AED] text-[10px] font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+              Go to Page →
+            </div>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 };
