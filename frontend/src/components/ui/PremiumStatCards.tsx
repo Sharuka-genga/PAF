@@ -114,44 +114,33 @@ const PremiumStatCards: React.FC<PremiumStatCardsProps> = ({ stats }) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {statCards.map((card) => {
-        const colors = getColorClasses(card.color);
-        
-        return (
-          <Link key={card.label} to={card.link} className="block group">
-            <div className="glass-card-white-strong p-6 border border-[rgba(0,0,0,0.08)] hover:border-[rgba(124,58,237,0.2)] transition-all duration-300 group-hover:transform group-hover:-translate-y-2">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">{card.label}</p>
-                  <p className="text-3xl font-bold text-gray-900 font-mono">{card.value}</p>
-                </div>
-                <div className={`w-12 h-12 ${colors.iconBg} rounded-xl flex items-center justify-center ${colors.iconGlow}`}>
-                  {card.icon}
-                </div>
+      {statCards.map((card) => (
+        <Link key={card.label} to={card.link} className="block group">
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md group-hover:border-[#7C3AED]/20">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">{card.label}</p>
+                <h3 className="text-xl font-bold text-gray-900">{card.value}</h3>
               </div>
-
-              {/* Delta Badge */}
-              {card.delta && (
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex items-center gap-1">
-                    <FiTrendingUp className={`${card.trend === 'up' ? 'text-[#10B981]' : 'text-[#EF4444]'} w-3 h-3`} />
-                    <span className={`text-xs font-semibold ${card.trend === 'up' ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
-                      {card.delta}
-                    </span>
-                  </div>
-                  <span className="text-gray-500 text-xs">vs last month</span>
-                </div>
-              )}
-
-              {/* Progress Line */}
-              <div className={`h-1 ${colors.progressBg} rounded-full overflow-hidden`}>
-                <div className={`h-full ${colors.progressLine} rounded-full`} style={{ width: '75%' }}></div>
+              <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center border border-[#7C3AED]/10 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors duration-300">
+                {React.cloneElement(card.icon as React.ReactElement, { className: 'w-5 h-5' })}
               </div>
             </div>
-          </Link>
-        );
-      })}
+
+            {card.delta && (
+              <div className="mt-3 flex items-center gap-1.5">
+                <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${
+                  card.trend === 'up' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                }`}>
+                  <FiTrendingUp className="w-2.5 h-2.5" />
+                  {card.delta}
+                </div>
+                <span className="text-gray-400 text-[10px] font-medium">vs last month</span>
+              </div>
+            )}
+          </div>
+        </Link>
+      ))}
     </div>
   );
 };
